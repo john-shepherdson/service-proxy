@@ -83,5 +83,6 @@
     <include file="META-INF/jpa-changelog-user-attribute.xml"/>
     <include file="META-INF/jpa-changelog-indexes.xml"/>
     <include file="META-INF/jpa-changelog-saml-fed-clients.xml"/>
+    <include file="META-INF/jpa-changelog-client-description.xml"/>
 
 </databaseChangeLog>
