@@ -10,6 +10,11 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [16.1.0-2.11] - 2022-09-01
+
+### Fixed
+- Disabled the distributed token relay cache for remote introspections. Using local node cache instead.
+
 ## [16.1.0-2.10] - 2022-07-25
 
 ### Added
