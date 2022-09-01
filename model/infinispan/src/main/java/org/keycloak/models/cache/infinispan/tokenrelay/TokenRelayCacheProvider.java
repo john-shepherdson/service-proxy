@@ -61,24 +61,25 @@ public class TokenRelayCacheProvider implements CustomCacheProvider {
         logger.info("Keycloak is clustered? -> " + globalConfiguration.isClustered());
 
         Configuration config;
-        if(globalConfiguration.isClustered()) {
-            logger.info("Initiating a cluster-aware TokenRelayCache");
-            config = new ConfigurationBuilder()
-                    .expiration().lifespan(LIFESPAN_SEC, TimeUnit.SECONDS).maxIdle(MAXIDLE_SEC, TimeUnit.SECONDS)
-                    .clustering()
-                    .cacheMode(CacheMode.REPL_SYNC)
-                    .memory().storage(StorageType.HEAP)
-                    .encoding().mediaType(MediaType.APPLICATION_SERIALIZED_OBJECT_TYPE)
-                    .build();
-            CACHE = cacheManager.administration()
-                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                    .createCache(tokenRelayCacheName, config);
-        }
-        else {
+        /* DISABLING THE DISTRIBUTED CACHE FOR NOW. PLEASE, MAKE SURE THE DISTRIBUTED CACHE IS INITIALIZED WITH THE getOrCreateCache() */
+//        if(globalConfiguration.isClustered()) {
+//            logger.info("Initiating a cluster-aware TokenRelayCache");
+//            config = new ConfigurationBuilder()
+//                    .expiration().lifespan(LIFESPAN_SEC, TimeUnit.SECONDS).maxIdle(MAXIDLE_SEC, TimeUnit.SECONDS)
+//                    .clustering()
+//                    .cacheMode(CacheMode.REPL_SYNC)
+//                    .memory().storage(StorageType.HEAP)
+//                    .encoding().mediaType(MediaType.APPLICATION_SERIALIZED_OBJECT_TYPE)
+//                    .build();
+//            CACHE = cacheManager.administration()
+//                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+//                    .getOrCreateCache(tokenRelayCacheName, config);
+//        }
+//        else {
             logger.info("Initiating a local TokenRelayCache");
             config = new ConfigurationBuilder().simpleCache(true).expiration().lifespan(LIFESPAN_SEC, TimeUnit.SECONDS).maxIdle(MAXIDLE_SEC, TimeUnit.SECONDS).build();
             CACHE = cacheManager.createCache(tokenRelayCacheName, config);
-        }
+//        }
 
     }
 
