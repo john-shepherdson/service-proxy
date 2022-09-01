@@ -478,7 +478,7 @@ public class AccountRestService {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public Stream<GroupRepresentation> groupMemberships(@QueryParam("briefRepresentation") @DefaultValue("true") boolean briefRepresentation) {
-        auth.requireOneOf(AccountRoles.MANAGE_ACCOUNT, AccountRoles.VIEW_GROUPS);
+        auth.require(AccountRoles.VIEW_GROUPS);
         return ModelToRepresentation.toGroupHierarchy(user, !briefRepresentation);
     }
 

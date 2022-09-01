@@ -27,7 +27,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Showing consent screen text instead of scope name in consent part of Application page in Account console [RCIAM-1057](https://jira.argo.grnet.gr/browse/RCIAM-1057)
 - Make optional the use of PKCE for Clients configured with PKCE only for Device Code Flow [RCIAM-1069](https://jira.argo.grnet.gr/browse/RCIAM-1069)
 - No extra checks for confidential clients in token exchange [RCIAM-988](https://jira.argo.grnet.gr/browse/RCIAM-988)
-
+- Changes related to [View groups from account console PR](https://github.com/keycloak/keycloak/pull/7933)
 
 ## [18.0.1-1.0] - 2022-07-04
 
