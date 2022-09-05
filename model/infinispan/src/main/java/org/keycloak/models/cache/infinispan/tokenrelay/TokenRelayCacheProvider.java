@@ -50,7 +50,7 @@ public class TokenRelayCacheProvider implements CustomCacheProvider {
             logger.error("Could not locate keycloak's cacheManager (this might fix with a restart of this node's keycloak service). Will initiate a local TokenRelayCache. If running in cluster mode, please restart this node to increase efficiency!");
             Configuration c = new ConfigurationBuilder().simpleCache(true).expiration().lifespan(LIFESPAN_SEC, TimeUnit.SECONDS).maxIdle(MAXIDLE_SEC, TimeUnit.SECONDS).build();
             cacheManager = new DefaultCacheManager();
-            CACHE = cacheManager.createCache(tokenRelayCacheName, c);
+            CACHE = cacheManager.cacheExists(tokenRelayCacheName) ? cacheManager.getCache(tokenRelayCacheName) : cacheManager.createCache(tokenRelayCacheName, c);
             return;
         }
 
@@ -78,7 +78,7 @@ public class TokenRelayCacheProvider implements CustomCacheProvider {
 //        else {
             logger.info("Initiating a local TokenRelayCache");
             config = new ConfigurationBuilder().simpleCache(true).expiration().lifespan(LIFESPAN_SEC, TimeUnit.SECONDS).maxIdle(MAXIDLE_SEC, TimeUnit.SECONDS).build();
-            CACHE = cacheManager.createCache(tokenRelayCacheName, config);
+            CACHE = cacheManager.cacheExists(tokenRelayCacheName) ? cacheManager.getCache(tokenRelayCacheName) : cacheManager.createCache(tokenRelayCacheName, config);
 //        }
 
     }
