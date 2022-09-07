@@ -205,7 +205,7 @@ public class IdentityProviderResource {
         } else if (updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD) != null && oldIdP != null && (!updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD).equals(oldIdP.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) || !oldIdP.getAlias().equals(newProviderId))) {
             //change refreshPeriod or alias
             TimerProvider timer = session.getProvider(TimerProvider.class);
-            long delay = updated.getConfig().get(IdentityProviderModel.LAST_REFRESH_TIME) == null ? Long.parseLong(updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) * 1000 : Long.parseLong(updated.getConfig().get(IdentityProviderModel.LAST_REFRESH_TIME) + Long.parseLong(updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) * 1000) - Instant.now().toEpochMilli();
+            long delay = updated.getConfig().get(IdentityProviderModel.LAST_REFRESH_TIME) == null ? Long.parseLong(updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) * 1000 : Long.parseLong(updated.getConfig().get(IdentityProviderModel.LAST_REFRESH_TIME) )+ Long.parseLong(updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) * 1000 - Instant.now().toEpochMilli();
             timer.cancelTask(realm.getId()+"_AutoUpdateIdP_" + oldIdP.getAlias());
             createScheduleTask(timer, updated.getAlias(), delay, Long.parseLong(updated.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) * 1000);
         }

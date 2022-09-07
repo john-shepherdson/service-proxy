@@ -1193,6 +1193,7 @@ module.controller('RealmIdentityProviderCtrl', function($scope, $filter, $upload
             $scope.identityProvider.config.allowCreate = 'true';
         }
         $scope.identityProvider.config.spEntityId = $scope.identityProvider.config.spEntityId || (authUrl + '/realms/' + realm.realm);
+        $scope.lastRefreshTime = $scope.identityProvider.config.lastRefreshTime;
     }
 
     $scope.hidePassword = true;
