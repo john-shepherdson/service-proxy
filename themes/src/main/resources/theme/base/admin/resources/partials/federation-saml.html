@@ -240,11 +240,10 @@
 			<div class="form-group">
 				<label class="col-md-2 control-label" for="wantAssertionsEncrypted">{{::'want-assertions-encrypted' | translate}}</label>
 				<div class="col-md-6">
-					<input
-						ng-model="identityProvidersFederation.config.wantAssertionsEncrypted"
-						id="wantAssertionsEncrypted" name="wantAssertionsEncrypted"
-						onoffswitchvalue on-text="{{:: 'onText' | translate}}"
-						off-text="{{:: 'offText' | translate}}" />
+					<select id="wantAssertionsEncrypted"
+							ng-model="identityProvidersFederation.config.wantAssertionsEncrypted"
+							ng-options="enc for enc in wantAssertionsEncrypted">
+					</select>
 				</div>
 				<kc-tooltip>{{:: 'want-assertions-encrypted.tooltip' |translate}}</kc-tooltip>
 			</div>

@@ -15,6 +15,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Fixed
 - Correct problems related with autoupdated IdP
 
+### Changed
+- Correct including claim in token introspection response only [RCIAM-1117](https://jira.argo.grnet.gr/browse/RCIAM-1117)
+
 ## [18.0.1-2.0] - 2022-09-01
 
 ### Added
