@@ -1677,6 +1677,10 @@ module.controller('IdentityProvidersFederationConfigCtrl', function(realm, Dialo
                  "Clients"
              ];
 
+      $scope.wantAssertionsEncrypted = [
+     	    "true","false","optional"
+          ];
+
 	$scope.realm = realm;
 	$scope.identityProvidersFederation = identityProvidersFederation;
 
@@ -1701,6 +1705,7 @@ module.controller('IdentityProvidersFederationConfigCtrl', function(realm, Dialo
          $scope.identityProvidersFederation.config.principalType = $scope.principalTypes[0].type;
          $scope.identityProvidersFederation.config.postBindingResponse = 'true';
          $scope.identityProvidersFederation.config.xsltOverride = '';
+         $scope.identityProvidersFederation.config.wantAssertionsEncrypted = $scope.wantAssertionsEncrypted[2];
          $scope.identityProvidersFederation.config.spEntityId = $scope.identityProvidersFederation.config.spEntityId || (authUrl + '/realms/' + realm.realm);
          $scope.multiplePrincipals= [];
          $scope.newMultiplePrincipal={};
