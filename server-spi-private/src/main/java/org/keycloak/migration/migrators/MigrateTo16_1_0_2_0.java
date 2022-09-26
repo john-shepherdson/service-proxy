@@ -1,6 +1,7 @@
 package org.keycloak.migration.migrators;
 
 import org.keycloak.migration.ModelVersion;
+import org.keycloak.models.AccountRoles;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
@@ -30,7 +31,13 @@ public class MigrateTo16_1_0_2_0 implements Migration {
     }
 
     private void addGroupsRole(RealmModel realm) {
-        realm.setClaimsSupported(RepresentationToModel.DEFAULT_CLAIMS_SUPPORTED);
+        ClientModel accountClient = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
+        if (accountClient != null && accountClient.getRole(AccountRoles.VIEW_GROUPS) == null) {
+            RoleModel viewGroupsRole = accountClient.addRole(AccountRoles.VIEW_GROUPS);
+            viewGroupsRole.setDescription("${role_" + AccountRoles.VIEW_GROUPS + "}");
+            ClientModel accountConsoleClient = realm.getClientByClientId(Constants.ACCOUNT_CONSOLE_CLIENT_ID);
+            accountConsoleClient.addScopeMapping(viewGroupsRole);
+        }
 
     }
 
