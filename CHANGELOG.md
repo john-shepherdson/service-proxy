@@ -14,9 +14,10 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Fixed
 - Correct problems related with autoupdated IdP
-- 
+
 ### Changed
 - Changes related to View Groups from account console PR [PR-7933](https://github.com/keycloak/keycloak/pull/7933)
+- Extra space between contacts in consent screen  [RCIAM-1124](https://jira.argo.grnet.gr/browse/RCIAM-1124)
 
 ## [16.1.0-2.11] - 2022-09-01
 
