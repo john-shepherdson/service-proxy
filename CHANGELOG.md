@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## Unreleased
+## [16.1.0-2.12] - 2022-09-28
 
 ### Fixed
 - Correct problems related with autoupdated IdP
