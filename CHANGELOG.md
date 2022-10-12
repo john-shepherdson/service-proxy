@@ -10,6 +10,11 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [Unreleased]
+
+### Fixed
+- Avoid duplicate entries for UseConsent with same userId - clientId [KEYCLOAK-9482](https://github.com/keycloak/keycloak/issues/9482)
+
 ## [18.0.1-2.2] - 2022-10-11
 
 ### Fixed
