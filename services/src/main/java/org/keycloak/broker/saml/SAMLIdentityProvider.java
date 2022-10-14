@@ -487,4 +487,8 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
     public IdentityProviderDataMarshaller getMarshaller() {
         return new SAMLDataMarshaller();
     }
+
+    public DestinationValidator getDestinationValidator() {
+        return destinationValidator;
+    }
 }
