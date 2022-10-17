@@ -13,7 +13,8 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ## [Unreleased]
 
 ### Fixed
-- Avoid duplicate entries for UseConsent with same userId - clientId [KEYCLOAK-9482](https://github.com/keycloak/keycloak/issues/9482)
+- A user could be assigned to a parent group if he is already assigned to a subgroup. [KEYCLOAK-9482](https://github.com/keycloak/keycloak/issues/9482)
+- Correct SAML federation login for Quarkus [RCIAM-1141](https://jira.argo.grnet.gr/browse/RCIAM-1141)
 
 ## [18.0.1-2.2] - 2022-10-11
 
