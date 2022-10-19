@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [18.0.1-2.3] - 2022-10-19
 
 ### Fixed
 - A user could be assigned to a parent group if he is already assigned to a subgroup. [KEYCLOAK-9482](https://github.com/keycloak/keycloak/issues/9482)
