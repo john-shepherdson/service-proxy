@@ -380,7 +380,7 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
             oauth.scope(optionalScope);
             OAuthClient.AccessTokenResponse response1 = oauth.doGrantAccessTokenRequest("password", "test-user@localhost", "password");
             RefreshToken refreshToken1 = oauth.parseRefreshToken(response1.getRefreshToken());
-            AbstractOIDCScopeTest.assertScopes("email phone address profile",  refreshToken1.getScope());
+            AbstractOIDCScopeTest.assertScopes("openid email phone address profile",  refreshToken1.getScope());
 
             setTimeOffset(2);
 
@@ -391,7 +391,7 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
             AbstractOIDCScopeTest.assertScopes("email phone profile",  response2.getScope());
             RefreshToken refreshToken2 = oauth.parseRefreshToken(response2.getRefreshToken());
             assertNotNull(refreshToken2);
-            AbstractOIDCScopeTest.assertScopes("email phone address profile",  refreshToken2.getScope());
+            AbstractOIDCScopeTest.assertScopes("openid email phone address profile",  refreshToken2.getScope());
 
         } finally {
             setTimeOffset(0);
