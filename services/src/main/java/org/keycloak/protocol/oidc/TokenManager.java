@@ -404,9 +404,8 @@ public class TokenManager {
         boolean generateRefreshToken = OIDCAdvancedConfigWrapper.fromClientModel(authorizedClient).isUseRefreshToken() || (authorizedClient.getAttribute(OIDCConfigAttributes.REVOKE_REFRESH_TOKEN) == null && realm.isRevokeRefreshToken()) || Boolean.valueOf(authorizedClient.getAttribute(OIDCConfigAttributes.REVOKE_REFRESH_TOKEN));
 
         if (generateRefreshToken) {
-            responseBuilder.generateRefreshToken();
-            //refresh token scope equal to old refresh token scope
-            responseBuilder.getRefreshToken().setScope(refreshToken.getScope());
+            //refresh token must have same scope as old refresh token (type, scope, expiration)
+            responseBuilder.generateRefreshToken(refreshToken.getScope());
         }
 
         if (validation.newToken.getAuthorization() != null
@@ -1015,6 +1014,22 @@ public class TokenManager {
 
             ClientScopeModel offlineAccessScope = KeycloakModelUtils.getClientScopeByName(realm, OAuth2Constants.OFFLINE_ACCESS);
             boolean offlineTokenRequested = offlineAccessScope==null ? false : clientSessionCtx.getClientScopeIds().contains(offlineAccessScope.getId());
+            generateRefreshToken(offlineTokenRequested);
+            return this;
+        }
+
+        public AccessTokenResponseBuilder generateRefreshToken(String scope) {
+            if (accessToken == null) {
+                throw new IllegalStateException("accessToken not set");
+            }
+
+            boolean offlineTokenRequested = Arrays.asList(scope.split(" ")).contains(OAuth2Constants.OFFLINE_ACCESS) ;
+            generateRefreshToken(offlineTokenRequested);
+            refreshToken.setScope(scope);
+            return this;
+        }
+
+        private void generateRefreshToken(boolean offlineTokenRequested) {
             if (offlineTokenRequested) {
                 UserSessionManager sessionManager = new UserSessionManager(session);
                 if (!sessionManager.isOfflineTokenAllowed(clientSessionCtx)) {
@@ -1033,7 +1048,6 @@ public class TokenManager {
             }
             refreshToken.id(KeycloakModelUtils.generateId());
             refreshToken.issuedNow();
-            return this;
         }
 
         private int getRefreshExpiration() {
@@ -1107,7 +1121,7 @@ public class TokenManager {
             }
 
             if (clientOfflineSessionIdleTimeout > 0) {
-                int clientOfflineSessionIdleExpiration = Time.currentTime() + clientOfflineSessionIdleTimeout;
+                int clientOfflineSessionIdleExpiration = userSession.getStarted() + clientOfflineSessionIdleTimeout;
                 expiration = expiration < clientOfflineSessionIdleExpiration ? expiration : clientOfflineSessionIdleExpiration;
             }
 
