@@ -10,13 +10,13 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [16.1.0-2.14] - 2022-10-21
 
 ### Fixed
 - Refresh token scope same as old refresh token scope in refresh token flow [RCIAM-1158](https://jira.argo.grnet.gr/browse/RCIAM-1158)
 
 ### Changed
--Offline refresh token calculation: (user session started + Client Offline Session Idle) instead of (current time + Client Offline Session Idle)  [RCIAM-1159](https://jira.argo.grnet.gr/browse/RCIAM-1159)
+- Offline refresh token calculation: (user session started + Client Offline Session Idle) instead of (current time + Client Offline Session Idle)  [RCIAM-1159](https://jira.argo.grnet.gr/browse/RCIAM-1159)
 
 ## [16.1.0-2.13] - 2022-10-06
 
