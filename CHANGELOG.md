@@ -15,6 +15,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Fixed
 - Hightlight SAML federation menu when choosen
 
+### Changed
+-Support for client_id parameter in OIDC RP-Initiated logout endpoint [KEYCLOAK-12002](https://github.com/keycloak/keycloak/issues/12002)
+
 ## [18.0.1-2.4] - 2022-10-21
 
 ### Fixed
