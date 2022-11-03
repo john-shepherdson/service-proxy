@@ -158,7 +158,9 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
             } else if (attribute.equalsIgnoreCase(LAST_NAME)) {
                 setIfNotEmpty(context::setLastName, attributeValuesInContext);
             } else if (attribute.equalsIgnoreCase(EMAIL_VERIFIED)) {
-                Boolean verified =  Boolean.valueOf(attributeValuesInContext.get(0));
+                //SAML release list of verified email
+                //check if email consists in email verified list
+                Boolean verified =  attributeValuesInContext!= null && attributeValuesInContext.contains(context.getEmail());
                 context.setEmailVerified(verified);
             } else {
                 context.setUserAttribute(attribute, attributeValuesInContext);
@@ -221,6 +223,14 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
             setIfNotEmptyAndDifferent(user::setFirstName, user::getFirstName, attributeValuesInContext);
         } else if (attribute.equalsIgnoreCase(LAST_NAME)) {
             setIfNotEmptyAndDifferent(user::setLastName, user::getLastName, attributeValuesInContext);
+        } else if (EMAIL_VERIFIED.equalsIgnoreCase(attribute)) {
+            //SAML release list of verified email
+            //check if email released by SAML IdP consists in email verified list and is user email
+            List<String> emailAttribute = findAttributeValuesInContext(EMAIL, context);
+            if (emailAttribute != null && !emailAttribute.isEmpty() && user.getEmail().equals(emailAttribute.get(0))) {
+                Boolean verified = attributeValuesInContext != null && attributeValuesInContext.contains(user.getEmail());
+                user.setEmailVerified(verified);
+            }
         } else {
             List<String> currentAttributeValues = user.getAttributes().get(attribute);
             if (attributeValuesInContext == null) {
