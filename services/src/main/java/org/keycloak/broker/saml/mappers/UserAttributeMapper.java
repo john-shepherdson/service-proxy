@@ -160,7 +160,8 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
             } else if (attribute.equalsIgnoreCase(EMAIL_VERIFIED)) {
                 //SAML release list of verified email
                 //check if email consists in email verified list
-                Boolean verified =  attributeValuesInContext!= null && attributeValuesInContext.contains(context.getEmail());
+                List<String> emailAttribute = findAttributeValuesInContext(EMAIL, context);
+                Boolean verified =  attributeValuesInContext!= null && emailAttribute != null && ! emailAttribute.isEmpty() && attributeValuesInContext.contains(emailAttribute.get(0));
                 context.setEmailVerified(verified);
             } else {
                 context.setUserAttribute(attribute, attributeValuesInContext);
