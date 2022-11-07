@@ -67,6 +67,7 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
     public static final String USER_ATTRIBUTE = "user.attribute";
     public static final String IS_REQUIRED = "is.required";
     private static final String EMAIL = "email";
+    private static final String EMAIL_ATTRIBUTE = "urn:oid:0.9.2342.19200300.100.1.3";
     public static final String EMAIL_VERIFIED = "emailVerified";
     private static final String FIRST_NAME = "firstName";
     private static final String LAST_NAME = "lastName";
@@ -160,7 +161,7 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
             } else if (attribute.equalsIgnoreCase(EMAIL_VERIFIED)) {
                 //SAML release list of verified email
                 //check if email consists in email verified list
-                List<String> emailAttribute = findAttributeValuesInContext(EMAIL, context);
+                List<String> emailAttribute = findAttributeValuesInContext(EMAIL_ATTRIBUTE, context);
                 Boolean verified =  attributeValuesInContext!= null && emailAttribute != null && ! emailAttribute.isEmpty() && attributeValuesInContext.contains(emailAttribute.get(0));
                 context.setEmailVerified(verified);
             } else {
@@ -227,7 +228,7 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
         } else if (EMAIL_VERIFIED.equalsIgnoreCase(attribute)) {
             //SAML release list of verified email
             //check if email released by SAML IdP consists in email verified list and is user email
-            List<String> emailAttribute = findAttributeValuesInContext(EMAIL, context);
+            List<String> emailAttribute = findAttributeValuesInContext(EMAIL_ATTRIBUTE, context);
             if (emailAttribute != null && !emailAttribute.isEmpty() && user.getEmail().equals(emailAttribute.get(0))) {
                 Boolean verified = attributeValuesInContext != null && attributeValuesInContext.contains(user.getEmail());
                 user.setEmailVerified(verified);
