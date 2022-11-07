@@ -10,12 +10,12 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [18.0.1-2.6] - 2022-11-07
 
 ### Fixed
 - Correct SAML implementation for emailVerified attribute mapper [EOSC-KC-70](https://github.com/eosc-kc/keycloak/issues/70)
 
-## [18.0.1-2.5] - 2022-11-3
+## [18.0.1-2.5] - 2022-11-03
 
 ### Fixed
 - Hightlight SAML federation menu when choosen
