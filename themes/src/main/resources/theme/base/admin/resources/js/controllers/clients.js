@@ -1191,6 +1191,7 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
     $scope.samlOneTimeUseCondition = false;
     $scope.samlMultiValuedRoles = false;
     $scope.samlArtifactBinding = false;
+    $scope.samlAutoUpdated = false;
     $scope.samlServerSignature = false;
     $scope.samlServerSignatureEnableKeyInfoExtension = false;
     $scope.samlAssertionSignature = false;
@@ -1219,6 +1220,7 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
     $scope.clientOfflineSessionIdleTimeout = TimeUnit2.asUnit(client.attributes['client.offline.session.idle.timeout']);
     $scope.clientOfflineSessionMaxLifespan = TimeUnit2.asUnit(client.attributes['client.offline.session.max.lifespan']);
     $scope.oauth2DeviceCodeLifespan = TimeUnit2.asUnit(client.attributes['oauth2.device.code.lifespan']);
+    $scope.refreshPeriod = TimeUnit2.asUnit(client.attributes['saml.refresh.period']);
     $scope.oauth2DevicePollingInterval = parseInt(client.attributes['oauth2.device.polling.interval']);
     // PAR request.
     $scope.requirePushedAuthorizationRequests = false;
@@ -1280,6 +1282,13 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
             $scope.nameIdFormat = $scope.nameIdFormats[3];
         }
 
+        if ($scope.client.attributes["saml.auto.updated"]) {
+            if ($scope.client.attributes["saml.auto.updated"] == "true") {
+                $scope.samlAutoUpdated = true;
+            } else {
+                $scope.samlAutoUpdated = false;
+            }
+        }
 
         if ($scope.client.attributes["saml.artifact.binding"]) {
             if ($scope.client.attributes["saml.artifact.binding"] == "true") {
@@ -1838,6 +1847,24 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
         }
     }
 
+    $scope.updateRefreshPeriod = function() {
+        if ($scope.refreshPeriod.time) {
+            $scope.clientEdit.attributes['saml.refresh.period'] = $scope.refreshPeriod.toSeconds();
+        } else {
+            $scope.clientEdit.attributes['saml.refresh.period'] = null;
+        }
+    }
+
+    $scope.autoUpdateChange = function() {
+        $scope.changed = true;
+        //execute on click
+        if($scope.samlAutoUpdated == true) {
+            delete $scope.clientEdit.attributes['saml.metadata.url'];
+            delete $scope.refreshPeriod;
+            delete $scope.clientEdit.attributes['saml.last.refresh.time'];
+        }
+    };
+
     $scope.confirmChangeAuthzSettings = function($event) {
         if ($scope.client.authorizationServicesEnabled && $scope.clientEdit.authorizationServicesEnabled) {
             $event.preventDefault();
@@ -1944,6 +1971,12 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
             $scope.clientEdit.attributes["default.acr.values"] = $scope.defaultAcrValues.join("##");
         } else {
             $scope.clientEdit.attributes["default.acr.values"] = null;
+        }
+
+        if ($scope.samlAutoUpdated == true) {
+            $scope.clientEdit.attributes["saml.auto.updated"] = "true";
+        } else {
+            $scope.clientEdit.attributes["saml.auto.updated"] = "false";
         }
 
         if ($scope.samlArtifactBinding == true) {
@@ -2132,7 +2165,7 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
     };
 });
 
-module.controller('CreateClientCtrl', function($scope, realm, client, $route, serverInfo, Client, ClientDescriptionConverter, $location, $modal, Dialog, Notifications) {
+module.controller('CreateClientCtrl', function($scope, realm, client, $route, serverInfo, Client, ClientDescriptionConverter, $location, $modal, Dialog, Notifications, TimeUnit2) {
     $scope.protocols = serverInfo.listProviderIds('login-protocol');
     $scope.create = true;
 
@@ -2200,9 +2233,30 @@ module.controller('CreateClientCtrl', function($scope, realm, client, $route, se
         $scope.changed = isChanged();
     }, true);
 
+    $scope.updateRefreshPeriod = function() {
+        if ($scope.refreshPeriod.time) {
+            $scope.client.attributes['saml.refresh.period'] = $scope.refreshPeriod.toSeconds();
+        } else {
+            $scope.client.attributes['saml.refresh.period'] = null;
+        }
+    }
+
+    $scope.autoUpdateChange = function() {
+        //execute on click
+        if($scope.samlAutoUpdated == true) {
+            delete $scope.client.attributes['saml.metadata.url'];
+            delete $scope.refreshPeriod;
+            delete $scope.client.attributes['saml.last.refresh.time'];
+        } else {
+            $scope.refreshPeriod = TimeUnit2.asUnit(null);
+        }
+    }
 
     $scope.save = function() {
         $scope.client.protocol = $scope.protocol;
+        if ($scope.samlAutoUpdated == true) {
+            $scope.client.attributes["saml.auto.updated"] = "true";
+        }
 
         Client.save({
             realm: realm.realm,

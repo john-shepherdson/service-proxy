@@ -169,6 +169,46 @@
                 </div>
             </div>
             <div class="form-group clearfix block" data-ng-show="protocol == 'saml'">
+                <label class="col-md-2 control-label" for="autoUpdated">{{:: 'autoUpdate' | translate}}</label>
+                <div class="col-sm-6">
+                    <input ng-model="samlAutoUpdated" ng-click="autoUpdateChange()" onoffswitch on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" name="autoUpdated" id="autoUpdated" />
+                </div>
+                <kc-tooltip>{{:: 'client.autoUpdate.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group" data-ng-show="protocol == 'saml' && samlAutoUpdated">
+                <label class="col-md-2 control-label" for="metadataUrl"><span
+                        class="required">*</span> {{:: 'metadataUrl' | translate}}</label>
+                <div class="col-sm-6">
+                    <input class="form-control" type="text" name="metadataUrl" id="metadataUrl" data-ng-model="clientEdit.attributes['saml.metadata.url']" ng-required="protocol == 'saml' && samlAutoUpdated">
+                </div>
+                <kc-tooltip>{{:: 'client.metadataUrl.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix" data-ng-show="protocol == 'saml' && samlAutoUpdated">
+                <label class="col-md-2 control-label" for="refreshPeriod"><span
+                        class="required">*</span> {{::'refreshPeriod' | translate}}</label>
+                <div class="col-md-6 time-selector">
+                    <input class="form-control" type="number" min="1" max="31536000"
+                           data-ng-model="refreshPeriod.time" id="refreshPeriod" ng-required="protocol == 'saml' && samlAutoUpdated"
+                           name="refreshPeriod" data-ng-change="updateRefreshPeriod()" />
+                    <select
+                        class="form-control" name="refreshPeriodUnit"
+                        data-ng-model="refreshPeriod.unit"
+                        data-ng-change="updateRefreshPeriod()">
+                            <option value="Minutes">{{:: 'minutes' | translate}}</option>
+                            <option value="Hours">{{:: 'hours' | translate}}</option>
+                            <option value="Days">{{:: 'days' | translate}}</option>
+                    </select>
+                </div>
+                <kc-tooltip>{{::'client.refreshPeriod.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix" data-ng-show="protocol == 'saml' && clientEdit.attributes['saml.auto.updated'] &&  clientEdit.attributes['saml.last.refresh.time']">
+                <label class="col-md-2 control-label">{{::'last-refresh' | translate}}</label>
+                <div class="col-md-6">
+                    {{clientEdit.attributes['saml.last.refresh.time'] | date : 'yyyy-MM-dd HH:mm:ss'}}
+                </div>
+                <kc-tooltip>{{:: 'lastRefreshTime.tooltip' |translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix block" data-ng-show="protocol == 'saml'">
                 <label class="col-md-2 control-label" for="samlAuthnStatement">{{:: 'include-authnstatement' | translate}}</label>
                 <div class="col-sm-6">
                     <input ng-model="samlAuthnStatement" ng-click="switchChange()" name="samlAuthnStatement" id="samlAuthnStatement" onoffswitch on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}"/>
