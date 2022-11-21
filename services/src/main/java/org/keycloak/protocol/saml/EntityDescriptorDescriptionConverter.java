@@ -266,6 +266,7 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
 
         attributes.put(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE, SamlProtocol.ATTRIBUTE_FALSE_VALUE);
         attributes.put(SamlConfigAttributes.SAML_ENCRYPT, SamlProtocol.ATTRIBUTE_FALSE_VALUE);
+        String certFullUse = null;
         for (KeyDescriptorType keyDescriptor : spDescriptorType.getKeyDescriptor()) {
             X509Certificate cert = null;
             try {
@@ -282,7 +283,18 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
             } else if (keyDescriptor.getUse() == KeyTypes.ENCRYPTION) {
                 attributes.put(SamlConfigAttributes.SAML_ENCRYPT, SamlProtocol.ATTRIBUTE_TRUE_VALUE);
                 attributes.put(SamlConfigAttributes.SAML_ENCRYPTION_CERTIFICATE_ATTRIBUTE, certPem);
+            } else {
+                certFullUse = certPem;
             }
+        }
+        //use key for both uses if exists and no signing or encryption specific key exists
+        if (certFullUse != null && SamlProtocol.ATTRIBUTE_FALSE_VALUE.equals(attributes.get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE))){
+            attributes.put(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE, SamlProtocol.ATTRIBUTE_TRUE_VALUE);
+            attributes.put(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE, certFullUse);
+        }
+        if (certFullUse != null && SamlProtocol.ATTRIBUTE_FALSE_VALUE.equals(attributes.get(SamlConfigAttributes.SAML_ENCRYPT))){
+            attributes.put(SamlConfigAttributes.SAML_ENCRYPT, SamlProtocol.ATTRIBUTE_TRUE_VALUE);
+            attributes.put(SamlConfigAttributes.SAML_ENCRYPTION_CERTIFICATE_ATTRIBUTE, certFullUse);
         }
 
         return app;
