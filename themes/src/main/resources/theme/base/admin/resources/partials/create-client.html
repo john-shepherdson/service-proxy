@@ -9,7 +9,7 @@
 
     <form class="form-horizontal" name="clientForm" novalidate kc-read-only="!access.manageClients">
         <fieldset class="border-top">
-            <div class="form-group">
+            <div class="form-group" data-ng-show="!(protocol == 'saml' && samlAutoUpdated)">
                 <label class="col-sm-2 control-label">{{:: 'import' | translate}}</label>
 
                 <div class="col-md-6" data-ng-hide="importing">
@@ -24,9 +24,9 @@
             </div>
 
             <div class="form-group">
-                <label class="col-md-2 control-label" for="clientId">{{:: 'client-id' | translate}} <span class="required">*</span></label>
+                <label class="col-md-2 control-label" for="clientId">{{:: 'client-id' | translate}} <span class="required" data-ng-show="!(protocol == 'saml' && samlAutoUpdated)">*</span></label>
                 <div class="col-sm-6">
-                    <input class="form-control" type="text" id="clientId" name="clientId" data-ng-model="client.clientId" autofocus required>
+                    <input class="form-control" type="text" id="clientId" name="clientId" data-ng-model="client.clientId" autofocus ng-required="!(protocol == 'saml' && samlAutoUpdated)">
                 </div>
                 <kc-tooltip>{{:: 'client-id.tooltip' | translate}}</kc-tooltip>
             </div>
@@ -50,6 +50,39 @@
                     <input class="form-control" type="text" name="rootUrl" id="rootUrl" data-ng-model="client.rootUrl">
                 </div>
                 <kc-tooltip>{{:: 'root-url.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix block" data-ng-show="protocol == 'saml'">
+                <label class="col-md-2 control-label" for="autoUpdated">{{:: 'autoUpdate' | translate}}</label>
+                <div class="col-sm-6">
+                    <input ng-model="samlAutoUpdated" ng-click="autoUpdateChange()" onoffswitch on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" name="autoUpdated" id="autoUpdated" />
+                </div>
+                <kc-tooltip>{{:: 'client.autoUpdate.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group" data-ng-show="protocol == 'saml' && samlAutoUpdated">
+                <label class="col-md-2 control-label" for="metadataUrl"><span
+                        class="required">*</span> {{:: 'metadataUrl' | translate}}</label>
+                <div class="col-sm-6">
+                    <input class="form-control" type="text" name="metadataUrl" id="metadataUrl" ng-required="protocol == 'saml' && samlAutoUpdated"  data-ng-model="client.attributes['saml.metadata.url']">
+                </div>
+                <kc-tooltip>{{:: 'client.metadataUrl.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix" data-ng-show="protocol == 'saml' && samlAutoUpdated">
+                <label class="col-md-2 control-label" for="refreshPeriod"><span
+                        class="required">*</span> {{::'refreshPeriod' | translate}}</label>
+                <div class="col-md-6 time-selector">
+                    <input class="form-control" type="number" min="1" max="31536000"
+                           data-ng-model="refreshPeriod.time" id="refreshPeriod" ng-required="protocol == 'saml' && samlAutoUpdated"
+                           name="refreshPeriod" data-ng-change="updateRefreshPeriod()" />
+                    <select
+                            class="form-control" name="refreshPeriodUnit"
+                            data-ng-model="refreshPeriod.unit"
+                            data-ng-change="updateRefreshPeriod()">
+                        <option value="Minutes">{{:: 'minutes' | translate}}</option>
+                        <option value="Hours">{{:: 'hours' | translate}}</option>
+                        <option value="Days">{{:: 'days' | translate}}</option>
+                    </select>
+                </div>
+                <kc-tooltip>{{::'client.refreshPeriod.tooltip' | translate}}</kc-tooltip>
             </div>
             <div class="form-group" data-ng-show="protocol == 'saml'">
                 <label class="col-md-2 control-label" for="masterSamlUrl">{{:: 'client-saml-endpoint' | translate}}</label>

@@ -40,6 +40,7 @@ import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.platform.Platform;
 import org.keycloak.platform.PlatformProvider;
+import org.keycloak.protocol.saml.SamlConfigAttributes;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.DefaultKeycloakSessionFactory;
@@ -66,6 +67,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -254,11 +256,12 @@ public class KeycloakApplication extends Application {
                  		FederationProvider federationProvider = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, fedModel.getProviderId()).create(session, fedModel,realm.getId());
                     	federationProvider.enableUpdateTask();
                  	}
+                    session.clients().getClientsStream(realm).filter(clientModel ->"saml".equals(clientModel.getProtocol()) && clientModel.getAttributes() != null && Boolean.valueOf(clientModel.getAttributes().get(SamlConfigAttributes.SAML_AUTO_UPDATED))).forEach( clientModel -> ConfigureAutoUpdateSAMLClient.configure(clientModel, realm, session));
                 }
                 session.getTransactionManager().commit();
 
             } catch (Throwable t) {
-                ServicesLogger.LOGGER.error("Failed to update identity providers from federation",t);
+                ServicesLogger.LOGGER.error("Error: Failed to start updating tasks",t);
 
                 session.getTransactionManager().rollback();
             } finally {

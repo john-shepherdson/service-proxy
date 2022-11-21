@@ -10,6 +10,14 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [Unreleased]
+
+### Added
+- Autoupdated SAML Client [RCIAM-1181](https://jira.argo.grnet.gr/browse/RCIAM-1181)
+
+### Changed
+- SAML SP Descriptor keys for use both for encrypt and signing
+
 ## [18.0.1-2.7] - 2022-11-18
 
 ### Fixed
