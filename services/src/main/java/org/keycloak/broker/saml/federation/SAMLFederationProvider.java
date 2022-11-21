@@ -489,6 +489,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 
 		Boolean signing = Boolean.FALSE;
 		Boolean encrypt = Boolean.FALSE;
+		String certFullUse = null;
 		for (KeyDescriptorType keyDescriptor : spDescriptorType.getKeyDescriptor()) {
 			X509Certificate cert = null;
 			try {
@@ -505,7 +506,18 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 			} else if (keyDescriptor.getUse() == KeyTypes.ENCRYPTION) {
 				app.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPTION_CERTIFICATE_ATTRIBUTE, certPem);
 				encrypt = Boolean.TRUE;
+			} else {
+				certFullUse = certPem;
 			}
+		}
+		//use key for both uses if exists and no signing or encryption specific key exists
+		if (certFullUse != null && !signing){
+			app.getAttributes().put(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE, certFullUse);
+			signing = true;
+		}
+		if (certFullUse != null && !encrypt){
+			app.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPTION_CERTIFICATE_ATTRIBUTE, certFullUse);
+			encrypt = true;
 		}
 		app.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPT, encrypt.toString());
 		app.getAttributes().put(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE, signing.toString());
