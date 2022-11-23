@@ -17,6 +17,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Changed
 - SAML SP Descriptor keys for use both for encrypt and signing
+- Startup autoupdated tasks with delay
 
 ## Fixed
 - Client registration service do not check client protocol for Bearer token  [RCIAM-1186](https://jira.argo.grnet.gr/browse/RCIAM-1186)

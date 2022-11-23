@@ -847,7 +847,7 @@ public class ClientTest extends AbstractAdminTest {
         Map<String, String> attributes = new HashMap<>();
         attributes.put(SamlConfigAttributes.SAML_AUTO_UPDATED, "true");
         attributes.put(SamlConfigAttributes.SAML_METADATA_URL, entityIdClient);
-        attributes.put(SamlConfigAttributes.SAML_REFRESH_PERIOD, "120");
+        attributes.put(SamlConfigAttributes.SAML_REFRESH_PERIOD, "80");
         rep.setAttributes(attributes);
         Response response = realm.clients().create(rep);
         response.close();

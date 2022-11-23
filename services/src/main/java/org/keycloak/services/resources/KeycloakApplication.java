@@ -67,7 +67,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -249,33 +248,8 @@ public class KeycloakApplication extends Application {
             timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
             timer.schedule(new ScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions()), interval, ClearExpiredUserSessions.TASK_NAME);
             timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new RequiredActionsResetTask(), interval), interval, "RequiredActionsResetTask");
-            try {
-            	session.getTransactionManager().begin();
-            	for (RealmModel realm : session.realms().getRealms()) {
-                 	for ( FederationModel fedModel : realm.getSAMLFederations()) {
-                 		FederationProvider federationProvider = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, fedModel.getProviderId()).create(session, fedModel,realm.getId());
-                    	federationProvider.enableUpdateTask();
-                 	}
-                    session.clients().getClientsStream(realm).filter(clientModel ->"saml".equals(clientModel.getProtocol()) && clientModel.getAttributes() != null && Boolean.valueOf(clientModel.getAttributes().get(SamlConfigAttributes.SAML_AUTO_UPDATED))).forEach( clientModel -> ConfigureAutoUpdateSAMLClient.configure(clientModel, realm, session));
-                }
-                session.getTransactionManager().commit();
-
-            } catch (Throwable t) {
-                ServicesLogger.LOGGER.error("Error: Failed to start updating tasks",t);
-
-                session.getTransactionManager().rollback();
-            } finally {
-                try {
-                    session.close();
-                } catch (Throwable t) {
-                    ServicesLogger.LOGGER.failedToCloseProviderSession(t);
-                }
-            }
             new UserStorageSyncManager().bootstrapPeriodic(sessionFactory, timer);
-            ExecutorService executor = session.getProvider(ExecutorsProvider.class).getExecutor("idp-scheduled tasks");
-            StartIdPScheduledTasks idPScheduledTasks = new StartIdPScheduledTasks();
-            ScheduledTaskRunner task = new ScheduledTaskRunner(sessionFactory, idPScheduledTasks);
-            executor.submit(task);
+            timer.scheduleOnce(new ClusterAwareScheduledTaskRunner(sessionFactory, new StartAutoUpdatedScheduledTasks(), interval), interval, "StartAutoUpdatedScheduledTasks");
         } finally {
             session.close();
         }
