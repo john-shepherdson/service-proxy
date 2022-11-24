@@ -30,6 +30,7 @@ import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.provider.IdentityProviderMapperSyncModeDelegate;
 import org.keycloak.common.ClientConnection;
+import org.keycloak.common.Profile;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.events.Details;
@@ -342,13 +343,19 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             if (scope == null) {
                 scope = subjectTokenScopes;
             } else if (subjectTokenScopes != null) {
-                scope = Arrays.stream(scope.split(" ")).filter(s -> subjectTokenScopes.contains(s)).collect(Collectors.joining(" "));
+                if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES)) {
+                    Set<String> subjectTokenScopesSet = Arrays.stream(subjectTokenScopes.split(" ")).map(s -> s.split(":")[0]).collect(Collectors.toSet());
+                    scope = Arrays.stream(scope.split(" ")).filter(sc -> subjectTokenScopesSet.contains(sc.split(":")[0])).collect(Collectors.joining(" "));
+                } else {
+                    Set<String> subjectTokenScopesSet = Arrays.stream(subjectTokenScopes.split(" ")).collect(Collectors.toSet());
+                    scope = Arrays.stream(scope.split(" ")).filter(sc -> subjectTokenScopesSet.contains(sc)).collect(Collectors.joining(" "));
+                }
             }
             Set<String> targetClientScopes = new HashSet<String>();
             targetClientScopes.addAll(targetClient.getClientScopes(true).keySet());
             targetClientScopes.addAll(targetClient.getClientScopes(false).keySet());
             //from return scope remove scopes that are not default or optional scopes for targetClient
-            scope = Arrays.stream(scope.split(" ")).filter(s -> targetClientScopes.contains(s)).collect(Collectors.joining(" "));
+            scope = Arrays.stream(scope.split(" ")).filter(s -> targetClientScopes.contains(Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) ? s.split(":")[0]: s)).collect(Collectors.joining(" "));
         }
         switch (requestedTokenType) {
             case OAuth2Constants.ACCESS_TOKEN_TYPE:
@@ -396,6 +403,8 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
         ClientSessionContext clientSessionCtx = TokenManager.attachAuthenticationSession(this.session, targetUserSession, authSession);
 
         updateUserSessionFromClientAuth(targetUserSession);
+        if ( scope != null)
+            clientSessionCtx.getClientSession().setNote(OAuth2Constants.SCOPE,scope);
 
         TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, targetClient, event, this.session, targetUserSession, clientSessionCtx)
                 .generateAccessToken();

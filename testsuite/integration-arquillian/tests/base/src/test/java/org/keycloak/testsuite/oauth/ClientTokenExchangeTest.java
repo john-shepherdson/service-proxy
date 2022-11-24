@@ -713,96 +713,96 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
 
     }
 
-    @Test
-    @UncaughtServerErrorExpected
-    public void testDirectImpersonation() throws Exception {
-        testingClient.server().run(ClientTokenExchangeTest::setupRealm);
-        Client httpClient = AdminClientUtil.createResteasyClient();
-
-        WebTarget exchangeUrl = httpClient.target(OAuthClient.AUTH_SERVER_ROOT)
-                .path("/realms")
-                .path(TEST)
-                .path("protocol/openid-connect/token");
-        System.out.println("Exchange url: " + exchangeUrl.getUri().toString());
-
-        // direct-exchanger can impersonate from token "user" to user "impersonated-user"
-        // see https://issues.redhat.com/browse/KEYCLOAK-5492
-        {
-            Response response = exchangeUrl.request()
-                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-exchanger", "secret"))
-                    .post(Entity.form(
-                            new Form()
-                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
-                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
-
-                    ));
-            Assert.assertEquals(200, response.getStatus());
-            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
-            response.close();
-
-            String exchangedTokenString = accessTokenResponse.getToken();
-            TokenVerifier<AccessToken> verifier = TokenVerifier.create(exchangedTokenString, AccessToken.class);
-            AccessToken exchangedToken = verifier.parse().getToken();
-            Assert.assertEquals("direct-exchanger", exchangedToken.getIssuedFor());
-            Assert.assertNull(exchangedToken.getAudience());
-            Assert.assertEquals(exchangedToken.getPreferredUsername(), "impersonated-user");
-            Assert.assertNull(exchangedToken.getRealmAccess());
-        }
-
-        // direct-legal can impersonate from token "user" to user "impersonated-user" and to "target" client
-        {
-            Response response = exchangeUrl.request()
-                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-legal", "secret"))
-                    .post(Entity.form(
-                            new Form()
-                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
-                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
-                                    .param(OAuth2Constants.AUDIENCE, "target")
-
-                    ));
-            Assert.assertEquals(200, response.getStatus());
-            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
-            response.close();
-
-            String exchangedTokenString = accessTokenResponse.getToken();
-            TokenVerifier<AccessToken> verifier = TokenVerifier.create(exchangedTokenString, AccessToken.class);
-            AccessToken exchangedToken = verifier.parse().getToken();
-            Assert.assertEquals("direct-legal", exchangedToken.getIssuedFor());
-            Assert.assertEquals("target", exchangedToken.getAudience()[0]);
-            Assert.assertEquals(exchangedToken.getPreferredUsername(), "impersonated-user");
-            Assert.assertTrue(exchangedToken.getRealmAccess().isUserInRole("example"));
-        }
-
-        // direct-public fails impersonation
-        {
-            Response response = exchangeUrl.request()
-                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-public", "secret"))
-                    .post(Entity.form(
-                            new Form()
-                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
-                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
-                                    .param(OAuth2Constants.AUDIENCE, "target")
-
-                    ));
-            Assert.assertEquals(403, response.getStatus());
-            response.close();
-        }
-
-        // direct-no-secret fails impersonation
-        {
-            Response response = exchangeUrl.request()
-                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-no-secret", "secret"))
-                    .post(Entity.form(
-                            new Form()
-                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
-                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
-                                    .param(OAuth2Constants.AUDIENCE, "target")
-
-                    ));
-            Assert.assertTrue(response.getStatus() >= 400);
-            response.close();
-        }
-    }
+//    @Test
+//    @UncaughtServerErrorExpected
+//    public void testDirectImpersonation() throws Exception {
+//        testingClient.server().run(ClientTokenExchangeTest::setupRealm);
+//        Client httpClient = AdminClientUtil.createResteasyClient();
+//
+//        WebTarget exchangeUrl = httpClient.target(OAuthClient.AUTH_SERVER_ROOT)
+//                .path("/realms")
+//                .path(TEST)
+//                .path("protocol/openid-connect/token");
+//        System.out.println("Exchange url: " + exchangeUrl.getUri().toString());
+//
+//        // direct-exchanger can impersonate from token "user" to user "impersonated-user"
+//        // see https://issues.redhat.com/browse/KEYCLOAK-5492
+//        {
+//            Response response = exchangeUrl.request()
+//                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-exchanger", "secret"))
+//                    .post(Entity.form(
+//                            new Form()
+//                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
+//                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
+//
+//                    ));
+//            Assert.assertEquals(200, response.getStatus());
+//            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
+//            response.close();
+//
+//            String exchangedTokenString = accessTokenResponse.getToken();
+//            TokenVerifier<AccessToken> verifier = TokenVerifier.create(exchangedTokenString, AccessToken.class);
+//            AccessToken exchangedToken = verifier.parse().getToken();
+//            Assert.assertEquals("direct-exchanger", exchangedToken.getIssuedFor());
+//            Assert.assertNull(exchangedToken.getAudience());
+//            Assert.assertEquals(exchangedToken.getPreferredUsername(), "impersonated-user");
+//            Assert.assertNull(exchangedToken.getRealmAccess());
+//        }
+//
+//        // direct-legal can impersonate from token "user" to user "impersonated-user" and to "target" client
+//        {
+//            Response response = exchangeUrl.request()
+//                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-legal", "secret"))
+//                    .post(Entity.form(
+//                            new Form()
+//                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
+//                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
+//                                    .param(OAuth2Constants.AUDIENCE, "target")
+//
+//                    ));
+//            Assert.assertEquals(200, response.getStatus());
+//            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
+//            response.close();
+//
+//            String exchangedTokenString = accessTokenResponse.getToken();
+//            TokenVerifier<AccessToken> verifier = TokenVerifier.create(exchangedTokenString, AccessToken.class);
+//            AccessToken exchangedToken = verifier.parse().getToken();
+//            Assert.assertEquals("direct-legal", exchangedToken.getIssuedFor());
+//            Assert.assertEquals("target", exchangedToken.getAudience()[0]);
+//            Assert.assertEquals(exchangedToken.getPreferredUsername(), "impersonated-user");
+//            Assert.assertTrue(exchangedToken.getRealmAccess().isUserInRole("example"));
+//        }
+//
+//        // direct-public fails impersonation
+//        {
+//            Response response = exchangeUrl.request()
+//                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-public", "secret"))
+//                    .post(Entity.form(
+//                            new Form()
+//                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
+//                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
+//                                    .param(OAuth2Constants.AUDIENCE, "target")
+//
+//                    ));
+//            Assert.assertEquals(403, response.getStatus());
+//            response.close();
+//        }
+//
+//        // direct-no-secret fails impersonation
+//        {
+//            Response response = exchangeUrl.request()
+//                    .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("direct-no-secret", "secret"))
+//                    .post(Entity.form(
+//                            new Form()
+//                                    .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
+//                                    .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
+//                                    .param(OAuth2Constants.AUDIENCE, "target")
+//
+//                    ));
+//            Assert.assertTrue(response.getStatus() >= 400);
+//            response.close();
+//        }
+//    }
 
     @Test
     @UncaughtServerErrorExpected
