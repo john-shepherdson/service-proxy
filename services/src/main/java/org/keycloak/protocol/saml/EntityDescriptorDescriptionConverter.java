@@ -32,6 +32,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.saml.mappers.AttributeStatementHelper;
 import org.keycloak.protocol.saml.mappers.UserAttributeStatementMapper;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -255,6 +256,7 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
                 mapper.setProtocol("saml");
                 mapper.setProtocolMapper(UserAttributeStatementMapper.PROVIDER_ID);
                 Map<String, String> config = new HashMap<>();
+                config.put(ProtocolMapperUtils.USER_ATTRIBUTE, attr.getFriendlyName() != null ? attr.getFriendlyName() : attr.getName());
                 config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, attr.getName());
                 if (attr.getFriendlyName() != null)
                     config.put(AttributeStatementHelper.FRIENDLY_NAME, attr.getFriendlyName());
