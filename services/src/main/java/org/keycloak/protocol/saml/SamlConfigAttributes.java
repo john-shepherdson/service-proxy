@@ -49,4 +49,5 @@ public interface SamlConfigAttributes {
     String SAML_METADATA_URL = "saml.metadata.url";
     String SAML_REFRESH_PERIOD = "saml.refresh.period";
     String SAML_LAST_REFRESH_TIME = "saml.last.refresh.time";
+    String SAML_SKIP_REQUESTED_ATTRIBUTES = "saml.skip.requested.attributes";
 }

@@ -178,6 +178,14 @@ public class SamlClient extends ClientConfigResolver {
         client.setAttribute(SamlConfigAttributes.SAML_LAST_REFRESH_TIME,val == null ? null : val.toString());
     }
 
+    public String getDisableRequestedAttributes() {
+        return resolveAttribute(SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES);
+    }
+
+    public void setDisableRequestedAttributes(String value) {
+        client.setAttribute(SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES, value);
+    }
+
 
     public boolean addExtensionsElementWithKeyInfo() {
         return "true".equals(resolveAttribute(SamlConfigAttributes.SAML_SERVER_SIGNATURE_KEYINFO_EXT));

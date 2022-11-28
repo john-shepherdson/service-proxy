@@ -84,6 +84,13 @@
                 </div>
                 <kc-tooltip>{{::'client.refreshPeriod.tooltip' | translate}}</kc-tooltip>
             </div>
+            <div class="form-group clearfix block" data-ng-show="protocol == 'saml' && samlAutoUpdated">
+                <label class="col-md-2 control-label" for="skipRequestedAttributes">{{:: 'skip.requestedAttributes' | translate}}</label>
+                <div class="col-sm-6">
+                    <input ng-model="skipRequestedAttributes" onoffswitch on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" name="skipRequestedAttributes" id="skipRequestedAttributes" />
+                </div>
+                <kc-tooltip>{{:: 'skip.requestedAttributes.tooltip' | translate}}</kc-tooltip>
+            </div>
             <div class="form-group" data-ng-show="protocol == 'saml'">
                 <label class="col-md-2 control-label" for="masterSamlUrl">{{:: 'client-saml-endpoint' | translate}}</label>
                 <div class="col-sm-6">

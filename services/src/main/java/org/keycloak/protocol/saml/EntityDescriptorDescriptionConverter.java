@@ -248,23 +248,23 @@ public class EntityDescriptorDescriptionConverter implements ClientDescriptionCo
             }
         }
 
-        //TODO protocol mappers????
-        app.setProtocolMappers(spDescriptorType.getAttributeConsumingService().stream().flatMap(att -> att.getRequestedAttribute().stream())
-            .map(attr -> {
-                ProtocolMapperRepresentation mapper = new ProtocolMapperRepresentation();
-                mapper.setName(attr.getName());
-                mapper.setProtocol("saml");
-                mapper.setProtocolMapper(UserAttributeStatementMapper.PROVIDER_ID);
-                Map<String, String> config = new HashMap<>();
-                config.put(ProtocolMapperUtils.USER_ATTRIBUTE, attr.getFriendlyName() != null ? attr.getFriendlyName() : attr.getName());
-                config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, attr.getName());
-                if (attr.getFriendlyName() != null)
-                    config.put(AttributeStatementHelper.FRIENDLY_NAME, attr.getFriendlyName());
-                if (attr.getNameFormat() != null)
-                    config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT, getSAMLNameFormat(attr.getNameFormat()));
-                mapper.setConfig(config);
-                return mapper;
-            }).collect(Collectors.toList()));
+        if (!"true".equals(app.getAttributes().get(SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES)))
+            app.setProtocolMappers(spDescriptorType.getAttributeConsumingService().stream().flatMap(att -> att.getRequestedAttribute().stream())
+                    .map(attr -> {
+                        ProtocolMapperRepresentation mapper = new ProtocolMapperRepresentation();
+                        mapper.setName(attr.getName());
+                        mapper.setProtocol("saml");
+                        mapper.setProtocolMapper(UserAttributeStatementMapper.PROVIDER_ID);
+                        Map<String, String> config = new HashMap<>();
+                        config.put(ProtocolMapperUtils.USER_ATTRIBUTE, attr.getFriendlyName() != null ? attr.getFriendlyName() : attr.getName());
+                        config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAME, attr.getName());
+                        if (attr.getFriendlyName() != null)
+                            config.put(AttributeStatementHelper.FRIENDLY_NAME, attr.getFriendlyName());
+                        if (attr.getNameFormat() != null)
+                            config.put(AttributeStatementHelper.SAML_ATTRIBUTE_NAMEFORMAT, getSAMLNameFormat(attr.getNameFormat()));
+                        mapper.setConfig(config);
+                        return mapper;
+                    }).collect(Collectors.toList()));
 
         attributes.put(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE, SamlProtocol.ATTRIBUTE_FALSE_VALUE);
         attributes.put(SamlConfigAttributes.SAML_ENCRYPT, SamlProtocol.ATTRIBUTE_FALSE_VALUE);
