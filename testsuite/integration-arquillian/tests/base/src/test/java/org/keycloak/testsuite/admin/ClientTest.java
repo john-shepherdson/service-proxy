@@ -45,14 +45,12 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.AccountRoles;
 import org.keycloak.models.Constants;
-import org.keycloak.protocol.ProtocolMapperUtils;
 import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
 import org.keycloak.protocol.saml.SamlConfigAttributes;
 import org.keycloak.protocol.saml.SamlProtocol;
-import org.keycloak.protocol.saml.mappers.AttributeStatementHelper;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
 import org.keycloak.representations.adapters.action.PushNotBeforeAction;
 import org.keycloak.representations.adapters.action.TestAvailabilityAction;
@@ -896,7 +894,8 @@ public class ClientTest extends AbstractAdminTest {
                 SamlConfigAttributes.SAML_AUTO_UPDATED,
                 SamlConfigAttributes.SAML_METADATA_URL,
                 SamlConfigAttributes.SAML_REFRESH_PERIOD,
-                SamlConfigAttributes.SAML_LAST_REFRESH_TIME
+                SamlConfigAttributes.SAML_LAST_REFRESH_TIME,
+                SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES
         ));
         assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_SERVER_SIGNATURE));
         assertEquals(SignatureAlgorithm.RSA_SHA256.toString(), client.getAttributes().get(SamlConfigAttributes.SAML_SIGNATURE_ALGORITHM));

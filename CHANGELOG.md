@@ -14,6 +14,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Added
 - Autoupdated SAML Client [RCIAM-1181](https://jira.argo.grnet.gr/browse/RCIAM-1181)
+- Dynamic scopes for refresh flow and token exchange
 
 ### Changed
 - SAML SP Descriptor keys for use both for encrypt and signing

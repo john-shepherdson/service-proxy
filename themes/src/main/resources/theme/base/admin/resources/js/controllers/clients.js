@@ -1200,6 +1200,7 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
     $scope.samlForcePostBinding = false;
     $scope.samlForceNameIdFormat = false;
     $scope.samlAllowECPFlow = false;
+    $scope.skipRequestedAttributes = false;
     $scope.samlXmlKeyNameTranformer = $scope.xmlKeyNameTranformers[1];
     $scope.disableAuthorizationTab = !client.authorizationServicesEnabled;
     $scope.disableServiceAccountRolesTab = !client.serviceAccountsEnabled;
@@ -1383,6 +1384,13 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
                 $scope.samlForcePostBinding = false;
             }
         }
+         if ($scope.client.attributes["saml.skip.requested.attributes"]) {
+                    if ($scope.client.attributes["saml.skip.requested.attributes"] == "true") {
+                        $scope.skipRequestedAttributes = true;
+                    } else {
+                        $scope.skipRequestedAttributes = false;
+                    }
+                }
 
         $scope.accessTokenSignedResponseAlg = $scope.client.attributes['access.token.signed.response.alg'];
         $scope.idTokenSignedResponseAlg = $scope.client.attributes['id.token.signed.response.alg'];
@@ -1862,6 +1870,7 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
             delete $scope.clientEdit.attributes['saml.metadata.url'];
             delete $scope.refreshPeriod;
             delete $scope.clientEdit.attributes['saml.last.refresh.time'];
+            $scope.skipRequestedAttributes= false;
         }
     };
 
@@ -2051,6 +2060,11 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
         } else {
             $scope.clientEdit.attributes["saml.force.post.binding"] = "false";
 
+        }
+        if ($scope.skipRequestedAttributes == true) {
+            $scope.clientEdit.attributes["saml.skip.requested.attributes"] = "true";
+        } else {
+            $scope.clientEdit.attributes["saml.skip.requested.attributes"] = "false";
         }
 
         if ($scope.excludeSessionStateFromAuthResponse == true) {
@@ -2247,6 +2261,7 @@ module.controller('CreateClientCtrl', function($scope, realm, client, $route, se
             delete $scope.client.attributes['saml.metadata.url'];
             delete $scope.refreshPeriod;
             delete $scope.client.attributes['saml.last.refresh.time'];
+            $scope.skipRequestedAttributes= false;
         } else {
             $scope.refreshPeriod = TimeUnit2.asUnit(null);
         }
@@ -2256,6 +2271,11 @@ module.controller('CreateClientCtrl', function($scope, realm, client, $route, se
         $scope.client.protocol = $scope.protocol;
         if ($scope.samlAutoUpdated == true) {
             $scope.client.attributes["saml.auto.updated"] = "true";
+            if ($scope.skipRequestedAttributes == true) {
+                $scope.client.attributes["saml.skip.requested.attributes"] = "true";
+            } else {
+                $scope.client.attributes["saml.skip.requested.attributes"] = "false";
+            }
         }
 
         Client.save({
