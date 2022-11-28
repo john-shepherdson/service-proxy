@@ -846,6 +846,7 @@ public class ClientTest extends AbstractAdminTest {
         attributes.put(SamlConfigAttributes.SAML_AUTO_UPDATED, "true");
         attributes.put(SamlConfigAttributes.SAML_METADATA_URL, entityIdClient);
         attributes.put(SamlConfigAttributes.SAML_REFRESH_PERIOD, "80");
+        attributes.put(SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES,"true");
         rep.setAttributes(attributes);
         Response response = realm.clients().create(rep);
         response.close();
@@ -906,13 +907,8 @@ public class ClientTest extends AbstractAdminTest {
         assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
         assertEquals("https://project-seal.eu/node/141", client.getAttributes().get("policyUri"));
         assertEquals("https://eid-proxy.aai-dev.grnet.gr/Edugain/acs/post", client.getAttributes().get(SamlProtocol.SAML_ASSERTION_CONSUMER_URL_POST_ATTRIBUTE));
-        assertEquals(client.getProtocolMappers().size(), 12);
-
-//        ProtocolMapperRepresentation mapperEmail = client.getProtocolMappers().stream().filter(mapper -> "urn:oid:0.9.2342.19200300.100.1.3".equals(mapper.getName())).findAny().get();
-//        assertNotNull(mapperEmail);
-//        assertEquals("email", mapperEmail.getConfig().get(ProtocolMapperUtils.USER_ATTRIBUTE));
-//        assertEquals("urn:oid:0.9.2342.19200300.100.1.3", mapperEmail.getConfig().get(AttributeStatementHelper.SAML_ATTRIBUTE_NAME));
-//        assertEquals("email", mapperEmail.getConfig().get(AttributeStatementHelper.FRIENDLY_NAME));
+        //no protocol mappers with SAML_SKIP_REQUESTED_ATTRIBUTES true
+        assertNull(client.getProtocolMappers());
 
     }
 
