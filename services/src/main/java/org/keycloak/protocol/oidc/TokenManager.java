@@ -814,20 +814,21 @@ public class TokenManager {
             //we could have multiple time this dynamic scope requested with different values
             //for multiple times requested this dynamic scope,  returned claim values consist all the requested values - if they exist
             //if a value is not containing in final value parameter -> remove this scope
-            if (finalToken.get().getOtherClaims().containsKey(cs.getName())) {
-                Object value = finalToken.get().getOtherClaims().get(cs.getName());
+            if (finalToken.get().getOtherClaims().containsKey(cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName())) {
+                String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
+                Object value = finalToken.get().getOtherClaims().get(filterClaim);
                 List<String> requestedValues = scopeList.stream().filter(x -> x.contains(cs.getName()+":")).map(x -> x.replace(cs.getName()+":","")).collect(Collectors.toList());
                 if (requestedValues.size() >0 && value instanceof List<?>) {
                     //filter with all possible values
                     List<?> list = ((ArrayList<?>) value).stream().filter(x -> requestedValues.contains(x.toString())).collect(Collectors.toList());
                     if (list.isEmpty()) {
-                        finalToken.get().getOtherClaims().remove(cs.getName());
+                        finalToken.get().getOtherClaims().remove(filterClaim);
                     } else {
-                        finalToken.get().getOtherClaims().put(cs.getName(), list);
+                        finalToken.get().getOtherClaims().put(filterClaim, list);
                     }
                 } else  if (requestedValues.size() >0 ) {
                     if (!requestedValues.contains(value.toString()))
-                        finalToken.get().getOtherClaims().remove(cs.getName());
+                        finalToken.get().getOtherClaims().remove(filterClaim);
                 }
             }
         });
