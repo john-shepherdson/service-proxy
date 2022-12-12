@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
 import org.keycloak.admin.client.resource.ClientResource;
+import org.keycloak.admin.client.resource.ClientScopeResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.common.enums.SslRequired;
@@ -36,12 +37,17 @@ import org.keycloak.events.Errors;
 import org.keycloak.events.EventType;
 import org.keycloak.jose.jws.JWSHeader;
 import org.keycloak.jose.jws.JWSInput;
+import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.models.utils.SessionTimeoutHelper;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
+import org.keycloak.protocol.oidc.mappers.HardcodedClaim;
+import org.keycloak.protocol.oidc.mappers.UserRealmRoleMappingMapper;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 import org.keycloak.representations.RefreshToken;
@@ -49,6 +55,7 @@ import org.keycloak.representations.UserInfo;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.EventRepresentation;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserSessionRepresentation;
 import org.keycloak.testsuite.AbstractKeycloakTest;
@@ -79,6 +86,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.security.Security;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.hamcrest.Matchers.allOf;
@@ -426,6 +434,71 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
             RefreshToken refreshToken2 = oauth.parseRefreshToken(response2.getRefreshToken());
             assertNotNull(refreshToken2);
             AbstractOIDCScopeTest.assertScopes("email phone address profile",  refreshToken2.getScope());
+
+        } finally {
+            setTimeOffset(0);
+            oauth.scope(null);
+        }
+    }
+
+    @Test
+    public void refreshTokenReuseTokenWithLessDynamicScopes() throws Exception {
+        ClientScopeRepresentation rep = new ClientScopeRepresentation();
+        rep.setName("hard");
+        rep.setProtocol("openid-connect");
+        rep.setAttributes(new HashMap<String, String>() {{
+            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
+            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, String.format("%1s:*", "hard"));
+        }});
+        Response response = adminClient.realm("test").clientScopes().create(rep);
+        assertEquals(201, response.getStatus());
+        URI scopeUri = response.getLocation();
+        String clientScopeId = ApiUtil.getCreatedId(response);
+        response.close();
+        ClientScopeResource clientScopeResource = adminClient.proxy(ClientScopeResource.class, scopeUri);
+        ProtocolMapperModel hard = UserRealmRoleMappingMapper.create(null,"hard", "hard", true, false, true);
+        ProtocolMapperRepresentation mapper = ModelToRepresentation.toRepresentation(hard);
+        response = clientScopeResource.getProtocolMappers().createMapper(mapper);
+        assertEquals(201, response.getStatus());
+        response.close();
+
+        ClientRepresentation clientRep = ApiUtil.findClientByClientId(adminClient.realm("test"), "test-app").toRepresentation();
+        adminClient.realm("test").clients().get(clientRep.getId()).addOptionalClientScope(clientScopeId);
+        //add phone,address as optional scope and request them
+        ClientScopeRepresentation phoneScope = adminClient.realm("test").clientScopes().findAll().stream().filter((ClientScopeRepresentation clientScope) ->"phone".equals(clientScope.getName())).findFirst().get();
+        ClientScopeRepresentation addressScope = adminClient.realm("test").clientScopes().findAll().stream().filter((ClientScopeRepresentation clientScope) ->"address".equals(clientScope.getName())).findFirst().get();
+        ClientManager.realm(adminClient.realm("test")).clientId(oauth.getClientId()).addClientScope(phoneScope.getId(),false);
+        ClientManager.realm(adminClient.realm("test")).clientId(oauth.getClientId()).addClientScope(addressScope.getId(),false);
+
+        try {
+
+            //scope parameter consists less optional scope that scope refresh token => error thrown
+            oauth.doLogin("test-user@localhost", "password");
+
+            String code = oauth.getCurrentQuery().get(OAuth2Constants.CODE);
+
+            String optionalScope = "phone address hard";
+            oauth.scope(optionalScope);
+            OAuthClient.AccessTokenResponse response1 = oauth.doGrantAccessTokenRequest("password", "test-user@localhost", "password");
+            RefreshToken refreshToken1 = oauth.parseRefreshToken(response1.getRefreshToken());
+            AbstractOIDCScopeTest.assertScopes("email phone address profile hard",  refreshToken1.getScope());
+
+            setTimeOffset(2);
+
+            String scope = "email phone hard:offline_access";
+            oauth.scope(scope);
+            OAuthClient.AccessTokenResponse response2 = oauth.doRefreshTokenRequest(response1.getRefreshToken(), "password");
+            assertEquals(200, response2.getStatusCode());
+            AbstractOIDCScopeTest.assertScopes("phone hard:offline_access profile email",  response2.getScope());
+            RefreshToken refreshToken2 = oauth.parseRefreshToken(response2.getRefreshToken());
+            assertNotNull(refreshToken2);
+            AbstractOIDCScopeTest.assertScopes("phone address hard profile email",  refreshToken2.getScope());
+
+            AccessToken accessToken = oauth.verifyToken(response2.getAccessToken());
+
+            List<String> claimValue =(List) accessToken.getOtherClaims().get("hard");
+            Assert.assertEquals(claimValue.size(), 1);
+            Assert.assertEquals(claimValue.get(0), "offline_access");
 
         } finally {
             setTimeOffset(0);
