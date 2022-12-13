@@ -846,15 +846,15 @@ public class TokenManager {
     }
 
     public AccessToken transformUserInfoAccessToken(KeycloakSession session, AccessToken token,
-                                            UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                            UserSessionModel userSession, ClientSessionContext clientSessionCtx, String scope) {
 
         AtomicReference<AccessToken> finalToken = new AtomicReference<>(token);
         ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx)
                 .filter(mapper -> mapper.getValue() instanceof UserInfoTokenMapper)
                 .forEach(mapper -> finalToken.set(((UserInfoTokenMapper) mapper.getValue())
                         .transformUserInfoToken(finalToken.get(), mapper.getKey(), session, userSession, clientSessionCtx)));
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && finalToken.get().getOtherClaims() != null) {
-            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), finalToken);
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null && finalToken.get().getOtherClaims() != null) {
+            dynamicScopeFiltering( scope,clientSessionCtx.getClientScopesStream(), finalToken);
         }
         return finalToken.get();
     }
