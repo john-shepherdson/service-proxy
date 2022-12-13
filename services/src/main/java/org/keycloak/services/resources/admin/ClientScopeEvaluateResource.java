@@ -167,7 +167,7 @@ public class ClientScopeEvaluateResource {
             AccessToken userInfo = new AccessToken();
             TokenManager tokenManager = new TokenManager();
 
-            tokenManager.transformUserInfoAccessToken(session, userInfo, userSession, clientSessionCtx);
+            tokenManager.transformUserInfoAccessToken(session, userInfo, userSession, clientSessionCtx, clientSessionCtx.getScopeString());
             return tokenManager.generateUserInfoClaims(userInfo, user);
         });
     }

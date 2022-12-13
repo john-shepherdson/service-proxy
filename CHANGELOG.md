@@ -15,6 +15,10 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Added
 - Configurable Claims for dynamic scopes [RCIAM-1190](https://jira.argo.grnet.gr/browse/RCIAM-1190)
 
+## Fixed
+-  Correct UserInfo after refresh token with scope containing dynamic scope filtering  [RCIAM-1191](https://jira.argo.grnet.gr/browse/RCIAM-1191)
+
+
 ## [18.0.1-2.8] - 2022-12-12
 
 ### Added
