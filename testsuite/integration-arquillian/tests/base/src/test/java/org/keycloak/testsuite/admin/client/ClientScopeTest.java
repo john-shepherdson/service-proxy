@@ -704,31 +704,31 @@ public class ClientScopeTest extends AbstractClientTest {
         assertThat(scopeRep.getAttributes().get(ClientScopeModel.DYNAMIC_SCOPE_REGEXP), anyOf(nullValue(), equalTo("")));
     }
 
-    @Test
-    @DisableFeature(value = Profile.Feature.DYNAMIC_SCOPES, skipRestart = true)
-    public void testCreateDynamicScopeWithFeatureDisabledAndIsDynamicScopeTrue() {
-        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
-        scopeRep.setName("non-dynamic-scope-def2");
-        scopeRep.setProtocol("openid-connect");
-        scopeRep.setAttributes(new HashMap<String, String>(){{
-            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
-            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, "");
-        }});
-        handleExpectedCreateFailure(scopeRep, 400, "Unexpected value \"true\" for attribute is.dynamic.scope in ClientScope");
-    }
-
-    @Test
-    @DisableFeature(value = Profile.Feature.DYNAMIC_SCOPES, skipRestart = true)
-    public void testCreateDynamicScopeWithFeatureDisabledAndNonEmptyDynamicScopeRegexp() {
-        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
-        scopeRep.setName("non-dynamic-scope-def3");
-        scopeRep.setProtocol("openid-connect");
-        scopeRep.setAttributes(new HashMap<String, String>(){{
-            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "false");
-            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, "not-empty");
-        }});
-        handleExpectedCreateFailure(scopeRep, 400, "Unexpected value \"not-empty\" for attribute dynamic.scope.regexp in ClientScope");
-    }
+//    @Test
+//    @DisableFeature(value = Profile.Feature.DYNAMIC_SCOPES, skipRestart = true)
+//    public void testCreateDynamicScopeWithFeatureDisabledAndIsDynamicScopeTrue() {
+//        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+//        scopeRep.setName("non-dynamic-scope-def2");
+//        scopeRep.setProtocol("openid-connect");
+//        scopeRep.setAttributes(new HashMap<String, String>(){{
+//            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
+//            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, "");
+//        }});
+//        handleExpectedCreateFailure(scopeRep, 400, "Unexpected value \"true\" for attribute is.dynamic.scope in ClientScope");
+//    }
+//
+//    @Test
+//    @DisableFeature(value = Profile.Feature.DYNAMIC_SCOPES, skipRestart = true)
+//    public void testCreateDynamicScopeWithFeatureDisabledAndNonEmptyDynamicScopeRegexp() {
+//        ClientScopeRepresentation scopeRep = new ClientScopeRepresentation();
+//        scopeRep.setName("non-dynamic-scope-def3");
+//        scopeRep.setProtocol("openid-connect");
+//        scopeRep.setAttributes(new HashMap<String, String>(){{
+//            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "false");
+//            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, "not-empty");
+//        }});
+//        handleExpectedCreateFailure(scopeRep, 400, "Unexpected value \"not-empty\" for attribute dynamic.scope.regexp in ClientScope");
+//    }
 
     @Test
     @EnableFeature(value = Profile.Feature.DYNAMIC_SCOPES, skipRestart = true)
