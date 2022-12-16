@@ -35,7 +35,7 @@
                 </div>
                 <kc-tooltip>{{:: 'client-scope.dynamic-scope-regexp.tooltip' | translate}}</kc-tooltip>
             </div>
-            <div class="form-group">
+            <div class="form-group" data-ng-show="protocol === 'openid-connect' && isDynamicScope && serverInfo.featureEnabled('DYNAMIC_SCOPES')">
                 <label class="col-md-2 control-label" for="filteredClaim">{{:: 'filtered.claim' | translate}} </label>
                 <div class="col-sm-6">
                     <input class="form-control" type="text" id="filteredClaim" name="filteredClaim" data-ng-model="clientScope.attributes['filtered_claim']">
