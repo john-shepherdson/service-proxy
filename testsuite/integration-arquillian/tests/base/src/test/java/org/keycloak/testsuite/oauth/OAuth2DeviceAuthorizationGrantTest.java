@@ -77,6 +77,7 @@ public class OAuth2DeviceAuthorizationGrantTest extends AbstractKeycloakTest {
     public static final String DEVICE_APP_PUBLIC = "test-device-public";
     public static final String DEVICE_APP_PKCE_PUBLIC = "test-device-pkce-public";
     public static final String DEVICE_APP_PUBLIC_CUSTOM_CONSENT = "test-device-public-custom-consent";
+    private static final String shortDeficeFlowUrl = "https://keycloak.org/device";
 
     @Rule
     public AssertEvents events = new AssertEvents(this);
@@ -222,6 +223,32 @@ public class OAuth2DeviceAuthorizationGrantTest extends AbstractKeycloakTest {
         AccessToken token = oauth.verifyToken(tokenString);
 
         assertNotNull(token);
+    }
+
+
+    @Test
+    public void testCustomVerificationUri() throws Exception {
+        // Device Authorization Request from device
+        try {
+            RealmResource testRealm = adminClient.realm(REALM_NAME);
+            RealmRepresentation realmRep = testRealm.toRepresentation();
+            realmRep.getAttributes().put("shortVerificationUri", shortDeficeFlowUrl);
+            testRealm.update(realmRep);
+            oauth.realm(REALM_NAME);
+            oauth.clientId(DEVICE_APP_PUBLIC);
+            OAuthClient.DeviceAuthorizationResponse response = oauth.doDeviceAuthorizationRequest(DEVICE_APP_PUBLIC, null);
+
+            Assert.assertEquals(200, response.getStatusCode());
+            assertNotNull(response.getDeviceCode());
+            assertNotNull(response.getUserCode());
+            Assert.assertEquals(shortDeficeFlowUrl,response.getVerificationUri());
+            Assert.assertEquals(shortDeficeFlowUrl+ "?user_code=" + response.getUserCode(),response.getVerificationUriComplete());
+        } finally {
+            RealmResource testRealm = adminClient.realm(REALM_NAME);
+            RealmRepresentation realmRep = testRealm.toRepresentation();
+            realmRep.getAttributes().remove("shortVerificationUri");
+            testRealm.update(realmRep);
+        }
     }
 
     @Test

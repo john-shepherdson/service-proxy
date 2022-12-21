@@ -81,6 +81,7 @@ public class DeviceEndpoint extends AuthorizationEndpointBase implements RealmRe
 
     @Context
     private HttpRequest request;
+    private String SHORT_VERIFICATION_URI = "shortVerificationUri";
 
     private Cors cors;
 
@@ -165,7 +166,7 @@ public class DeviceEndpoint extends AuthorizationEndpointBase implements RealmRe
         store.put(deviceCode, userCode, lifespanSeconds);
 
         try {
-            String deviceUrl = DeviceGrantType.oauth2DeviceVerificationUrl(session.getContext().getUri()).build(realm.getName())
+            String deviceUrl = realm.getAttribute(SHORT_VERIFICATION_URI) != null ? realm.getAttribute(SHORT_VERIFICATION_URI) : DeviceGrantType.oauth2DeviceVerificationUrl(session.getContext().getUri()).build(realm.getName())
                 .toString();
 
             OAuth2DeviceAuthorizationResponse response = new OAuth2DeviceAuthorizationResponse();
