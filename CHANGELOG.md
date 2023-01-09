@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [18.0.1-2.9] - 2023-01-09
 
 ### Added
 - Configurable Claims for dynamic scopes [RCIAM-1190](https://jira.argo.grnet.gr/browse/RCIAM-1190)
