@@ -10,6 +10,11 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [Unreleased]
+
+## Fixed
+- Service Accounts Client create the Client ID mapper with Token Claim Name as client_id  [GITHUB-16329](https://github.com/keycloak/keycloak/issues/16329)
+
 ## [18.0.1-2.9] - 2023-01-09
 
 ### Added
