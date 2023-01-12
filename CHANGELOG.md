@@ -15,6 +15,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ## Fixed
 - Service Accounts Client create the Client ID mapper with Token Claim Name as client_id  [GITHUB-16329](https://github.com/keycloak/keycloak/issues/16329)
 
+### Changed
+- debug log for failed to add/update/remove mappers from SAML federation to SAML IdPs
+
 ## [18.0.1-2.9] - 2023-01-09
 
 ### Added
