@@ -1867,9 +1867,9 @@ module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $ro
         $scope.changed = true;
         //execute on click
         if($scope.samlAutoUpdated == true) {
-            delete $scope.clientEdit.attributes['saml.metadata.url'];
-            delete $scope.refreshPeriod;
-            delete $scope.clientEdit.attributes['saml.last.refresh.time'];
+            $scope.clientEdit.attributes['saml.metadata.url'] = null;
+            $scope.refreshPeriod = TimeUnit2.asUnit(null);
+            $scope.clientEdit.attributes['saml.refresh.period'] = null;
             $scope.skipRequestedAttributes= false;
         }
     };
@@ -2257,14 +2257,12 @@ module.controller('CreateClientCtrl', function($scope, realm, client, $route, se
 
     $scope.autoUpdateChange = function() {
         //execute on click
-        if($scope.samlAutoUpdated == true) {
-            delete $scope.client.attributes['saml.metadata.url'];
-            delete $scope.refreshPeriod;
-            delete $scope.client.attributes['saml.last.refresh.time'];
-            $scope.skipRequestedAttributes= false;
-        } else {
-            $scope.refreshPeriod = TimeUnit2.asUnit(null);
-        }
+       if($scope.samlAutoUpdated == true) {
+           $scope.client.attributes['saml.metadata.url'] = null;
+           $scope.refreshPeriod = TimeUnit2.asUnit(null);
+           $scope.client.attributes['saml.refresh.period'] = null;
+           $scope.skipRequestedAttributes= false;
+       }
     }
 
     $scope.save = function() {
