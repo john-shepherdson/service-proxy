@@ -10,13 +10,13 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [18.0.1-2.10] - 2023-01-31
 
 ## Fixed
 - Service Accounts Client create the Client ID mapper with Token Claim Name as client_id  [GITHUB-16329](https://github.com/keycloak/keycloak/issues/16329)
 - Correct Keycloak Quarkus vulnerabilities [RCIAM-1196](https://jira.argo.grnet.gr/browse/RCIAM-1196)
 - Bug corrections related to SAML Autoupdated client [RCIAM-1205](https://jira.argo.grnet.gr/browse/RCIAM-1205)
-- Coorection in StartAutoUpdatedScheduledTasks
+- Correction in StartAutoUpdatedScheduledTasks
 
 ### Changed
 - debug log for failed to add/update/remove mappers from SAML federation to SAML IdPs
