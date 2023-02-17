@@ -1116,7 +1116,7 @@ module.controller('ClientInstallationCtrl', function($scope, realm, client, serv
     }
 });
 
-
+//$scope, realm, client, $route, serverInfo, Client, ClientDescriptionConverter, $location, $modal, Dialog, Notifications, TimeUnit2
 module.controller('ClientDetailCtrl', function($scope, realm, client, flows, $route, serverInfo, Client, ClientDescriptionConverter, Components, ClientStorageOperations, $location, $modal, Dialog, Notifications, TimeUnit2, countries) {
     $scope.serverInfo = serverInfo;
     $scope.flows = [];
@@ -2190,6 +2190,7 @@ module.controller('CreateClientCtrl', function($scope, realm, client, $route, se
         attributes: {}
     };
     $scope.client.redirectUris = [];
+    $scope.refreshPeriod = TimeUnit2.asUnit(null);
     $scope.protocol = $scope.protocols[0];
 
 

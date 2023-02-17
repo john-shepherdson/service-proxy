@@ -10,9 +10,14 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [Unreleased]
+
+### Fixed
+- Correction in ui of autoupdated SAML client creation 
+
 ## [18.0.1-2.10] - 2023-01-31
 
-## Fixed
+### Fixed
 - Service Accounts Client create the Client ID mapper with Token Claim Name as client_id  [GITHUB-16329](https://github.com/keycloak/keycloak/issues/16329)
 - Correct Keycloak Quarkus vulnerabilities [RCIAM-1196](https://jira.argo.grnet.gr/browse/RCIAM-1196)
 - Bug corrections related to SAML Autoupdated client [RCIAM-1205](https://jira.argo.grnet.gr/browse/RCIAM-1205)
@@ -27,7 +32,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Configurable Claims for dynamic scopes [RCIAM-1190](https://jira.argo.grnet.gr/browse/RCIAM-1190)
 - Short verification_uri for Device Authorization Request [RCIAM-1151](https://jira.argo.grnet.gr/browse/RCIAM-1151)
 
-## Fixed
+### Fixed
 -  Correct UserInfo after refresh token with scope containing dynamic scope filtering  [RCIAM-1191](https://jira.argo.grnet.gr/browse/RCIAM-1191)
 
 
@@ -41,7 +46,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - SAML SP Descriptor keys for use both for encrypt and signing
 - Startup autoupdated tasks with delay
 
-## Fixed
+### Fixed
 - Client registration service do not check client protocol for Bearer token  [RCIAM-1186](https://jira.argo.grnet.gr/browse/RCIAM-1186)
 
 ## [18.0.1-2.7] - 2022-11-18
