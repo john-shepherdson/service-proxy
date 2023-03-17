@@ -82,6 +82,16 @@ public class ClientScopeResource {
         return mappers;
     }
 
+    @Path("policies")
+    public ClientScopePolicyResource getClientScopePolicies() {
+        AdminPermissionEvaluator.RequirePermissionCheck manageCheck = () -> auth.clients().requireManage(clientScope);
+        AdminPermissionEvaluator.RequirePermissionCheck viewCheck = () -> auth.clients().requireView(clientScope);
+        ClientScopePolicyResource policies = new ClientScopePolicyResource(clientScope, adminEvent, manageCheck, viewCheck);
+        ResteasyProviderFactory.getInstance().injectProperties(policies);
+        return policies;
+    }
+
+
     /**
      * Base path for managing the role scope mappings for the client scope
      *

@@ -1556,6 +1556,18 @@ public class TokenManager {
                     });
     }
 
+    public static String clientScopePolicy(String scope, UserModel user, List<ClientScopeModel> clientScopes) {
+        //filter based on client scope policies ( at least one policy is ok)
+        return scope== null ? null : Arrays.stream(scope.split(" ")).filter(x -> {
+            String name = x.split(":")[0];
+            ClientScopeModel sc = clientScopes.stream().filter(cs -> name.equals(cs.getName())).findAny().orElse(null);
+            return sc == null || sc.getClientScopePoliciesStream().count() == 0 || sc.getClientScopePoliciesStream().allMatch(policy -> policy.getClientScopePolicyValues().stream().anyMatch(policyValue -> {
+                boolean check = (policyValue.getRegex() && user.getAttributeStream(policy.getUserAttribute()).anyMatch(attrValue -> Pattern.compile(policyValue.getValue()).matcher(attrValue).matches())) || (!policyValue.getRegex() && user.getAttribute(policy.getUserAttribute()).contains(policyValue.getValue()));
+                return policyValue.getNegateOutput() ? !check : check;
+            }));
+        }).collect(Collectors.joining(" "));
+    }
+
     private Stream<OIDCIdentityProvider> getOIDCIdentityProviders(RealmModel realm, KeycloakSession session) {
         try {
             return realm.getIdentityProvidersStream()

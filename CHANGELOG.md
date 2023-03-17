@@ -12,6 +12,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ## [Unreleased]
 
+### Added
+- Client scope policy [RCIAM-1241](https://jira.argo.grnet.gr/browse/RCIAM-1241)
+
 ### Fixed
 - Correction in ui of autoupdated SAML client creation 
 

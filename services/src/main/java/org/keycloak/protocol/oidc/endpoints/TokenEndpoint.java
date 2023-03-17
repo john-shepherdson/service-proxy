@@ -17,6 +17,7 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
@@ -113,6 +114,7 @@ import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -425,18 +427,19 @@ public class TokenEndpoint {
         // Compute client scopes again from scope parameter. Check if user still has them granted
         // (but in code-to-token request, it could just theoretically happen that they are not available)
         String scopeParam = codeData.getScope();
-        Supplier<Stream<ClientScopeModel>> clientScopesSupplier = () -> TokenManager.getRequestedClientScopes(scopeParam, client);
+        String finalScope= TokenManager.clientScopePolicy(scopeParam, user, realm.getClientScopes());
+        Supplier<Stream<ClientScopeModel>> clientScopesSupplier = () -> TokenManager.getRequestedClientScopes(finalScope, client);
         if (!TokenManager.verifyConsentStillAvailable(session, user, client, clientScopesSupplier.get())) {
             event.error(Errors.NOT_ALLOWED);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_SCOPE, "Client no longer has requested consent from user", Response.Status.BAD_REQUEST);
         }
 
-        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionAndScopeParameter(clientSession, scopeParam, session);
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionAndScopeParameter(clientSession, finalScope, session);
 
         // Set nonce as an attribute in the ClientSessionContext. Will be used for the token generation
         clientSessionCtx.setAttribute(OIDCLoginProtocol.NONCE_PARAM, codeData.getNonce());
 
-        return createTokenResponse(user, userSession, clientSessionCtx, scopeParam, true, resourceList);
+        return createTokenResponse(user, userSession, clientSessionCtx, finalScope, true, resourceList);
     }
 
     public Response createTokenResponse(UserModel user, UserSessionModel userSession, ClientSessionContext clientSessionCtx,
@@ -602,7 +605,7 @@ public class TokenEndpoint {
         authSession.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         authSession.setAction(AuthenticatedClientSessionModel.Action.AUTHENTICATE.name());
         authSession.setClientNote(OIDCLoginProtocol.ISSUER, Urls.realmIssuer(session.getContext().getUri().getBaseUri(), realm.getName()));
-        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, scope);
+
 
         AuthenticationFlowModel flow = AuthenticationFlowResolver.resolveDirectGrantFlow(authSession);
         String flowId = flow.getId();
@@ -631,6 +634,9 @@ public class TokenEndpoint {
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_GRANT, "Account is not fully set up", Response.Status.BAD_REQUEST);
 
         }
+
+        scope = TokenManager.clientScopePolicy(scope, user, realm.getClientScopes());
+        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, scope);
 
         AuthenticationManager.setClientScopesInSession(authSession);
 
@@ -695,6 +701,7 @@ public class TokenEndpoint {
         }
 
         String scope = getRequestedScopes();
+        scope= TokenManager.clientScopePolicy(scope, clientUser, realm.getClientScopes());
 
         RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, false);
         AuthenticationSessionModel authSession = rootAuthSession.createAuthenticationSession(client);

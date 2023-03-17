@@ -3826,6 +3826,117 @@ module.controller('ClientScopeAddBuiltinProtocolMapperCtrl', function($scope, re
 
 });
 
+module.controller('ClientScopePolicyAddCtrl', function($scope, realm, clientScope, serverInfo, $route, ClientScopePolicy, Notifications, Dialog, $location) {
+    $scope.realm = realm;
+
+    $scope.model = {
+        realm: realm,
+        clientScope: clientScope,
+        create: true,
+        policy: {clientScopePolicyValues : [] },
+        changed: false
+    }
+
+    $scope.addPolicyValue = function() {
+        var policyValue={negateOutput: false, regex : false};
+        $scope.model.policy.clientScopePolicyValues.push(policyValue);
+     }
+
+    $scope.removePolicyValue  = function(index) {
+        $scope.model.policy.clientScopePolicyValues.splice(index, 1);
+    }
+
+    $scope.save = function() {
+        ClientScopePolicy.save({
+            realm : realm.realm, clientScope: clientScope.id
+        }, $scope.model.policy, function(data, headers) {
+            var l = headers().location;
+            var id = l.substring(l.lastIndexOf("/") + 1);
+            $location.url("/realms/" + realm.realm + '/client-scopes/' + clientScope.id + "/policies/" + id);
+            Notifications.success("Client Scope Policy has been created.");
+        });
+    };
+
+    $scope.reset = function() {
+        window.history.back();
+    };
+
+
+});
+
+module.controller('ClientScopePolicyCtrl', function($scope, realm, clientScope, policy, serverInfo, $route, ClientScopePolicy, Notifications, Dialog, $location) {
+    $scope.realm = realm;
+
+    $scope.model = {
+        realm: realm,
+        clientScope: clientScope,
+        create: false,
+        policy:  angular.copy(policy),
+        changed: false
+    }
+
+     $scope.$watch('model.policy', function() {
+        if (!angular.equals($scope.model.policy, policy)) {
+            $scope.model.changed = true;
+        }
+     }, true);
+
+      $scope.addPolicyValue = function() {
+          $scope.model.policy.clientScopePolicyValues.push({});
+          $compile($('#clientPolicyValues'))($scope);
+      }
+
+      $scope.removePolicyValue  = function(index) {
+          $scope.model.policy.clientScopePolicyValues.splice(index, 1);
+      }
+
+     $scope.save = function() {
+        ClientScopePolicy.update({
+            realm : realm.realm,
+            clientScope: clientScope.id,
+            id : policy.id
+        }, $scope.model.policy, function() {
+            $route.reload();
+            Notifications.success("Your changes have been saved.");
+        });
+     };
+
+    $scope.reset = function() {
+        window.history.back();
+    };
+
+    $scope.remove = function() {
+        Dialog.confirmDelete($scope.model.policy.userAttribute, 'policy', function() {
+            ClientScopePolicy.remove({ realm: realm.realm, clientScope: clientScope.id, id : $scope.model.policy.id }, function() {
+                Notifications.success("The client scope policy has been deleted.");
+                $location.url("/realms/" + realm.realm + '/client-scopes/' + clientScope.id + "/policies");
+           });
+        });
+    };
+
+
+});
+
+
+module.controller('ClientScopePoliciesListCtrl', function($scope, realm, clientScope, ClientScopePolicies, $route, Dialog, Notifications) {
+    $scope.realm = realm;
+    $scope.clientScope = clientScope;
+
+    $scope.removePolicy = function(policy) {
+        Dialog.confirmDelete(policy.userAttribute, 'policy', function() {
+            ClientScopePolicy.remove({ realm: realm.realm, clientScope: clientScope.id, id : policy.id }, function() {
+                Notifications.success("The mapper has been deleted.");
+                $route.reload();
+            });
+        });
+    };
+
+    var updatePolicies = function() {
+        $scope.policies = ClientScopePolicies.query({realm : realm.realm, clientScope : clientScope.id});
+    };
+
+    updatePolicies();
+});
 
 module.controller('ClientScopeScopeMappingCtrl', function($scope, $http, $route, realm, clientScope, Notifications,
                                                      ClientScope, Client,

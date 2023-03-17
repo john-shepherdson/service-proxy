@@ -592,6 +592,25 @@ module.factory('ClientScopeProtocolMapper', function($resource) {
     });
 });
 
+module.factory('ClientScopePolicies', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/policies', {
+        realm : '@realm',
+        clientScope : "@clientScope"
+    });
+});
+
+module.factory('ClientScopePolicy', function($resource) {
+    return $resource(authUrl + '/admin/realms/:realm/client-scopes/:clientScope/policies/:id', {
+        realm : '@realm',
+        clientScope: '@clientScope',
+        id : "@id"
+    }, {
+        update : {
+            method : 'PUT'
+        }
+    });
+});
+
 module.factory('User', function($resource) {
     return $resource(authUrl + '/admin/realms/:realm/users/:userId', {
         realm : '@realm',

@@ -1467,23 +1467,20 @@ module.config([ '$routeProvider', function($routeProvider) {
             },
             controller : 'ClientClientScopesEvaluateCtrl'
         })
-        .when('/realms/:realm/client-scopes/:clientScope/mappers', {
-            templateUrl : resourceUrl + '/partials/client-scope-mappers.html',
+        .when('/realms/:realm/client-scopes/:clientScope/policies', {
+            templateUrl : resourceUrl + '/partials/client-scope-policies.html',
             resolve : {
                 realm : function(RealmLoader) {
                     return RealmLoader();
                 },
                 clientScope : function(ClientScopeLoader) {
                     return ClientScopeLoader();
-                },
-                serverInfo : function(ServerInfoLoader) {
-                    return ServerInfoLoader();
                 }
             },
-            controller : 'ClientScopeProtocolMapperListCtrl'
+            controller : 'ClientScopePoliciesListCtrl'
         })
-        .when('/realms/:realm/client-scopes/:clientScope/add-mappers', {
-            templateUrl : resourceUrl + '/partials/client-scope-mappers-add.html',
+        .when('/realms/:realm/client-scopes/:clientScope/add-policy', {
+            templateUrl : resourceUrl + '/partials/client-scope-policies-detail.html',
             resolve : {
                 realm : function(RealmLoader) {
                     return RealmLoader();
@@ -1491,14 +1488,14 @@ module.config([ '$routeProvider', function($routeProvider) {
                 clientScope : function(ClientScopeLoader) {
                     return ClientScopeLoader();
                 },
-                serverInfo : function(ServerInfoLoader) {
-                    return ServerInfoLoader();
-                }
+                                 serverInfo : function(ServerInfoLoader) {
+                                     return ServerInfoLoader();
+                                 }
             },
-            controller : 'ClientScopeAddBuiltinProtocolMapperCtrl'
+            controller : 'ClientScopePolicyAddCtrl'
         })
-        .when('/realms/:realm/client-scopes/:clientScope/mappers/:id', {
-            templateUrl : resourceUrl + '/partials/client-scope-protocol-mapper-detail.html',
+        .when('/realms/:realm/client-scopes/:clientScope/policies/:id', {
+            templateUrl : resourceUrl + '/partials/client-scope-policies-detail.html',
             resolve : {
                 realm : function(RealmLoader) {
                     return RealmLoader();
@@ -1506,37 +1503,86 @@ module.config([ '$routeProvider', function($routeProvider) {
                 clientScope : function(ClientScopeLoader) {
                     return ClientScopeLoader();
                 },
-                serverInfo : function(ServerInfoLoader) {
-                    return ServerInfoLoader();
+                policy : function(ClientScopePolicyLoader) {
+                    return ClientScopePolicyLoader();
                 },
-                mapper : function(ClientScopeProtocolMapperLoader) {
-                    return ClientScopeProtocolMapperLoader();
-                },
-                clients : function(ClientListLoader) {
-                    return ClientListLoader();
-                }
+                                 serverInfo : function(ServerInfoLoader) {
+                                     return ServerInfoLoader();
+                                 }
+            },
+            controller : 'ClientScopePolicyCtrl'
+        })
+         .when('/realms/:realm/client-scopes/:clientScope/mappers', {
+                    templateUrl : resourceUrl + '/partials/client-scope-mappers.html',
+                    resolve : {
+                        realm : function(RealmLoader) {
+                            return RealmLoader();
+                        },
+                        clientScope : function(ClientScopeLoader) {
+                            return ClientScopeLoader();
+                        },
+                        serverInfo : function(ServerInfoLoader) {
+                            return ServerInfoLoader();
+                        }
+                    },
+                    controller : 'ClientScopeProtocolMapperListCtrl'
+                })
+                .when('/realms/:realm/client-scopes/:clientScope/add-mappers', {
+                    templateUrl : resourceUrl + '/partials/client-scope-protocol-mapper-detail.html',
+                    resolve : {
+                        realm : function(RealmLoader) {
+                            return RealmLoader();
+                        },
+                        clientScope : function(ClientScopeLoader) {
+                            return ClientScopeLoader();
+                        },
+                        serverInfo : function(ServerInfoLoader) {
+                            return ServerInfoLoader();
+                        }
+                    },
+                    controller : 'ClientScopeAddBuiltinProtocolMapperCtrl'
+                })
+                .when('/realms/:realm/client-scopes/:clientScope/mappers/:id', {
+                    templateUrl : resourceUrl + '/partials/client-scope-protocol-mapper-detail.html',
+                    resolve : {
+                        realm : function(RealmLoader) {
+                            return RealmLoader();
+                        },
+                        clientScope : function(ClientScopeLoader) {
+                            return ClientScopeLoader();
+                        },
+                        serverInfo : function(ServerInfoLoader) {
+                            return ServerInfoLoader();
+                        },
+                        mapper : function(ClientScopeProtocolMapperLoader) {
+                            return ClientScopeProtocolMapperLoader();
+                        },
+                        clients : function(ClientListLoader) {
+                            return ClientListLoader();
+                        }
 
-            },
-            controller : 'ClientScopeProtocolMapperCtrl'
-        })
-        .when('/create/client-scope/:realm/:clientScope/mappers', {
-            templateUrl : resourceUrl + '/partials/client-scope-protocol-mapper-detail.html',
-            resolve : {
-                realm : function(RealmLoader) {
-                    return RealmLoader();
-                },
-                serverInfo : function(ServerInfoLoader) {
-                    return ServerInfoLoader();
-                },
-                clientScope : function(ClientScopeLoader) {
-                    return ClientScopeLoader();
-                },
-                clients : function(ClientListLoader) {
-                    return ClientListLoader();
-                }
-            },
-            controller : 'ClientScopeProtocolMapperCreateCtrl'
-        })
+                    },
+                    controller : 'ClientScopeProtocolMapperCtrl'
+                })
+                .when('/create/client-scope/:realm/:clientScope/mappers', {
+                    templateUrl : resourceUrl + '/partials/client-scope-protocol-mapper-detail.html',
+                    resolve : {
+                        realm : function(RealmLoader) {
+                            return RealmLoader();
+                        },
+                        serverInfo : function(ServerInfoLoader) {
+
+                            return ServerInfoLoader();
+                        },
+                        clientScope : function(ClientScopeLoader) {
+                            return ClientScopeLoader();
+                        },
+                        clients : function(ClientListLoader) {
+                            return ClientListLoader();
+                        }
+                    },
+                    controller : 'ClientScopeProtocolMapperCreateCtrl'
+                })
         .when('/realms/:realm/clients/:client/sessions', {
             templateUrl : resourceUrl + '/partials/client-sessions.html',
             resolve : {

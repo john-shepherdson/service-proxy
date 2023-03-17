@@ -295,6 +295,7 @@ public class DeviceGrantType {
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_SCOPE,
                 "Client no longer has requested consent from user", Response.Status.BAD_REQUEST);
         }
+        scopeParam = TokenManager.clientScopePolicy(scopeParam, user, realm.getClientScopes());
 
         ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionAndScopeParameter(clientSession,
                 scopeParam, session);

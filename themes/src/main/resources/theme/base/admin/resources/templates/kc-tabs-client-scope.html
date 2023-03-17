@@ -16,5 +16,9 @@
             <a href="#/realms/{{realm.realm}}/client-scopes/{{clientScope.id}}/scope-mappings">{{:: 'scope' | translate}}</a>
             <kc-tooltip>{{:: 'scope.tooltip' | translate}}</kc-tooltip>
         </li>
+        <li ng-class="{active: path[4] == 'policies'}">
+            <a href="#/realms/{{realm.realm}}/client-scopes/{{clientScope.id}}/policies">{{:: 'client-scope.policies' | translate}}</a>
+            <kc-tooltip>{{:: 'client-scope.policies.tooltip' | translate}}</kc-tooltip>
+        </li>
     </ul>
 </div>

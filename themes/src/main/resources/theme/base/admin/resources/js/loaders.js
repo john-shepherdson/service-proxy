@@ -143,6 +143,16 @@ module.factory('ClientScopeProtocolMapperLoader', function(Loader, ClientScopePr
     });
 });
 
+module.factory('ClientScopePolicyLoader', function(Loader, ClientScopePolicy, $route, $q) {
+    return Loader.get(ClientScopePolicy, function() {
+        return {
+            realm : $route.current.params.realm,
+            clientScope : $route.current.params.clientScope,
+            id: $route.current.params.id
+        }
+    });
+});
+
 module.factory('UserLoader', function(Loader, User, $route, $q) {
     return Loader.get(User, function() {
         return {

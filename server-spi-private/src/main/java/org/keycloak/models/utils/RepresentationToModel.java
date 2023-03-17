@@ -72,6 +72,8 @@ import org.keycloak.models.CibaConfig;
 import org.keycloak.models.ClaimMask;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientScopeModel;
+import org.keycloak.models.ClientScopePolicyModel;
+import org.keycloak.models.ClientScopePolicyValueModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.FederationMapperModel;
@@ -111,6 +113,8 @@ import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
 import org.keycloak.representations.idm.ClaimRepresentation;
 import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.representations.idm.ClientScopePolicyRepresentation;
+import org.keycloak.representations.idm.ClientScopePolicyValueRepresentation;
 import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.ClientTemplateRepresentation;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
@@ -1735,6 +1739,11 @@ public class RepresentationToModel {
             }
             MigrationUtils.updateProtocolMappers(clientScope);
         }
+        if (resourceRep.getPolicies() != null) {
+            for (ClientScopePolicyRepresentation policy : resourceRep.getPolicies()) {
+                clientScope.addClientScopePolicy(toModel(policy));
+            }
+        }
 
         if (resourceRep.getAttributes() != null) {
             for (Map.Entry<String, String> entry : resourceRep.getAttributes().entrySet()) {
@@ -2140,6 +2149,23 @@ public class RepresentationToModel {
         model.setProtocol(rep.getProtocol());
         model.setProtocolMapper(rep.getProtocolMapper());
         model.setConfig(removeEmptyString(rep.getConfig()));
+        return model;
+    }
+
+    public static ClientScopePolicyModel toModel(ClientScopePolicyRepresentation rep) {
+        ClientScopePolicyModel model = new ClientScopePolicyModel();
+        model.setId(rep.getId());
+        model.setUserAttribute(rep.getUserAttribute());
+        model.setClientScopePolicyValues(rep.getClientScopePolicyValues().stream().map(x->toModel(x)).collect(Collectors.toList()));
+        return model;
+    }
+
+    private static ClientScopePolicyValueModel toModel(ClientScopePolicyValueRepresentation rep) {
+        ClientScopePolicyValueModel model = new ClientScopePolicyValueModel();
+        model.setId(rep.getId());
+        model.setValue(rep.getValue());
+        model.setRegex(rep.getRegex());
+        model.setNegateOutput(rep.getNegateOutput());
         return model;
     }
 

@@ -1,0 +1,84 @@
+<div class="col-sm-9 col-md-10 col-sm-push-3 col-md-push-2">
+
+    <ol class="breadcrumb">
+        <li><a href="#/realms/{{model.realm.realm}}/client-scopes">{{:: 'client-scopes' | translate}}</a></li>
+        <li><a href="#/realms/{{model.realm.realm}}/client-scopes/{{model.clientScope.id}}">{{model.clientScope.name}}</a></li>
+        <li><a href="#/realms/{{model.realm.realm}}/client-scopes/{{model.clientScope.id}}/policies">{{:: 'client-scope.policies' | translate}}</a></li>
+        <li class="active" data-ng-show="model.create">{{:: 'create-client-scope-policy' | translate}}</li>
+        <li class="active" data-ng-hide="model.create">{{model.userAttribute}}</li>
+    </ol>
+
+    <h1 data-ng-show="model.create">{{:: 'create-protocol-mapper' | translate}}</h1>
+    <h1 data-ng-hide="model.create">{{model.mapper.name|capitalize}}<i class="pficon pficon-delete clickable" data-ng-show="!model.create && access.manageClients"
+                                                                       data-ng-hide="model.changed" data-ng-click="remove()"></i></h1>
+
+    <form class="form-horizontal" name="policyForm" novalidate kc-read-only="!access.manageClients">
+
+        <fieldset>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="userAttribute">{{:: 'usermodel.attr.label' | translate}}</label>
+                <div class="col-md-6">
+                    <input class="form-control" id="userAttribute" type="text" ng-model="model.policy.userAttribute" required>
+                </div>
+                <kc-tooltip>{{:: 'client-scope.policies.user-attribute.tooltip' | translate}}</kc-tooltip>
+            </div>
+
+            <div class="form-group">
+                <label class="col-md-2 control-label" for="clientScopePolicyValues">{{::'client-scope.policy.values' | translate}}</label>
+                <div class="col-sm-6"  id="clientScopePolicyValues">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="kc-table-actions" colspan="6">
+                                <div class="form-inline">
+                                    <button class="btn btn-primary" data-ng-click="addPolicyValue()">{{:: 'create' | translate}}</button>
+                                </div>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>{{:: 'policy-value' | translate}}</th>
+                            <th>{{:: 'regex' | translate}}</th>
+                            <th>{{:: 'authz-policy-logic-negative' | translate}}</th>
+                            <th>{{:: 'actions' | translate}}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="clientPolicyValues" ng-repeat="(i, item) in model.policy.clientScopePolicyValues track by $index">
+                            <td>
+                                <input class="form-control" ng-model="model.policy.clientScopePolicyValues[i].value" required>
+                            </td>
+                            <td>
+                                <input type="checkbox" ng-model="model.policy.clientScopePolicyValues[i].regex" id="{{'regex-' + $index}}" name="{{'regex-' + $index}}"/>
+                            </td>
+                            <td>
+                                <input type="checkbox" ng-model="model.policy.clientScopePolicyValues[i].negateOutput" id="{{'negateOutput-' + $index}}" name="{{'negateOutput-' + $index}}"  />
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" data-ng-click="removePolicyValue($index)">{{:: 'delete' | translate}}</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <kc-tooltip>{{:: 'client-scope.policy.values.tooltip'| translate}}</kc-tooltip>
+            </div>
+
+        </fieldset>
+
+        <div class="form-group">
+            <div class="col-md-10 col-md-offset-2" data-ng-show="model.create && access.manageClients">
+                <button kc-save>{{:: 'save' | translate}}</button>
+                <button kc-cancel data-ng-click="cancel()">{{:: 'cancel' | translate}}</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-10 col-md-offset-2" data-ng-show="!model.create && access.manageClients">
+                <button kc-save  data-ng-disabled="!model.changed">{{:: 'save' | translate}}</button>
+                <button kc-reset data-ng-disabled="!model.changed">{{:: 'cancel' | translate}}</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<kc-menu></kc-menu>
