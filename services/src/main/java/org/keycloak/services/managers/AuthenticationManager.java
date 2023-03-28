@@ -1246,6 +1246,21 @@ public class AuthenticationManager {
         authSession.setClientScopes(requestedClientScopes);
     }
 
+    public static void setClientScopesInSession(AuthenticationSessionModel authSession, boolean oidc) {
+        ClientModel client = authSession.getClient();
+        UserModel user = authSession.getAuthenticatedUser();
+
+        // todo scope param protocol independent
+        String scopeParam = authSession.getClientNote(OAuth2Constants.SCOPE);
+        if (oidc)
+            scopeParam = TokenManager.clientScopePolicy(scopeParam, user, client.getRealm().getClientScopes());
+
+        Set<String> requestedClientScopes = TokenManager.getRequestedClientScopes(scopeParam, client)
+                .map(ClientScopeModel::getId).collect(Collectors.toSet());
+
+        authSession.setClientScopes(requestedClientScopes);
+    }
+
     public static RequiredActionProvider createRequiredAction(RequiredActionContextResult context) {
         String display = context.getAuthenticationSession().getAuthNote(OAuth2Constants.DISPLAY);
         if (display == null) return context.getFactory().create(context.getSession());

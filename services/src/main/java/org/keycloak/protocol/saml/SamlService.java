@@ -795,7 +795,7 @@ public class SamlService extends AuthorizationEndpointBase {
     }
 
     protected Response newBrowserAuthentication(AuthenticationSessionModel authSession, boolean isPassive, boolean redirectToAuthentication, SamlProtocol samlProtocol) {
-        return handleBrowserAuthenticationRequest(authSession, samlProtocol, isPassive, redirectToAuthentication);
+        return handleBrowserAuthenticationRequest(authSession, samlProtocol, isPassive, redirectToAuthentication, false);
     }
 
     public RedirectBindingProtocol newRedirectBindingProtocol() {

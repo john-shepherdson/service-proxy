@@ -324,7 +324,7 @@ public class DeviceEndpoint extends AuthorizationEndpointBase implements RealmRe
         event.client(deviceCode.getClientId()).detail(Details.SCOPE, deviceCode.getScope()).success();
 
         OIDCLoginProtocol protocol = new OIDCLoginProtocol(session, realm, session.getContext().getUri(), headers, event);
-        return handleBrowserAuthenticationRequest(authenticationSession, protocol, false, true);
+        return handleBrowserAuthenticationRequest(authenticationSession, protocol, false, true, true);
     }
 
     @Override
