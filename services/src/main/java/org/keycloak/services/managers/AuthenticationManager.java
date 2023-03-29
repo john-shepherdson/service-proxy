@@ -1094,6 +1094,7 @@ public class AuthenticationManager {
         if (client.isConsentRequired() || isOAuth2DeviceVerificationFlow(authSession)) {
 
             UserConsentModel grantedConsent = getEffectiveGrantedConsent(session, authSession);
+            authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, TokenManager.clientScopePolicy(authSession.getClientNote(OIDCLoginProtocol.SCOPE_PARAM), authSession.getAuthenticatedUser(), realm.getClientScopes()));
 
             // See if any clientScopes need to be approved on consent screen
             List<AuthorizationDetails> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(grantedConsent, session);
@@ -1159,6 +1160,7 @@ public class AuthenticationManager {
         if (client.isConsentRequired() || isOAuth2DeviceVerificationFlow(authSession)) {
 
             UserConsentModel grantedConsent = getEffectiveGrantedConsent(session, authSession);
+            authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, TokenManager.clientScopePolicy(authSession.getClientNote(OIDCLoginProtocol.SCOPE_PARAM), authSession.getAuthenticatedUser(), realm.getClientScopes()));
 
             List<AuthorizationDetails> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(grantedConsent, session);
 
