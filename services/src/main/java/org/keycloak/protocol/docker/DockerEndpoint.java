@@ -74,7 +74,7 @@ public class DockerEndpoint extends AuthorizationEndpointBase {
         // So back button doesn't work
         CacheControlUtil.noBackButtonCacheControlHeader();
 
-        return handleBrowserAuthenticationRequest(authenticationSession, new DockerAuthV2Protocol(session, realm, session.getContext().getUri(), headers, event.event(login)), false, false, true);
+        return handleBrowserAuthenticationRequest(authenticationSession, new DockerAuthV2Protocol(session, realm, session.getContext().getUri(), headers, event.event(login)), false, false);
     }
 
     private void updateAuthenticationSession() {

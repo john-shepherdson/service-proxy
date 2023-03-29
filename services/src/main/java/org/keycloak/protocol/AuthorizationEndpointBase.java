@@ -102,7 +102,7 @@ public abstract class AuthorizationEndpointBase {
      * @param redirectToAuthentication if true redirect to flow url.  If initial call to protocol is a POST, you probably want to do this.  This is so we can disable the back button on browser
      * @return response to be returned to the browser
      */
-    protected Response handleBrowserAuthenticationRequest(AuthenticationSessionModel authSession, LoginProtocol protocol, boolean isPassive, boolean redirectToAuthentication, boolean oidc) {
+    protected Response handleBrowserAuthenticationRequest(AuthenticationSessionModel authSession, LoginProtocol protocol, boolean isPassive, boolean redirectToAuthentication) {
         AuthenticationFlowModel flow = getAuthenticationFlow(authSession);
         String flowId = flow.getId();
         AuthenticationProcessor processor = createProcessor(authSession, flowId, LoginActionsService.AUTHENTICATE_PATH);
@@ -131,7 +131,7 @@ public abstract class AuthorizationEndpointBase {
                     }
                 }
 
-                AuthenticationManager.setClientScopesInSession(authSession, oidc);
+                AuthenticationManager.setClientScopesInSession(authSession);
 
                 if (processor.nextRequiredAction() != null) {
                     Response response = protocol.sendError(authSession, Error.PASSIVE_INTERACTION_REQUIRED);
