@@ -1090,11 +1090,12 @@ public class AuthenticationManager {
         if (kcAction != null) {
             return kcAction;
         }
+        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, TokenManager.clientScopePolicy(authSession.getClientNote(OIDCLoginProtocol.SCOPE_PARAM), authSession.getAuthenticatedUser(), realm.getClientScopes()));
+        AuthenticationManager.setClientScopesInSession(authSession);
 
         if (client.isConsentRequired() || isOAuth2DeviceVerificationFlow(authSession)) {
 
             UserConsentModel grantedConsent = getEffectiveGrantedConsent(session, authSession);
-            authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, TokenManager.clientScopePolicy(authSession.getClientNote(OIDCLoginProtocol.SCOPE_PARAM), authSession.getAuthenticatedUser(), realm.getClientScopes()));
 
             // See if any clientScopes need to be approved on consent screen
             List<AuthorizationDetails> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(grantedConsent, session);
@@ -1154,13 +1155,15 @@ public class AuthenticationManager {
         action = executionActions(session, authSession, request, event, realm, user, authSession.getRequiredActions().stream());
         if (action != null) return action;
 
+        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, TokenManager.clientScopePolicy(authSession.getClientNote(OIDCLoginProtocol.SCOPE_PARAM), authSession.getAuthenticatedUser(), realm.getClientScopes()));
+        AuthenticationManager.setClientScopesInSession(authSession);
+
         // https://tools.ietf.org/html/draft-ietf-oauth-device-flow-15#section-5.4
         // The spec says "The authorization server SHOULD display information about the device",
         // so the consent is required when running a verification flow of OAuth 2.0 Device Authorization Grant.
         if (client.isConsentRequired() || isOAuth2DeviceVerificationFlow(authSession)) {
 
             UserConsentModel grantedConsent = getEffectiveGrantedConsent(session, authSession);
-            authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, TokenManager.clientScopePolicy(authSession.getClientNote(OIDCLoginProtocol.SCOPE_PARAM), authSession.getAuthenticatedUser(), realm.getClientScopes()));
 
             List<AuthorizationDetails> clientScopesToApprove = getClientScopesToApproveOnConsentScreen(grantedConsent, session);
 
