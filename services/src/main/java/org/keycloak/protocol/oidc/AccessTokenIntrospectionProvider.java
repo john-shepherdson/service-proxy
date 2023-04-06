@@ -241,8 +241,8 @@ public class AccessTokenIntrospectionProvider implements TokenIntrospectionProvi
                 .forEach(mapper -> finalToken.set(((OIDCIntrospectionMapper) mapper.getValue())
                         .transformAccessTokenForIntrospection(finalToken.get(), mapper.getKey(), user)));
 
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && token.getScope() != null && finalToken.get().getOtherClaims() != null) {
-            TokenManager.dynamicScopeFiltering( token.getScope(), ccu.getClientScopesStream(), finalToken);
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && token.getScope() != null ) {
+           TokenManager.dynamicScopeFiltering( token.getScope(), ccu.getClientScopesStream(), finalToken);
         }
         return finalToken.get();
     }

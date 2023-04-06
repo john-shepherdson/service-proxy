@@ -18,6 +18,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Fixed
 - Correction in ui of autoupdated SAML client creation 
 
+### Changed
+- Filter dynamic scopes from access token scope
+
 ## [18.0.1-2.10] - 2023-01-31
 
 ### Fixed

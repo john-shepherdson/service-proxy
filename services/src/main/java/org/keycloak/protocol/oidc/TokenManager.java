@@ -801,24 +801,27 @@ public class TokenManager {
                 .filter(mapper -> mapper.getValue() instanceof OIDCAccessTokenMapper)
                 .forEach(mapper -> finalToken.set(((OIDCAccessTokenMapper) mapper.getValue())
                         .transformAccessToken(finalToken.get(), mapper.getKey(), session, userSession, clientSessionCtx)));
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && finalToken.get().getOtherClaims() != null) {
-            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), finalToken);
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null ) {
+            String newScope = dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), finalToken);
+            token.setScope(newScope);
+            clientSessionCtx.getClientSession().setNote(OAuth2Constants.SCOPE,newScope);
         }
         return finalToken.get();
     }
 
-    public static void dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream,AtomicReference<AccessToken> finalToken){
+    public static String dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream, AtomicReference<AccessToken> finalToken) {
         //filtering based on dynamic scopes
         List<String> scopeList = new ArrayList<>(Arrays.asList(scope.split(" ")));
+
         clientScopeStream.filter(cs -> Boolean.valueOf(cs.getAttribute(ClientScopeModel.IS_DYNAMIC_SCOPE))).forEach(cs -> {
             //we could have multiple time this dynamic scope requested with different values
             //for multiple times requested this dynamic scope,  returned claim values consist all the requested values - if they exist
             //if a value is not containing in final value parameter -> remove this scope
-            if (finalToken.get().getOtherClaims().containsKey(cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName())) {
+            if (finalToken.get().getOtherClaims() != null && finalToken.get().getOtherClaims().containsKey(cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName())) {
                 String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
                 Object value = finalToken.get().getOtherClaims().get(filterClaim);
-                List<String> requestedValues = scopeList.stream().filter(x -> x.contains(cs.getName()+":")).map(x -> x.replace(cs.getName()+":","")).collect(Collectors.toList());
-                if (requestedValues.size() >0 && value instanceof List<?>) {
+                List<String> requestedValues = scopeList.stream().filter(x -> x.contains(cs.getName() + ":")).map(x -> x.replace(cs.getName() + ":", "")).collect(Collectors.toList());
+                if (requestedValues.size() > 0 && value instanceof List<?>) {
                     //filter with all possible values
                     List<?> list = ((ArrayList<?>) value).stream().filter(x -> requestedValues.contains(x.toString())).collect(Collectors.toList());
                     if (list.isEmpty()) {
@@ -826,12 +829,18 @@ public class TokenManager {
                     } else {
                         finalToken.get().getOtherClaims().put(filterClaim, list);
                     }
-                } else  if (requestedValues.size() >0 ) {
-                    if (!requestedValues.contains(value.toString()))
+                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().map(Object::toString).noneMatch(val -> val.equals(x.split(":")[1])));
+                } else if (requestedValues.size() > 0) {
+                    if (!requestedValues.contains(value.toString())) {
                         finalToken.get().getOtherClaims().remove(filterClaim);
+                    }
+                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.split(":")[1]));
                 }
+            } else {
+                scopeList.removeIf(x -> x.contains(cs.getName() + ":"));
             }
         });
+        return scopeList.stream().collect(Collectors.joining(" "));
     }
 
     public AccessTokenResponse transformAccessTokenResponse(KeycloakSession session, AccessTokenResponse accessTokenResponse,

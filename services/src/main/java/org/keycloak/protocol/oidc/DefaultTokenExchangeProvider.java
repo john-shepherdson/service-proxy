@@ -416,6 +416,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
         }
 
         String scopeParam = clientSessionCtx.getClientSession().getNote(OAuth2Constants.SCOPE);
+        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, scopeParam);
         if ( (requestedTokenType.equals(OAuth2Constants.REFRESH_TOKEN_TYPE)
                 && OIDCAdvancedConfigWrapper.fromClientModel(client).isUseRefreshToken() ) || TokenUtil.hasScope(scopeParam, OAuth2Constants.OFFLINE_ACCESS )) {
             responseBuilder.generateRefreshToken();

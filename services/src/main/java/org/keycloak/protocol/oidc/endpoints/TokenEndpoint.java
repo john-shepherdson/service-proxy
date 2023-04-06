@@ -651,6 +651,7 @@ public class TokenEndpoint {
         }
 
         String scopeParam = clientSessionCtx.getClientSession().getNote(OAuth2Constants.SCOPE);
+        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, scopeParam);
         if (TokenUtil.isOIDCRequest(scopeParam)) {
             responseBuilder.generateIDToken().generateAccessTokenHash();
         }
@@ -754,6 +755,7 @@ public class TokenEndpoint {
         checkMtlsHoKToken(responseBuilder, useRefreshToken);
 
         String scopeParam = clientSessionCtx.getClientSession().getNote(OAuth2Constants.SCOPE);
+        authSession.setClientNote(OIDCLoginProtocol.SCOPE_PARAM, scope);
         if (TokenUtil.isOIDCRequest(scopeParam)) {
             responseBuilder.generateIDToken().generateAccessTokenHash();
         }
