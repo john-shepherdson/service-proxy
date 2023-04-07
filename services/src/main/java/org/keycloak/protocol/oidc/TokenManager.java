@@ -20,6 +20,7 @@ package org.keycloak.protocol.oidc;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
@@ -817,8 +818,8 @@ public class TokenManager {
             //we could have multiple time this dynamic scope requested with different values
             //for multiple times requested this dynamic scope,  returned claim values consist all the requested values - if they exist
             //if a value is not containing in final value parameter -> remove this scope
-            if (finalToken.get().getOtherClaims() != null && finalToken.get().getOtherClaims().containsKey(cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName())) {
-                String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
+            String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
+            if (finalToken.get().getOtherClaims() != null && finalToken.get().getOtherClaims().containsKey(filterClaim)) {
                 Object value = finalToken.get().getOtherClaims().get(filterClaim);
                 List<String> requestedValues = scopeList.stream().filter(x -> x.contains(cs.getName() + ":")).map(x -> x.replace(cs.getName() + ":", "")).collect(Collectors.toList());
                 if (requestedValues.size() > 0 && value instanceof List<?>) {
@@ -829,12 +830,12 @@ public class TokenManager {
                     } else {
                         finalToken.get().getOtherClaims().put(filterClaim, list);
                     }
-                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().map(Object::toString).noneMatch(val -> val.equals(x.split(":")[1])));
+                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(StringUtils.remove(x,cs.getName()+ ":"))));
                 } else if (requestedValues.size() > 0) {
                     if (!requestedValues.contains(value.toString())) {
                         finalToken.get().getOtherClaims().remove(filterClaim);
                     }
-                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.split(":")[1]));
+                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(StringUtils.remove(x,cs.getName()+ ":")));
                 }
             } else {
                 scopeList.removeIf(x -> x.contains(cs.getName() + ":"));
