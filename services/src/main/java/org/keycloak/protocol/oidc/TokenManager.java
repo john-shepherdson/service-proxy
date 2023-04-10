@@ -803,14 +803,14 @@ public class TokenManager {
                 .forEach(mapper -> finalToken.set(((OIDCAccessTokenMapper) mapper.getValue())
                         .transformAccessToken(finalToken.get(), mapper.getKey(), session, userSession, clientSessionCtx)));
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null ) {
-            String newScope = dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), finalToken);
+            String newScope = dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), finalToken, userSession.getUser(), true);
             token.setScope(newScope);
             clientSessionCtx.getClientSession().setNote(OAuth2Constants.SCOPE,newScope);
         }
         return finalToken.get();
     }
 
-    public static String dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream, AtomicReference<AccessToken> finalToken) {
+    public static String dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream, AtomicReference<AccessToken> finalToken, UserModel user, boolean filtering) {
         //filtering based on dynamic scopes
         List<String> scopeList = new ArrayList<>(Arrays.asList(scope.split(" ")));
 
@@ -830,15 +830,17 @@ public class TokenManager {
                     } else {
                         finalToken.get().getOtherClaims().put(filterClaim, list);
                     }
-                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(StringUtils.remove(x,cs.getName()+ ":"))));
+                    if (filtering)
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(StringUtils.remove(x, cs.getName() + ":"))) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(StringUtils.remove(x, cs.getName() + ":")))));
                 } else if (requestedValues.size() > 0) {
                     if (!requestedValues.contains(value.toString())) {
                         finalToken.get().getOtherClaims().remove(filterClaim);
                     }
-                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(StringUtils.remove(x,cs.getName()+ ":")));
+                    if (filtering)
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(StringUtils.remove(x,cs.getName()+ ":")) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(StringUtils.remove(x, cs.getName() + ":")))));
                 }
-            } else {
-                scopeList.removeIf(x -> x.contains(cs.getName() + ":"));
+            } else if (filtering) {
+                scopeList.removeIf(x -> x.contains(cs.getName() + ":") && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(StringUtils.remove(x, cs.getName() + ":")))));
             }
         });
         return scopeList.stream().collect(Collectors.joining(" "));
@@ -864,7 +866,7 @@ public class TokenManager {
                 .forEach(mapper -> finalToken.set(((UserInfoTokenMapper) mapper.getValue())
                         .transformUserInfoToken(finalToken.get(), mapper.getKey(), session, userSession, clientSessionCtx)));
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null && finalToken.get().getOtherClaims() != null) {
-            dynamicScopeFiltering( scope,clientSessionCtx.getClientScopesStream(), finalToken);
+            dynamicScopeFiltering( scope,clientSessionCtx.getClientScopesStream(), finalToken, userSession.getUser(), false);
         }
         return finalToken.get();
     }

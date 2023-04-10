@@ -242,7 +242,7 @@ public class AccessTokenIntrospectionProvider implements TokenIntrospectionProvi
                         .transformAccessTokenForIntrospection(finalToken.get(), mapper.getKey(), user)));
 
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && token.getScope() != null ) {
-           TokenManager.dynamicScopeFiltering( token.getScope(), ccu.getClientScopesStream(), finalToken);
+           TokenManager.dynamicScopeFiltering( token.getScope(), ccu.getClientScopesStream(), finalToken, user, false);
         }
         return finalToken.get();
     }
