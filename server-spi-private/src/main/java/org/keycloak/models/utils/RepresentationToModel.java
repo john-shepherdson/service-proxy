@@ -2164,8 +2164,8 @@ public class RepresentationToModel {
         ClientScopePolicyValueModel model = new ClientScopePolicyValueModel();
         model.setId(rep.getId());
         model.setValue(rep.getValue());
-        model.setRegex(rep.getRegex());
-        model.setNegateOutput(rep.getNegateOutput());
+        model.setRegex(rep.getRegex() == null ? Boolean.FALSE : rep.getRegex());
+        model.setNegateOutput(rep.getNegateOutput() == null ? Boolean.FALSE : rep.getNegateOutput());
         return model;
     }
 

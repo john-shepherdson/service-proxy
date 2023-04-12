@@ -860,7 +860,7 @@ public class JpaUserProvider implements UserProvider.Streams, UserCredentialStor
 
                     attributePredicates.add(builder.and(
                             builder.equal(builder.lower(attributesJoin.get("name")), key.toLowerCase()),
-                            builder.equal(builder.lower(attributesJoin.get("value")), value.toLowerCase())));
+                            Boolean.valueOf(attributes.get(UserModel.EXACT)) ? builder.like(builder.lower(attributesJoin.get("value")), "%"+value.toLowerCase()+"%") : builder.equal(builder.lower(attributesJoin.get("value")), value.toLowerCase())));
 
                     break;
             }
