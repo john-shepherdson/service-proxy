@@ -20,7 +20,6 @@ package org.keycloak.protocol.oidc;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.OAuth2Constants;
@@ -67,7 +66,6 @@ import org.keycloak.protocol.oidc.mappers.UserInfoTokenMapper;
 import org.keycloak.rar.AuthorizationDetails;
 import org.keycloak.representations.AuthorizationDetailsJSONRepresentation;
 import org.keycloak.rar.AuthorizationRequestContext;
-import org.keycloak.protocol.oidc.utils.AcrUtils;
 import org.keycloak.protocol.oidc.utils.OIDCResponseType;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
@@ -831,16 +829,16 @@ public class TokenManager {
                         finalToken.get().getOtherClaims().put(filterClaim, list);
                     }
                     if (filtering)
-                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(StringUtils.remove(x, cs.getName() + ":"))) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(StringUtils.remove(x, cs.getName() + ":")))));
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(x.replace(cs.getName() + ":",""))) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(x.replace(cs.getName() + ":","")))));
                 } else if (requestedValues.size() > 0) {
                     if (!requestedValues.contains(value.toString())) {
                         finalToken.get().getOtherClaims().remove(filterClaim);
                     }
                     if (filtering)
-                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(StringUtils.remove(x,cs.getName()+ ":")) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(StringUtils.remove(x, cs.getName() + ":")))));
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.replace(cs.getName() + ":","")) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(x.replace(cs.getName() + ":","")))));
                 }
             } else if (filtering) {
-                scopeList.removeIf(x -> x.contains(cs.getName() + ":") && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(StringUtils.remove(x, cs.getName() + ":")))));
+                scopeList.removeIf(x -> x.contains(cs.getName() + ":") && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(x.replace(cs.getName() + ":","")))));
             }
         });
         return scopeList.stream().collect(Collectors.joining(" "));

@@ -17,7 +17,6 @@
 
 package org.keycloak.protocol.oidc.endpoints;
 
-import org.apache.commons.lang.StringUtils;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.HttpResponse;
