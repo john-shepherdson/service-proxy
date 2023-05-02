@@ -3918,7 +3918,7 @@ module.controller('ClientScopePolicyCtrl', function($scope, realm, clientScope, 
 });
 
 
-module.controller('ClientScopePoliciesListCtrl', function($scope, realm, clientScope, ClientScopePolicies, $route, Dialog, Notifications) {
+module.controller('ClientScopePoliciesListCtrl', function($scope, realm, clientScope, ClientScopePolicies, ClientScopePolicy, $route, Dialog, Notifications) {
     $scope.realm = realm;
     $scope.clientScope = clientScope;
 

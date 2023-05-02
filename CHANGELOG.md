@@ -12,6 +12,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ## [unreleased]
 
+### Added
+- Sort Identity Providers by guiOrder and displayname
+
 ### Fixed
 - Correct scope policy ui problem
 
