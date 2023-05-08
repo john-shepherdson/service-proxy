@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [unreleased]
+## [18.0.1-2.12] - 2023-05-08
 
 ### Added
 - Sort Identity Providers by guiOrder and displayname
