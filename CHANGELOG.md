@@ -12,6 +12,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ## [Unreleased]
 
+### Added
+- Add authnAuthority and voPersonID user attribute to event details
+
 ### Changed
 - Protocol mapper that can combine multiple user attributes [RCIAM-1267](https://jira.argo.grnet.gr/browse/RCIAM-1267)
 

@@ -42,6 +42,9 @@ public class EventBuilder {
 
     private static final Logger log = Logger.getLogger(EventBuilder.class);
 
+    public static final String AUTHN_AUTHORITY ="authnAuthority";
+    public static final String VO_PERSON_ID ="voPersonID";
+
     private EventStoreProvider store;
     private List<EventListenerProvider> listeners;
     private RealmModel realm;
@@ -108,6 +111,10 @@ public class EventBuilder {
 
     public EventBuilder user(UserModel user) {
         event.setUserId(user == null ? null : user.getId());
+        if (user.getAttributeStream(AUTHN_AUTHORITY).count() >0)
+            detail(AUTHN_AUTHORITY,user.getAttributeStream(AUTHN_AUTHORITY).collect(Collectors.toList()));
+        if (user.getAttributeStream(VO_PERSON_ID).count() >0)
+            detail(VO_PERSON_ID,user.getAttributeStream(VO_PERSON_ID).collect(Collectors.toList()));
         return this;
     }
 
