@@ -18,6 +18,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Changed
 - Protocol mapper that can combine multiple user attributes [RCIAM-1267](https://jira.argo.grnet.gr/browse/RCIAM-1267)
 
+### Fixed
+- Update changes related to service account with Client registration 
+
 ## [18.0.1-2.12] - 2023-05-08
 
 ### Added
