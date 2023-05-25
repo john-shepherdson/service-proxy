@@ -57,6 +57,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -495,6 +496,38 @@ public final class KeycloakModelUtils {
         if (group.getParentId() == null) return null;
         return resolveFirstAttribute(group.getParent(), name);
 
+    }
+
+    public static List<String>  resolveAttribute(GroupModel group, String name) {
+        List<String> values = group.getAttributeStream(name).collect(Collectors.toList());
+        if (!values.isEmpty()) return values;
+        if (group.getParentId() == null) return null;
+        return resolveAttribute(group.getParent(), name);
+    }
+
+
+    public static Collection<String> resolveAttribute(UserModel user, String name, boolean aggregateAttrs) {
+        List<String> values = user.getAttributeStream(name).collect(Collectors.toList());
+        Set<String> aggrValues = new HashSet<String>();
+        if (!values.isEmpty()) {
+            if (!aggregateAttrs) {
+                return values;
+            }
+            aggrValues.addAll(values);
+        }
+        Stream<List<String>> attributes = user.getGroupsStream()
+                .map(group -> resolveAttribute(group, name))
+                .filter(Objects::nonNull)
+                .filter(attr -> !attr.isEmpty());
+
+        if (!aggregateAttrs) {
+            Optional<List<String>> first = attributes.findFirst();
+            if (first.isPresent()) return first.get();
+        } else {
+            aggrValues.addAll(attributes.flatMap(Collection::stream).collect(Collectors.toSet()));
+        }
+
+        return aggrValues;
     }
 
     public static Set<String>  resolveAttribute(GroupModel group, List<String> names) {
