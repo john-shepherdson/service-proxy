@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Group Management
         run: |
-          mvn -f group-management/pom.xml clean install -DskipTestsuite -DskipExamples -DskipTests
+          mvn -f group-management/pom.xml clean install -DskipTestsuite
 
       - name: Fetch tar.gz
         run: cp group-management/target/keycloak-group-management.tar.gz keycloak-group-management.tar.gz
