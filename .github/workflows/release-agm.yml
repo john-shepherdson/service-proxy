@@ -1,9 +1,9 @@
-name: Create Release
+name: Create Release for Group Management
 
 on:
   push:
     tags:
-      - '18.0.1*' # Push events to matching any tag *, i.e. 'v1.0', 'v20.15.10' or even 'mod1'
+      - 'agm*' # Push events to matching any tag *, i.e. 'v1.0', 'v20.15.10' or even 'mod1'
 
 env:
   DEFAULT_JDK_VERSION: 11
@@ -31,19 +31,23 @@ jobs:
 
       - name: Build Keycloak
         run: |
-          mvn clean install -nsu -B -e -DskipTests -Pdistribution
+          mvn clean install -DskipTestsuite -DskipExamples -DskipTests
+
+      - name: Build Group Management
+        run: |
+          mvn -f group-management/pom.xml clean install -DskipTestsuite -DskipExamples -DskipTests
 
       - name: Fetch tar.gz
-        run: cp quarkus/dist/target/keycloak*.tar.gz keycloak.tar.gz
+        run: cp group-management/target/keycloak-group-management.tar.gz keycloak-group-management.tar.gz
 
       - name: Compute sha1 hash
-        run: echo "sha1:" >> hashes.txt && sha1sum keycloak.tar.gz >> hashes.txt
+        run: echo "sha1:" >> hashes.txt && sha1sum keycloak-group-management.tar.gz >> hashes.txt
 
       - name: Compute sha256 hash
-        run: echo "sha256:" >> hashes.txt && sha256sum keycloak.tar.gz >> hashes.txt
+        run: echo "sha256:" >> hashes.txt && sha256sum keycloak-group-management.tar.gz >> hashes.txt
 
       - name: Compute md5 hash
-        run: echo "md5:" >> hashes.txt && md5sum keycloak.tar.gz >> hashes.txt
+        run: echo "md5:" >> hashes.txt && md5sum keycloak-group-management.tar.gz >> hashes.txt
 
       - name: Create Release
         id: create_release
@@ -56,15 +60,15 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload keycloak archive
-        id: upload-keycloak-archive
+      - name: Upload Keycloak Group Management archive
+        id: upload-keycloak-group-management-archive
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./keycloak.tar.gz
-          asset_name: keycloak.tar.gz
+          asset_path: ./keycloak-group-management.tar.gz
+          asset_name: keycloak-group-management.tar.gz
           asset_content_type: application/gzip
 
       - name: Upload hash file
@@ -81,4 +85,3 @@ jobs:
       - name: Remove keycloak artifacts before caching
         if: steps.cache.outputs.cache-hit != 'true'
         run: rm -rf ~/.m2/repository/org/keycloak
-
