@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
 import { AlertVariant, Switch } from "@patternfly/react-core";
 
 import type RequiredActionProviderRepresentation from "@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation";
@@ -20,6 +21,11 @@ type Row = {
   data: DataType;
 };
 
+type ResetIntervalConfig = {
+  reset_every_value?: number;
+  reset_every_unit?: string;
+};
+
 export const RequiredActions = () => {
   const { t } = useTranslation("authentication");
   const { adminClient } = useAdminClient();
@@ -28,6 +34,23 @@ export const RequiredActions = () => {
   const [actions, setActions] = useState<Row[]>();
   const [key, setKey] = useState(0);
   const refresh = () => setKey(key + 1);
+  const [resetIntervalOpen, toggleResetIntervalOpen] = useToggle();
+  const { handleSubmit } = useForm<ResetIntervalConfig>();
+
+const submitForm = async (config: ResetIntervalConfig) => {
+
+try {
+
+       toggleResetIntervalOpen();
+       addAlert(
+        t("authentication:resetIntervalSaved"),
+        AlertVariant.success
+      );
+    } catch (error) {
+      addError("authentication:updatedRequiredActionError", error);
+    }
+  };
+
 
   useFetch(
     async () => {
@@ -63,7 +86,12 @@ export const RequiredActions = () => {
     field: "enabled" | "defaultAction"
   ) => {
     try {
-      if (field in action) {
+      if (field === "resetInterval") {
+        await adminClient.authenticationManagement.updateRequiredAction(
+          { alias: action.alias! },
+          action
+        );
+      } else if (field in action) {
         action[field] = !action[field];
         await adminClient.authenticationManagement.updateRequiredAction(
           { alias: action.alias! },
@@ -116,6 +144,66 @@ export const RequiredActions = () => {
   }
 
   return (
+      <>
+     {resetIntervalOpen && (
+        <Modal
+      variant={ModalVariant.small}
+      title={t("resetInterval" )}
+      isOpen={true}
+      onClose={toggleResetIntervalOpen}
+      actions={[
+        <Button
+          data-testid="save-reset-intervals-button"
+          key="save"
+          variant="primary"
+          type="submit"
+          form="reset-intervals-form"
+        >
+          {t("common:save")}
+        </Button>,
+        <Button
+          id="modal-cancel"
+          data-testid="cancel"
+          key="cancel"
+          variant={ButtonVariant.link}
+          onClick={() => {
+            handleModalToggle();
+          }}
+        >
+          {t("common:cancel")}
+        </Button>,
+      ]}
+    >
+      <Form id="reset-intervals-form" isHorizontal onSubmit={handleSubmit(submitForm)}>
+         <FormGroup
+            name="reset-every-value-group"
+            label={t("common:name")}
+            fieldId="reset-every-value"
+         >
+            <KeycloakTextInput
+              data-testid="resetEveryValue"
+              autoFocus
+              id="reset-every-value"
+              type="number"
+              min={0}
+              {...register("reset_every_value")}
+            />
+         </FormGroup>
+         <FormGroup
+            name="reset-every-unit-group"
+            label={t("common:name")}
+            fieldId="reset-every-unit"
+         >
+            <KeycloakTextInput
+              data-testid="resetEveryUnit"
+              autoFocus
+              id="reset-every-unit"
+              {...register("reset_every_unit")}
+            />
+        </FormGroup>
+      </Form>
+    </Modal>
+      )}
     <DraggableTable
       keyField="name"
       onDragFinish={async (nameDragged, items) => {
@@ -165,6 +253,25 @@ export const RequiredActions = () => {
               }}
               aria-label={toKey(row.name)}
             />
+          ),
+        },
+        {
+          name: "settings",
+          displayKey: "common:settings",
+          cellRenderer: (row) => (
+
+              <Dropdown
+                toggle={
+                  <KebabToggle onToggle={() => setKebabOpen(!kebabOpen)} />
+                }
+                isOpen={kebabOpen}
+                isPlain
+                dropdownItems={[
+                  <DropdownItem key="rename" onClick={toggleResetInterval}>
+                    {t("authentication:resetInterval")}
+                  </DropdownItem>,
+                ]}
+              />
           ),
         },
       ]}

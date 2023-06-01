@@ -162,5 +162,9 @@
   "setAsDefaultAction": "Set as default action",
   "disabledOff": "Disabled off",
   "updatedRequiredActionSuccess": "Updated required action successfully",
-  "updatedRequiredActionError": "Could not update required action: {{error}}"
+  "updatedRequiredActionError": "Could not update required action: {{error}}",
+  "resetInterval": "Reset interval",
+  "resetEveryValue": "value",
+  "resetEveryUnit": "unit",
+  "resetIntervalSaved" : "reset interval configuration has been saved"
 }
