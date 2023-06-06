@@ -14,6 +14,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Added
 - Add authnAuthority and voPersonID user attribute to event details
+- OIDC RP-Initiated Logout POST method support [GITHUB-11958](https://github.com/keycloak/keycloak/issues/11958)
 
 ### Changed
 - Protocol mapper that can combine multiple user attributes [RCIAM-1267](https://jira.argo.grnet.gr/browse/RCIAM-1267)
