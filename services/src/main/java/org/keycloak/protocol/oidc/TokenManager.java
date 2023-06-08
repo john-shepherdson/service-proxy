@@ -27,7 +27,6 @@ import org.keycloak.OAuthErrorException;
 import org.keycloak.TokenCategory;
 import org.keycloak.TokenVerifier;
 import org.keycloak.authentication.authenticators.util.AcrStore;
-import org.keycloak.authentication.authenticators.util.LoAUtil;
 import org.keycloak.broker.oidc.OIDCIdentityProvider;
 import org.keycloak.broker.provider.IdentityBrokerException;
 import org.keycloak.cluster.ClusterProvider;
@@ -94,7 +93,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -816,6 +814,7 @@ public class TokenManager {
             //we could have multiple time this dynamic scope requested with different values
             //for multiple times requested this dynamic scope,  returned claim values consist all the requested values - if they exist
             //if a value is not containing in final value parameter -> remove this scope
+            List<String> attributesList = cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null ? new ArrayList<>() : Arrays.asList(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE).split("##"));
             String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
             if (finalToken.get().getOtherClaims() != null && finalToken.get().getOtherClaims().containsKey(filterClaim)) {
                 Object value = finalToken.get().getOtherClaims().get(filterClaim);
@@ -829,19 +828,23 @@ public class TokenManager {
                         finalToken.get().getOtherClaims().put(filterClaim, list);
                     }
                     if (filtering)
-                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(x.replace(cs.getName() + ":",""))) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(x.replace(cs.getName() + ":","")))));
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(x.replace(cs.getName() + ":","")))  && userAttributeFiltering(x, attributesList, cs, user));
                 } else if (requestedValues.size() > 0) {
                     if (!requestedValues.contains(value.toString())) {
                         finalToken.get().getOtherClaims().remove(filterClaim);
                     }
                     if (filtering)
-                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.replace(cs.getName() + ":","")) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(x.replace(cs.getName() + ":","")))));
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.replace(cs.getName() + ":","")) && userAttributeFiltering(x, attributesList, cs, user));
                 }
             } else if (filtering) {
-                scopeList.removeIf(x -> x.contains(cs.getName() + ":") && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttribute(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).contains(x.replace(cs.getName() + ":","")))));
+                scopeList.removeIf(x -> x.contains(cs.getName() + ":") && userAttributeFiltering(x, attributesList, cs, user));
             }
         });
         return scopeList.stream().collect(Collectors.joining(" "));
+    }
+
+    private static boolean userAttributeFiltering(String x, List<String> attributesList, ClientScopeModel cs, UserModel user){
+        return attributesList.stream().noneMatch(att -> user.getAttribute(att) != null &&  user.getAttribute(att).contains(x.replace(cs.getName() + ":","")));
     }
 
     public AccessTokenResponse transformAccessTokenResponse(KeycloakSession session, AccessTokenResponse accessTokenResponse,
