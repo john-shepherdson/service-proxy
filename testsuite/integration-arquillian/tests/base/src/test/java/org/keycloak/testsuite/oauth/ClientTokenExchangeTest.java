@@ -149,6 +149,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
         clientExchanger.setSecret("secret");
         clientExchanger.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         clientExchanger.setFullScopeAllowed(false);
+        clientExchanger.setAttribute(OIDCConfigAttributes.ACCESS_TOKEN_LIFESPAN,"120000");
         clientExchanger.addScopeMapping(impersonateRole);
         clientExchanger.addProtocolMapper(UserSessionNoteMapper.createUserSessionNoteMapper(IMPERSONATOR_ID));
         clientExchanger.addProtocolMapper(UserSessionNoteMapper.createUserSessionNoteMapper(IMPERSONATOR_USERNAME));
@@ -226,6 +227,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
         differentScopeClient.setSecret("secret");
         differentScopeClient.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         differentScopeClient.setFullScopeAllowed(false);
+
         differentScopeClient.removeClientScope(realm.getClientScopesStream().filter(scope -> "email".equals(scope.getName())).findAny().get());
 
         // permission for client to client exchange to "target" client
@@ -236,7 +238,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
         clientRep.addClient(directLegal.getId());
         clientRep.addClient(noRefreshToken.getId());
         clientRep.addClient(differentScopeClient.getId());
-
+        clientExchanger.setAttribute(OIDCConfigAttributes.ACCESS_TOKEN_LIFESPAN,"60000");
         ResourceServer server = management.realmResourceServer();
         Policy clientPolicy = management.authz().getStoreFactory().getPolicyStore().create(server, clientRep);
         management.clients().exchangeToPermission(target).addAssociatedPolicy(clientPolicy);
@@ -317,6 +319,8 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
             AccessToken exchangedToken = verifier.parse().getToken();
             Assert.assertEquals("legal", exchangedToken.getIssuedFor());
             Assert.assertEquals("target", exchangedToken.getAudience()[0]);
+            //exchanged access token value not bigger than token exp
+            Assert.assertEquals(token.getExp(), exchangedToken.getExp());
             Assert.assertEquals(exchangedToken.getPreferredUsername(), "user");
             Assert.assertTrue(exchangedToken.getRealmAccess().isUserInRole("example"));
         }
@@ -360,6 +364,8 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
             AccessToken exchangedToken = verifier.parse().getToken();
             Assert.assertEquals("different-scope-client", exchangedToken.getIssuedFor());
             Assert.assertEquals("target", exchangedToken.getAudience()[0]);
+            //different-scope-client has smaller ACCESS_TOKEN_LIFESPAN, so exchangedToken expiration is less than subject access token
+            Assert.assertTrue(exchangedToken.getExp() < token.getExp());
             Assert.assertEquals(exchangedToken.getPreferredUsername(), "user");
             Assert.assertTrue(exchangedToken.getRealmAccess().isUserInRole("example"));
             Assert.assertNames(Arrays.asList(exchangedToken.getScope().split(" ")), "profile", "email", "openid");

@@ -361,7 +361,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
         switch (requestedTokenType) {
             case OAuth2Constants.ACCESS_TOKEN_TYPE:
             case OAuth2Constants.REFRESH_TOKEN_TYPE:
-                return exchangeClientToOIDCClient(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope);
+                return exchangeClientToOIDCClient(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope, token.getExp());
             case OAuth2Constants.SAML2_TOKEN_TYPE:
                 return exchangeClientToSAML2Client(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope);
         }
@@ -386,7 +386,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
     }
 
     protected Response exchangeClientToOIDCClient(UserModel targetUser, UserSessionModel targetUserSession, String requestedTokenType,
-                                                  ClientModel targetClient, String audience, String scope) {
+                                                  ClientModel targetClient, String audience, String scope, Long initialTokenExp) {
         RootAuthenticationSessionModel rootAuthSession = new AuthenticationSessionManager(session).createAuthenticationSession(realm, false);
         AuthenticationSessionModel authSession = rootAuthSession.createAuthenticationSession(targetClient);
 
@@ -411,6 +411,9 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
                 .generateAccessToken();
         responseBuilder.getAccessToken().issuedFor(client.getClientId());
 
+        if (responseBuilder.getAccessToken().getExp()> initialTokenExp)
+            responseBuilder.getAccessToken().exp(initialTokenExp);
+
         if (audience != null) {
             responseBuilder.getAccessToken().addAudience(audience);
         }
@@ -421,6 +424,8 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
                 && OIDCAdvancedConfigWrapper.fromClientModel(client).isUseRefreshToken() ) || TokenUtil.hasScope(scopeParam, OAuth2Constants.OFFLINE_ACCESS )) {
             responseBuilder.generateRefreshToken();
             responseBuilder.getRefreshToken().issuedFor(client.getClientId());
+            if (responseBuilder.getRefreshToken().getExp()> initialTokenExp)
+                responseBuilder.getRefreshToken().exp(initialTokenExp);
         }
 
         if (TokenUtil.isOIDCRequest(scopeParam)) {
