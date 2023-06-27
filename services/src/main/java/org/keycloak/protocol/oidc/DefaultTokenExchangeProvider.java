@@ -361,7 +361,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
         switch (requestedTokenType) {
             case OAuth2Constants.ACCESS_TOKEN_TYPE:
             case OAuth2Constants.REFRESH_TOKEN_TYPE:
-                return exchangeClientToOIDCClient(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope, token.getExp());
+                return exchangeClientToOIDCClient(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope, token != null ? token.getExp() : null);
             case OAuth2Constants.SAML2_TOKEN_TYPE:
                 return exchangeClientToSAML2Client(targetUser, targetUserSession, requestedTokenType, targetClient, audience, scope);
         }
@@ -411,7 +411,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
                 .generateAccessToken();
         responseBuilder.getAccessToken().issuedFor(client.getClientId());
 
-        if (responseBuilder.getAccessToken().getExp()> initialTokenExp)
+        if (initialTokenExp != null && responseBuilder.getAccessToken().getExp()> initialTokenExp)
             responseBuilder.getAccessToken().exp(initialTokenExp);
 
         if (audience != null) {
@@ -424,7 +424,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
                 && OIDCAdvancedConfigWrapper.fromClientModel(client).isUseRefreshToken() ) || TokenUtil.hasScope(scopeParam, OAuth2Constants.OFFLINE_ACCESS )) {
             responseBuilder.generateRefreshToken();
             responseBuilder.getRefreshToken().issuedFor(client.getClientId());
-            if (responseBuilder.getRefreshToken().getExp()> initialTokenExp)
+            if (initialTokenExp != null && responseBuilder.getRefreshToken().getExp()> initialTokenExp)
                 responseBuilder.getRefreshToken().exp(initialTokenExp);
         }
 
