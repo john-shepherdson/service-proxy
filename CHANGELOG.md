@@ -26,6 +26,8 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Fixed
 - Update changes related to service account with Client registration 
+- Fix AssertionConsumerServiceURL value or the redirect_uri vulnerability
+- Fix CVEs
 
 ## [18.0.1-2.12] - 2023-05-08
 

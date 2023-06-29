@@ -2,6 +2,7 @@ package org.keycloak.testsuite.saml;
 
 import org.junit.Test;
 import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
+import org.keycloak.protocol.saml.SamlConfigAttributes;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.saml.SignatureAlgorithm;
 import org.keycloak.saml.common.constants.GeneralConstants;
@@ -16,6 +17,7 @@ import org.keycloak.saml.processing.web.util.RedirectBindingUtil;
 import org.keycloak.services.resources.RealmsResource;
 import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
 import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude.AuthServer;
+import org.keycloak.testsuite.updaters.ClientAttributeUpdater;
 import org.keycloak.testsuite.util.KeyUtils;
 import org.keycloak.testsuite.util.Matchers;
 import org.keycloak.testsuite.util.SamlClient;
@@ -26,6 +28,7 @@ import org.keycloak.testsuite.util.SamlClientBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.security.Signature;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -50,6 +53,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesRegex;
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.NAMEID_FORMAT_TRANSIENT;
 import static org.keycloak.saml.common.constants.JBossSAMLURIConstants.PROTOCOL_NSURI;
 import static org.keycloak.testsuite.util.ServerURLs.AUTH_SERVER_PORT;
@@ -306,5 +310,23 @@ public class BasicSamlTest extends AbstractSamlTest {
         assertThat("AuthnRequest/NameIdPolicy Format should be present, but it is not", formatAttribute, notNullValue());
         assertThat("AuthnRequest/NameIdPolicy Format should be Transient, but it is not", formatAttribute.getNodeValue(), is(NAMEID_FORMAT_TRANSIENT.get()));
         assertThat("AuthnRequest/NameIdPolicy element shouldn't contain the AllowCreate attribute when Format is set to Transient, but it does", allowCreateAttribute, nullValue());
+    }
+    
+
+    @Test
+    public void testInvalidAssertionConsumerServiceURL() throws IOException {
+        try (ClientAttributeUpdater c = ClientAttributeUpdater.forClient(adminClient, REALM_NAME, SAML_CLIENT_ID_SALES_POST)
+                .setRedirectUris(Collections.singletonList("*"))
+                .update()) {
+
+            String page = new SamlClientBuilder()
+                    .authnRequest(getAuthServerSamlEndpoint(REALM_NAME), SAML_CLIENT_ID_SALES_POST, "javascript:alert('XSS')", Binding.POST)
+                    .build()
+                    .executeAndTransform(response -> {
+                        assertThat(response, statusCodeIsHC(Status.BAD_REQUEST));
+                        return EntityUtils.toString(response.getEntity(), "UTF-8");
+                    });
+            assertThat(page, containsString("Invalid redirect uri"));
+        }
     }
 }
