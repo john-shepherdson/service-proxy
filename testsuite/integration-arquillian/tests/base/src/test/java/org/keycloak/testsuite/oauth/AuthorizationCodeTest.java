@@ -32,6 +32,7 @@ import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.testsuite.AbstractKeycloakTest;
 import org.keycloak.testsuite.AssertEvents;
 import org.keycloak.testsuite.pages.ErrorPage;
+import org.keycloak.testsuite.updaters.ClientAttributeUpdater;
 import org.keycloak.testsuite.pages.PageUtils;
 import org.keycloak.testsuite.util.ClientManager;
 import org.keycloak.testsuite.util.OAuthClient;
@@ -41,6 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -227,6 +229,22 @@ public class AuthorizationCodeTest extends AbstractKeycloakTest {
         String codeId = events.expectLogin().assertEvent().getDetails().get(Details.CODE_ID);
     }
 
+    @Test
+    public void authorizationRequestFormPostResponseModeInvalidRedirectUri() throws IOException {
+        try (ClientAttributeUpdater c = ClientAttributeUpdater.forClient(adminClient, "test", "test-app")
+                .setRedirectUris(Collections.singletonList("*"))
+                .update()) {
+            oauth.responseMode(OIDCResponseMode.FORM_POST.value());
+            oauth.responseType(OAuth2Constants.CODE);
+            oauth.redirectUri("javascript:alert('XSS')");
+            oauth.openLoginForm();
+
+            errorPage.assertCurrent();
+            assertEquals("Invalid parameter: redirect_uri", errorPage.getError());
+
+            events.expectLogin().error(Errors.INVALID_REDIRECT_URI).user((String) null).session((String) null).clearDetails().assertEvent();
+        }
+    }
 
     @Test
     public void authorizationRequestFormPostResponseModeWithCustomState() throws IOException {
