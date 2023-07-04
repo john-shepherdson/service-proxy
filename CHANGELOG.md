@@ -14,6 +14,11 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Fixed
 - Dynamic scope filtering based on multiple user attribute [RCIAM-1267](https://jira.argo.grnet.gr/browse/RCIAM-1267)
+- Fix AssertionConsumerServiceURL value or the redirect_uri vulnerability
+- Fix CVEs
+
+### Changed
+- Change SAML 2.0 Identity Provider Metadata [RCIAM-1288](https://jira.argo.grnet.gr/browse/RCIAM-1288)
 
 ## [18.0.1-2.13] - 2023-06-07
 
@@ -26,8 +31,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Fixed
 - Update changes related to service account with Client registration 
-- Fix AssertionConsumerServiceURL value or the redirect_uri vulnerability
-- Fix CVEs
+
 
 ## [18.0.1-2.12] - 2023-05-08
 
