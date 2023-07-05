@@ -66,7 +66,7 @@ public class IDPMetadataDescriptor {
         EntityDescriptorType entityDescriptor = new EntityDescriptorType(entityId);
 
         IDPSSODescriptorType spIDPDescriptor = new IDPSSODescriptorType(Arrays.asList(PROTOCOL_NSURI.get()));
-        spIDPDescriptor.setWantAuthnRequestsSigned(wantAuthnRequestsSigned);
+       // spIDPDescriptor.setWantAuthnRequestsSigned(wantAuthnRequestsSigned);
         spIDPDescriptor.addNameIDFormat(NAMEID_FORMAT_PERSISTENT.get());
         spIDPDescriptor.addNameIDFormat(NAMEID_FORMAT_TRANSIENT.get());
         spIDPDescriptor.addNameIDFormat(NAMEID_FORMAT_UNSPECIFIED.get());
