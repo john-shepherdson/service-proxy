@@ -338,6 +338,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
         }
 
         String scope = formParams.getFirst(OAuth2Constants.SCOPE);
+        logger.info("scope parameter for token exchange === "+scope);
         if (token != null && token.getScope() != null && scope == null) {
             scope = token.getScope();
         } else if (token != null && token.getScope() != null) {
@@ -354,8 +355,9 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             targetClientScopes.addAll(targetClient.getClientScopes(true).keySet());
             targetClientScopes.addAll(targetClient.getClientScopes(false).keySet());
             //from return scope remove scopes that are not default or optional scopes for targetClient
-            scope = Arrays.stream(scope.split(" ")).filter(s -> targetClientScopes.contains(Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) ? s.split(":")[0] : s)).collect(Collectors.joining(" "));
+            scope = Arrays.stream(scope.split(" ")).filter(s -> "openid".equals(s) || (targetClientScopes.contains(Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) ? s.split(":")[0] : s))).collect(Collectors.joining(" "));
         }
+        logger.info("final scope parameter for token exchange (based on calculation) === "+scope);
 
         switch (requestedTokenType) {
             case OAuth2Constants.ACCESS_TOKEN_TYPE:
@@ -407,6 +409,8 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
         ClientSessionContext clientSessionCtx = TokenManager.attachAuthenticationSession(this.session, targetUserSession, authSession);
 
         updateUserSessionFromClientAuth(targetUserSession);
+//        if ( scope != null)
+//            clientSessionCtx.getClientSession().setNote(OAuth2Constants.SCOPE,scope);
 
         TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager.responseBuilder(realm, targetClient, event, this.session, targetUserSession, clientSessionCtx)
                 .generateAccessToken();
