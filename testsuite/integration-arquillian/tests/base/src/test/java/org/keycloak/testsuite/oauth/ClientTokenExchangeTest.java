@@ -129,6 +129,16 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
 
         RoleModel impersonateRole = management.getRealmManagementClient().getRole(ImpersonationConstants.IMPERSONATION_ROLE);
 
+        ClientModel differentScopeClient = realm.addClient("different-scope-client");
+        differentScopeClient.setClientId("different-scope-client");
+        differentScopeClient.setPublicClient(false);
+        differentScopeClient.setDirectAccessGrantsEnabled(true);
+        differentScopeClient.setEnabled(true);
+        differentScopeClient.setSecret("secret");
+        differentScopeClient.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
+        differentScopeClient.setFullScopeAllowed(false);
+        differentScopeClient.removeClientScope(realm.getClientScopesStream().filter(scope->"email".equals(scope.getName())).findAny().get());
+
         ClientModel clientExchanger = realm.addClient("client-exchanger");
         clientExchanger.setClientId("client-exchanger");
         clientExchanger.setPublicClient(false);
@@ -140,6 +150,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
         clientExchanger.addScopeMapping(impersonateRole);
         clientExchanger.addProtocolMapper(UserSessionNoteMapper.createUserSessionNoteMapper(IMPERSONATOR_ID));
         clientExchanger.addProtocolMapper(UserSessionNoteMapper.createUserSessionNoteMapper(IMPERSONATOR_USERNAME));
+        clientExchanger.addProtocolMapper(AudienceProtocolMapper.createClaimMapper("different-scope-client-audience", differentScopeClient.getClientId(), null, true, false));
 
         ClientModel illegal = realm.addClient("illegal");
         illegal.setClientId("illegal");
@@ -215,16 +226,6 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
         serviceAccount.setSecret("secret");
         serviceAccount.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
         serviceAccount.setFullScopeAllowed(false);
-
-        ClientModel differentScopeClient = realm.addClient("different-scope-client");
-        differentScopeClient.setClientId("different-scope-client");
-        differentScopeClient.setPublicClient(false);
-        differentScopeClient.setDirectAccessGrantsEnabled(true);
-        differentScopeClient.setEnabled(true);
-        differentScopeClient.setSecret("secret");
-        differentScopeClient.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
-        differentScopeClient.setFullScopeAllowed(false);
-        differentScopeClient.removeClientScope(realm.getClientScopesStream().filter(scope->"email".equals(scope.getName())).findAny().get());
 
         // permission for client to client exchange to "target" client
         ClientPolicyRepresentation clientRep = new ClientPolicyRepresentation();
@@ -393,7 +394,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
 
         oauth.realm(TEST);
         oauth.clientId("client-exchanger");
-        oauth.scope("profile email phone");
+        oauth.scope("email phone");
         OAuthClient.AccessTokenResponse response = oauth.doGrantAccessTokenRequest("secret", "user", "password");
         String accessToken = response.getAccessToken();
         TokenVerifier<AccessToken> accessTokenVerifier = TokenVerifier.create(accessToken, AccessToken.class);
@@ -409,7 +410,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
             Assert.assertEquals("different-scope-client", exchangedToken.getIssuedFor());
             Assert.assertNull(exchangedToken.getAudience());
             Assert.assertEquals(exchangedToken.getPreferredUsername(), "user");
-            Assert.assertNames(Arrays.asList(exchangedToken.getScope().split(" ")),"profile","phone","openid");
+            Assert.assertNames(Arrays.asList(exchangedToken.getScope().split(" ")),"phone","openid");
             Assert.assertNull(exchangedToken.getEmailVerified());
         }
 
@@ -422,7 +423,7 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
             Assert.assertEquals("target", exchangedToken.getAudience()[0]);
             Assert.assertEquals(exchangedToken.getPreferredUsername(), "user");
             Assert.assertTrue(exchangedToken.getRealmAccess().isUserInRole("example"));
-            Assert.assertNames(Arrays.asList(exchangedToken.getScope().split(" ")),"profile","email","phone","openid");
+            Assert.assertNames(Arrays.asList(exchangedToken.getScope().split(" ")),"email","phone","openid");
             Assert.assertFalse(exchangedToken.getEmailVerified());
         }
     }
