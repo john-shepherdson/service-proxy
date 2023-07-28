@@ -16,6 +16,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Fix autoupdate schedule task stuck [trello card](https://trello.com/c/m2WM3bSQ/1974-saml-client-metadata-update-problem-fe-https-aai-devegieu-auth-admin-master-console-realms-egi-clients-1fa52476-73dd-4ab9-b6fd-7)
 - Execution config not duplicated when duplicating flows [GITHUB-12012](https://github.com/keycloak/keycloak/issues/12012)
 
+### Added
+- Login events type for add, remove, suspend user from a group [RCIAM-1292](https://jira.argo.grnet.gr/browse/RCIAM-1292)
+
 ## [18.0.1-2.14] - 2023-07-05
 
 ### Fixed
