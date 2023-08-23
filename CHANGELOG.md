@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [18.0.1-2.15] - 2023-23-08
 
 ### Fixed
 - Fix autoupdate schedule task stuck [trello card](https://trello.com/c/m2WM3bSQ/1974-saml-client-metadata-update-problem-fe-https-aai-devegieu-auth-admin-master-console-realms-egi-clients-1fa52476-73dd-4ab9-b6fd-7)
