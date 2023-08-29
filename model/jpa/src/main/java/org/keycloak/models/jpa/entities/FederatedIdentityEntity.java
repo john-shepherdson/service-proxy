@@ -18,7 +18,10 @@
 package org.keycloak.models.jpa.entities;
 
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,8 +31,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -68,6 +73,11 @@ public class FederatedIdentityEntity {
 
     @Column(name = "TOKEN")
     protected String token;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy="federatedIdentity")
+    @Fetch(FetchMode.SELECT)
+    @BatchSize(size = 20)
+    protected Collection<FederatedIdentityAttributeEntity> attributes;
 
     public UserEntity getUser() {
         return user;

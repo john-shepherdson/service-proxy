@@ -82,5 +82,6 @@
     <include file="META-INF/jpa-changelog-text.xml"/>
     <include file="META-INF/jpa-changelog-consentuser-constraints.xml"/>
     <include file="META-INF/jpa-changelog-clientscope-policy.xml"/>
+    <include file="META-INF/jpa-changelog-idp-attributes.xml"/>
 
 </databaseChangeLog>

@@ -1,0 +1,23 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet author="eosc-kc" id="text-values">
+        <createTable tableName="FEDERATED_IDENTITY_ATTRIBUTE">
+            <column name="ID" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="USER_ID" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="IDENTITY_PROVIDER" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALUE" type="longvarchar"/>
+        </createTable>
+        <addPrimaryKey columnNames="ID" constraintName="FEDERATED_IDENTITY_ATTRIBUTE_PK" tableName="FEDERATED_IDENTITY_ATTRIBUTE" />
+        <addForeignKeyConstraint baseColumnNames="USER_ID,IDENTITY_PROVIDER" baseTableName="FEDERATED_IDENTITY_ATTRIBUTE" constraintName="FEDERATED_IDENTITY_ATTRIBUTE_FK" referencedColumnNames="USER_ID,IDENTITY_PROVIDER" referencedTableName="FEDERATED_IDENTITY" />
+    </changeSet>
+</databaseChangeLog>

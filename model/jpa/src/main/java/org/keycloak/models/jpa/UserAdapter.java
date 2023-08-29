@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa;
 
+import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.models.ClientModel;
@@ -520,6 +521,9 @@ public class UserAdapter implements UserModel.Streams, JpaModel<UserEntity> {
     public void setServiceAccountClientLink(String clientInternalId) {
         user.setServiceAccountClientLink(clientInternalId);
     }
+
+    @Override
+    public void setFederatedIdentityAttributes(BrokeredIdentityContext brokerContext){}
 
 
     @Override

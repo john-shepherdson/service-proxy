@@ -17,6 +17,8 @@
 
 package org.keycloak.representations.idm;
 
+import java.util.List;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -26,6 +28,7 @@ public class FederatedIdentityRepresentation {
     protected String userId;
     protected String userName;
 
+    protected List<FederatedIdentityAttributeRepresentation> attributes;
     public String getIdentityProvider() {
         return identityProvider;
     }
@@ -48,5 +51,13 @@ public class FederatedIdentityRepresentation {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public List<FederatedIdentityAttributeRepresentation> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<FederatedIdentityAttributeRepresentation> attributes) {
+        this.attributes = attributes;
     }
 }
