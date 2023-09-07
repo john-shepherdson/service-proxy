@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [Unreleased]
+## [18.0.1-2.16] - 2023-07-09
 ### Fixed
 - Fix refresh flow with scope parameter problem[EGI dev oidc client refresh flow not allowed](https://trello.com/c/rwDjqUF0/2076-egi-dev-oidc-client-refresh-flow-not-allowed)
 
