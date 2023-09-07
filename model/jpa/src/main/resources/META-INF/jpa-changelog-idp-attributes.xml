@@ -19,5 +19,22 @@
         </createTable>
         <addPrimaryKey columnNames="ID" constraintName="FEDERATED_IDENTITY_ATTRIBUTE_PK" tableName="FEDERATED_IDENTITY_ATTRIBUTE" />
         <addForeignKeyConstraint baseColumnNames="USER_ID,IDENTITY_PROVIDER" baseTableName="FEDERATED_IDENTITY_ATTRIBUTE" constraintName="FEDERATED_IDENTITY_ATTRIBUTE_FK" referencedColumnNames="USER_ID,IDENTITY_PROVIDER" referencedTableName="FEDERATED_IDENTITY" />
+        <createTable tableName="BROKER_LINK_ATTRIBUTE">
+            <column name="ID" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="USER_ID" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="IDENTITY_PROVIDER" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALUE" type="longvarchar"/>
+        </createTable>
+        <addPrimaryKey columnNames="ID" constraintName="BROKER_LINK_ATTRIBUTE_PK" tableName="BROKER_LINK_ATTRIBUTE" />
+        <addForeignKeyConstraint baseColumnNames="USER_ID,IDENTITY_PROVIDER" baseTableName="BROKER_LINK_ATTRIBUTE" constraintName="BROKER_LINK_ATTRIBUTE_FK" referencedColumnNames="USER_ID,IDENTITY_PROVIDER" referencedTableName="BROKER_LINK" />
     </changeSet>
 </databaseChangeLog>

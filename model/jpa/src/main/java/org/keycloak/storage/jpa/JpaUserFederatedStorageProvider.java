@@ -37,11 +37,14 @@ import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserConsentModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.jpa.JpaUserCredentialStore;
+import org.keycloak.models.jpa.entities.FederatedIdentityAttributeEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.representations.idm.FederatedIdentityAttributeRepresentation;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
+import org.keycloak.storage.jpa.entity.BrokerLinkAttributeEntity;
 import org.keycloak.storage.jpa.entity.BrokerLinkEntity;
 import org.keycloak.storage.jpa.entity.FederatedUser;
 import org.keycloak.storage.jpa.entity.FederatedUserAttributeEntity;
@@ -200,8 +203,17 @@ public class JpaUserFederatedStorageProvider implements
         entity.setToken(link.getToken());
         entity.setBrokerUserName(link.getUserName());
         entity.setStorageProviderId(new StorageId(userId).getProviderId());
+        entity.setAttributes(link.getAttributes().stream().map(this::convert).collect(Collectors.toList()));
         em.persist(entity);
 
+    }
+
+    private BrokerLinkAttributeEntity convert( FederatedIdentityAttributeRepresentation rep){
+        BrokerLinkAttributeEntity entity = new BrokerLinkAttributeEntity();
+        entity.setId(rep.getId() != null ? rep.getId() : KeycloakModelUtils.generateId());
+        entity.setName(rep.getName());
+        entity.setValue(rep.getValue());
+        return entity;
     }
 
     @Override

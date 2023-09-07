@@ -1,4 +1,4 @@
-package org.keycloak.models.jpa.entities;
+package org.keycloak.storage.jpa.entity;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -13,9 +13,9 @@ import javax.persistence.Table;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Nationalized;
 
-@Table(name="FEDERATED_IDENTITY_ATTRIBUTE")
+@Table(name="BROKER_LINK_ATTRIBUTE")
 @Entity
-public class FederatedIdentityAttributeEntity {
+public class BrokerLinkAttributeEntity {
 
     @Id
     @Column(name="ID", length = 36)
@@ -26,7 +26,7 @@ public class FederatedIdentityAttributeEntity {
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @JoinColumn(name="IDENTITY_PROVIDER", referencedColumnName="IDENTITY_PROVIDER")
-    private FederatedIdentityEntity federatedIdentity;
+    private BrokerLinkEntity brokerLink;
 
     @Column(name = "NAME")
     private String name;
@@ -42,12 +42,12 @@ public class FederatedIdentityAttributeEntity {
         this.id = id;
     }
 
-    public FederatedIdentityEntity getFederatedIdentity() {
-        return federatedIdentity;
+    public BrokerLinkEntity getBrokerLinkEntity() {
+        return brokerLink;
     }
 
-    public void setFederatedIdentity(FederatedIdentityEntity federatedIdentity) {
-        this.federatedIdentity = federatedIdentity;
+    public void setBrokerLinkEntity(BrokerLinkEntity brokerLink) {
+        this.brokerLink = brokerLink;
     }
 
     public String getName() {
@@ -70,9 +70,9 @@ public class FederatedIdentityAttributeEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        if (!(o instanceof ClientEntity)) return false;
+        if (!(o instanceof BrokerLinkAttributeEntity)) return false;
 
-        ClientEntity that = (ClientEntity) o;
+        BrokerLinkAttributeEntity that = (BrokerLinkAttributeEntity) o;
 
         if (!id.equals(that.getId())) return false;
 

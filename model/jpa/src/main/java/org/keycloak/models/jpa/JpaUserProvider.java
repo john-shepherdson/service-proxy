@@ -38,6 +38,7 @@ import org.keycloak.models.UserConsentModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserProvider;
 import org.keycloak.models.jpa.entities.CredentialEntity;
+import org.keycloak.models.jpa.entities.FederatedIdentityAttributeEntity;
 import org.keycloak.models.jpa.entities.FederatedIdentityEntity;
 import org.keycloak.models.jpa.entities.UserAttributeEntity;
 import org.keycloak.models.jpa.entities.UserConsentClientScopeEntity;
@@ -45,6 +46,7 @@ import org.keycloak.models.jpa.entities.UserConsentEntity;
 import org.keycloak.models.jpa.entities.UserEntity;
 import org.keycloak.models.jpa.entities.UserGroupMembershipEntity;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.representations.idm.FederatedIdentityAttributeRepresentation;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.client.ClientStorageProvider;
@@ -69,6 +71,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.keycloak.models.jpa.PaginationUtils.paginateQuery;
@@ -165,8 +168,17 @@ public class JpaUserProvider implements UserProvider.Streams, UserCredentialStor
         entity.setToken(identity.getToken());
         UserEntity userEntity = em.getReference(UserEntity.class, user.getId());
         entity.setUser(userEntity);
+        entity.setAttributes(identity.getAttributes() == null ? null : identity.getAttributes().stream().map(this::convert).collect(Collectors.toList()));
         em.persist(entity);
         em.flush();
+    }
+
+    private FederatedIdentityAttributeEntity convert(FederatedIdentityAttributeRepresentation rep){
+        FederatedIdentityAttributeEntity entity = new FederatedIdentityAttributeEntity();
+        entity.setId(rep.getId() != null ? rep.getId() : KeycloakModelUtils.generateId());
+        entity.setName(rep.getName());
+        entity.setValue(rep.getValue());
+        return entity;
     }
 
     @Override
@@ -174,6 +186,16 @@ public class JpaUserProvider implements UserProvider.Streams, UserCredentialStor
         FederatedIdentityEntity federatedIdentity = findFederatedIdentity(federatedUser, federatedIdentityModel.getIdentityProvider(), LockModeType.PESSIMISTIC_WRITE);
 
         federatedIdentity.setToken(federatedIdentityModel.getToken());
+
+        em.persist(federatedIdentity);
+        em.flush();
+    }
+
+    @Override
+    public void updateFederatedIdentityAttributes(RealmModel realm, UserModel federatedUser, String identityProvider, Stream<FederatedIdentityAttributeRepresentation> attributesRepStream) {
+        FederatedIdentityEntity federatedIdentity = findFederatedIdentity(federatedUser, identityProvider, LockModeType.PESSIMISTIC_WRITE);
+
+        federatedIdentity.setAttributes(attributesRepStream.map(this::convert).collect(Collectors.toList()));
 
         em.persist(federatedIdentity);
         em.flush();
@@ -939,13 +961,21 @@ public class JpaUserProvider implements UserProvider.Streams, UserCredentialStor
         query.setParameter("user", userEntity);
 
         return closing(query.getResultStream().map(entity -> new FederatedIdentityModel(entity.getIdentityProvider(),
-                entity.getUserId(), entity.getUserName(), entity.getToken())).distinct());
+                entity.getUserId(), entity.getUserName(), entity.getToken(),  entity.getAttributes() == null ? null : entity.getAttributes().stream().map(this::convert).collect(Collectors.toList()))).distinct());
     }
 
     @Override
     public FederatedIdentityModel getFederatedIdentity(RealmModel realm, UserModel user, String identityProvider) {
         FederatedIdentityEntity entity = findFederatedIdentity(user, identityProvider, LockModeType.NONE);
-        return (entity != null) ? new FederatedIdentityModel(entity.getIdentityProvider(), entity.getUserId(), entity.getUserName(), entity.getToken()) : null;
+        return (entity != null) ? new FederatedIdentityModel(entity.getIdentityProvider(), entity.getUserId(), entity.getUserName(), entity.getToken(),entity.getAttributes() == null ? null : entity.getAttributes().stream().map(this::convert).collect(Collectors.toList())) : null;
+    }
+
+    private FederatedIdentityAttributeRepresentation convert(FederatedIdentityAttributeEntity entity){
+        FederatedIdentityAttributeRepresentation rep = new FederatedIdentityAttributeRepresentation();
+        rep.setId(entity.getId());
+        rep.setName(entity.getName());
+        rep.setValue(entity.getValue());
+        return rep;
     }
 
     @Override

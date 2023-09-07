@@ -558,8 +558,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             target.preprocessFederatedIdentity(session, realm, mapper, context);
         }
 
-        FederatedIdentityModel federatedIdentityModel = new FederatedIdentityModel(providerId, context.getId(),
-                context.getUsername(), context.getToken());
+        FederatedIdentityModel federatedIdentityModel = new FederatedIdentityModel(providerId, context.getId(), context.getUsername(), context.getToken(), context.getContextData(), context.getFirstName(), context.getLastName(), context.getEmail());
 
         UserModel user = this.session.users().getUserByFederatedIdentity(realm, federatedIdentityModel);
 
@@ -601,8 +600,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             user.setLastName(context.getLastName());
 
 
-            federatedIdentityModel = new FederatedIdentityModel(context.getIdpConfig().getAlias(), context.getId(),
-                    context.getUsername(), context.getToken());
+            federatedIdentityModel.setIdentityProvider(context.getIdpConfig().getAlias());
             session.users().addFederatedIdentity(realm, user, federatedIdentityModel);
 
             context.getIdp().importNewUser(session, realm, user, context);

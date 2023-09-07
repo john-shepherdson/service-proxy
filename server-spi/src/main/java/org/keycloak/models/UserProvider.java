@@ -19,6 +19,7 @@ package org.keycloak.models;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.provider.Provider;
+import org.keycloak.representations.idm.FederatedIdentityAttributeRepresentation;
 import org.keycloak.storage.user.UserBulkUpdateProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
@@ -240,6 +241,8 @@ public interface UserProvider extends Provider,
      *                               the user and the identity provider
      */
     void updateFederatedIdentity(RealmModel realm, UserModel federatedUser, FederatedIdentityModel federatedIdentityModel);
+
+    default void updateFederatedIdentityAttributes(RealmModel realm, UserModel federatedUser, String identityProvider, Stream<FederatedIdentityAttributeRepresentation> attributesRepStream){};
 
     /**
      * @deprecated Use {@link #getFederatedIdentitiesStream(RealmModel, UserModel) getFederatedIdentitiesStream} instead.

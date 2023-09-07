@@ -17,6 +17,12 @@
 
 package org.keycloak.models;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.keycloak.representations.idm.FederatedIdentityAttributeRepresentation;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
@@ -24,18 +30,44 @@ public class FederatedIdentityModel {
 
     private String token;
     private final String userId;
-    private final String identityProvider;
+    private String identityProvider;
     private final String userName;
+    private List<FederatedIdentityAttributeRepresentation> attributes;
 
     public FederatedIdentityModel(String identityProvider, String userId, String userName) {
-        this(identityProvider, userId, userName, null);
+        this(identityProvider, userId, userName, (String)null, (List) null);
+    }
+
+    public FederatedIdentityModel(String identityProvider, String userId, String userName, List<FederatedIdentityAttributeRepresentation> attributes) {
+        this(identityProvider, userId, userName, (String)null, attributes);
     }
 
     public FederatedIdentityModel(String providerId, String userId, String userName, String token) {
+        this(providerId, userId, userName, token, (List) null);
+    }
+
+    public FederatedIdentityModel(String providerId, String userId, String userName, String token, List<FederatedIdentityAttributeRepresentation> attributes) {
         this.identityProvider = providerId;
         this.userId = userId;
         this.userName = userName;
         this.token = token;
+        this.attributes = attributes;
+    }
+
+    public FederatedIdentityModel(String providerId,  String userId, String userName, String token, Map<String, Object> contextData, String firstName, String lastName, String email) {
+        List<FederatedIdentityAttributeRepresentation> attributesList = new ArrayList<>();
+        contextData.entrySet().stream().forEach(x->attributesList.add(new FederatedIdentityAttributeRepresentation(x.getKey(), x.getValue().toString())));
+        if (firstName != null)
+            attributesList.add(new FederatedIdentityAttributeRepresentation("firstName",firstName));
+        if (lastName != null)
+            attributesList.add(new FederatedIdentityAttributeRepresentation("lastName",lastName));
+        if (email != null)
+            attributesList.add(new FederatedIdentityAttributeRepresentation("email",email));
+        this.identityProvider = providerId;
+        this.userId = userId;
+        this.userName = userName;
+        this.token = token;
+        this.attributes = attributesList;
     }
 
     public FederatedIdentityModel(FederatedIdentityModel originalIdentity, String userId) {
@@ -47,6 +79,10 @@ public class FederatedIdentityModel {
 
     public String getUserId() {
         return userId;
+    }
+
+    public void setIdentityProvider(String identityProvider) {
+        this.identityProvider = identityProvider;
     }
 
     public String getIdentityProvider() {
@@ -63,6 +99,14 @@ public class FederatedIdentityModel {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public List<FederatedIdentityAttributeRepresentation> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<FederatedIdentityAttributeRepresentation> attributes) {
+        this.attributes = attributes;
     }
 
     @Override

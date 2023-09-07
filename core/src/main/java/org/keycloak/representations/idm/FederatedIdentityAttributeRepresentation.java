@@ -1,14 +1,19 @@
 package org.keycloak.representations.idm;
 
-import javax.persistence.Column;
-
-import org.hibernate.annotations.Nationalized;
-
 public class FederatedIdentityAttributeRepresentation {
 
     private String id;
     private String name;
     private String value;
+
+    public FederatedIdentityAttributeRepresentation(){
+
+    }
+
+    public FederatedIdentityAttributeRepresentation(String name, String value){
+        this.name = name;
+        this.value = value;
+    }
 
     public String getId() {
         return id;

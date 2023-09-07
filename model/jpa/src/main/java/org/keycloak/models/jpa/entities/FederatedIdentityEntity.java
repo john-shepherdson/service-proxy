@@ -127,6 +127,14 @@ public class FederatedIdentityEntity {
         return token;
     }
 
+    public Collection<FederatedIdentityAttributeEntity> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Collection<FederatedIdentityAttributeEntity> attributes) {
+        this.attributes = attributes;
+    }
+
     public static class Key implements Serializable {
 
         protected UserEntity user;

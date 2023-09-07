@@ -17,7 +17,6 @@
 
 package org.keycloak.models;
 
-import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.provider.ProviderEvent;
 
 import org.keycloak.storage.SearchableModelField;
@@ -298,8 +297,6 @@ public interface UserModel extends RoleMapperModel {
 
     String getServiceAccountClientLink();
     void setServiceAccountClientLink(String clientInternalId);
-
-    default void setFederatedIdentityAttributes(BrokeredIdentityContext brokerContext){};
 
     enum RequiredAction {
         VERIFY_EMAIL,

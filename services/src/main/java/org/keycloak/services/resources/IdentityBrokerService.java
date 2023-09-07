@@ -634,7 +634,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         });
 
         FederatedIdentityModel federatedIdentityModel = new FederatedIdentityModel(providerId, context.getId(),
-                context.getUsername(), context.getToken());
+                context.getUsername(), context.getToken(), context.getContextData(), context.getFirstName(), context.getLastName(), context.getEmail());
 
         this.event.event(EventType.IDENTITY_PROVIDER_LOGIN)
                 .detail(Details.REDIRECT_URI, authenticationSession.getRedirectUri())
@@ -794,7 +794,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
             // Add federated identity link here
             FederatedIdentityModel federatedIdentityModel = new FederatedIdentityModel(context.getIdpConfig().getAlias(), context.getId(),
-                    context.getUsername(), context.getToken());
+                    context.getUsername(), context.getToken(), context.getContextData(), context.getFirstName(), context.getLastName(), context.getEmail());
             session.users().addFederatedIdentity(realmModel, federatedUser, federatedIdentityModel);
 
 

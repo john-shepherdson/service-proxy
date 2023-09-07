@@ -17,16 +17,23 @@
 
 package org.keycloak.storage.jpa.entity;
 
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.keycloak.models.jpa.entities.FederatedIdentityAttributeEntity;
 import org.keycloak.storage.jpa.KeyUtils;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -68,6 +75,11 @@ public class BrokerLinkEntity {
 
     @Column(name = "TOKEN")
     protected String token;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy="brokerLink")
+    @Fetch(FetchMode.SELECT)
+    @BatchSize(size = 20)
+    protected Collection<BrokerLinkAttributeEntity> attributes;
 
     public String getUserId() {
         return userId;
@@ -124,6 +136,14 @@ public class BrokerLinkEntity {
 
     public String getToken() {
         return token;
+    }
+
+    public Collection<BrokerLinkAttributeEntity> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Collection<BrokerLinkAttributeEntity> attributes) {
+        this.attributes = attributes;
     }
 
     public static class Key implements Serializable {

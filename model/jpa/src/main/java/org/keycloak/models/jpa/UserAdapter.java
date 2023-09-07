@@ -521,11 +521,6 @@ public class UserAdapter implements UserModel.Streams, JpaModel<UserEntity> {
     public void setServiceAccountClientLink(String clientInternalId) {
         user.setServiceAccountClientLink(clientInternalId);
     }
-
-    @Override
-    public void setFederatedIdentityAttributes(BrokeredIdentityContext brokerContext){}
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
