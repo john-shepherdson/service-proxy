@@ -10,6 +10,13 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [Unreleased]
+### Fixed
+- Fix refresh flow with scope parameter problem[Feedback from CESNET about EOSC Keycloak federation support](https://trello.com/c/VTJNB9Gu/2116-feedback-from-cesnet-about-eosc-keycloak-federation-support)
+
+### Changed
+- Add regex support in 'Condition - User attribute' execution[Add regex support in Keycloak attribute condition](https://trello.com/c/P8Dvw6ir/2121-add-regex-support-in-keycloak-attribute-condition)
+
 ## [18.0.1-2.16] - 2023-07-09
 ### Fixed
 - Fix refresh flow with scope parameter problem[EGI dev oidc client refresh flow not allowed](https://trello.com/c/rwDjqUF0/2076-egi-dev-oidc-client-refresh-flow-not-allowed)
