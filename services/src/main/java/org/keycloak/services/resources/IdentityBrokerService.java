@@ -455,7 +455,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path(ENDPOINT_PATH)
-    public Response getIdpFederationEndpointPOST(@FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @FormParam(GeneralConstants.RELAY_STATE) String relayState) {
+    public Response getIdpFederationEndpointPOST(@FormParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @FormParam(GeneralConstants.RELAY_STATE) String relayState) {
         if (samlResponse == null)
             return errorForNullSamlResponse();
         byte[] samlBytes = PostBindingUtil.base64Decode(samlResponse);
@@ -466,14 +466,14 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         SAMLIdentityProvider identityProvider = getSAMLIdentityProvider(session, realmModel, alias);
         SAMLEndpoint endpoint = new SAMLEndpoint(realmModel, identityProvider, identityProvider.getConfig(), this, identityProvider.getDestinationValidator());
         ResteasyProviderFactory.getInstance().injectProperties(endpoint);
-        return endpoint.postBinding(null, samlResponse, relayState);
+        return endpoint.postBinding(samlRequest, samlResponse, relayState);
     }
 
 
     @GET
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path(ENDPOINT_PATH)
-    public Response getIdpFederationEndpointGET(@QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @QueryParam(GeneralConstants.RELAY_STATE) String relayState) {
+    public Response getIdpFederationEndpointGET(@QueryParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @QueryParam(GeneralConstants.RELAY_STATE) String relayState) {
         if (samlResponse == null)
             return errorForNullSamlResponse();
         SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlResponse);
@@ -483,7 +483,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         SAMLIdentityProvider identityProvider = getSAMLIdentityProvider(session, realmModel, alias);
         SAMLEndpoint endpoint = new SAMLEndpoint(realmModel, identityProvider, identityProvider.getConfig(), this, identityProvider.getDestinationValidator());
         ResteasyProviderFactory.getInstance().injectProperties(endpoint);
-        return endpoint.redirectBinding(null, samlResponse, relayState);
+        return endpoint.redirectBinding(samlRequest, samlResponse, relayState);
     }
 
     private Response errorForNullSamlResponse() {
