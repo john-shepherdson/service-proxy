@@ -456,9 +456,9 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path(ENDPOINT_PATH)
     public Response getIdpFederationEndpointPOST(@FormParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @FormParam(GeneralConstants.RELAY_STATE) String relayState) {
-        if (samlResponse == null)
+        if (samlResponse == null && samlRequest == null)
             return errorForNullSamlResponse();
-        byte[] samlBytes = PostBindingUtil.base64Decode(samlResponse);
+        byte[] samlBytes = PostBindingUtil.base64Decode(samlRequest != null ? samlRequest : samlResponse);
         SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
         StatusResponseType statusResponse = (StatusResponseType) samlDocumentHolder.getSamlObject();
         String issuer = statusResponse.getIssuer().getValue(); //this should be the entityId
@@ -474,9 +474,9 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path(ENDPOINT_PATH)
     public Response getIdpFederationEndpointGET(@QueryParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @QueryParam(GeneralConstants.RELAY_STATE) String relayState) {
-        if (samlResponse == null)
+        if (samlResponse == null && samlRequest == null)
             return errorForNullSamlResponse();
-        SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlResponse);
+        SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlRequest != null ? samlRequest : samlResponse);
         StatusResponseType statusResponse = (StatusResponseType)samlDocumentHolder.getSamlObject();
         String issuer = statusResponse.getIssuer().getValue(); //this should be the entityId
         String alias = SAMLFederationProvider.getHash(issuer);
