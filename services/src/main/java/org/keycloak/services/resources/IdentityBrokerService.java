@@ -48,6 +48,7 @@ import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.common.util.Time;
+import org.keycloak.dom.saml.v2.protocol.RequestAbstractType;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
@@ -458,17 +459,18 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     public Response getIdpFederationEndpointPOST(@FormParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @FormParam(GeneralConstants.RELAY_STATE) String relayState) {
         if (samlResponse == null && samlRequest == null)
             return errorForNullSamlResponse();
-        byte[] samlBytes = PostBindingUtil.base64Decode(samlRequest != null ? samlRequest : samlResponse);
-        SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
-        StatusResponseType statusResponse = (StatusResponseType) samlDocumentHolder.getSamlObject();
-        String issuer = statusResponse.getIssuer().getValue(); //this should be the entityId
-        String alias = SAMLFederationProvider.getHash(issuer);
-        SAMLIdentityProvider identityProvider = getSAMLIdentityProvider(session, realmModel, alias);
-        SAMLEndpoint endpoint = new SAMLEndpoint(realmModel, identityProvider, identityProvider.getConfig(), this, identityProvider.getDestinationValidator());
-        ResteasyProviderFactory.getInstance().injectProperties(endpoint);
-        return endpoint.postBinding(samlRequest, samlResponse, relayState);
+        if (samlRequest != null) {
+            byte[] samlBytes = PostBindingUtil.base64Decode(samlRequest);
+            SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
+            RequestAbstractType statusResponse = (RequestAbstractType) samlDocumentHolder.getSamlObject();
+            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+        } else {
+            byte[] samlBytes = PostBindingUtil.base64Decode(samlResponse);
+            SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
+            StatusResponseType statusResponse = (StatusResponseType) samlDocumentHolder.getSamlObject();
+            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+        }
     }
-
 
     @GET
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -476,9 +478,20 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     public Response getIdpFederationEndpointGET(@QueryParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @QueryParam(GeneralConstants.RELAY_STATE) String relayState) {
         if (samlResponse == null && samlRequest == null)
             return errorForNullSamlResponse();
-        SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlRequest != null ? samlRequest : samlResponse);
-        StatusResponseType statusResponse = (StatusResponseType)samlDocumentHolder.getSamlObject();
-        String issuer = statusResponse.getIssuer().getValue(); //this should be the entityId
+        SAMLEndpoint endpoint = null;
+        if (samlRequest != null) {
+            SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlRequest);
+            RequestAbstractType statusResponse = (RequestAbstractType) samlDocumentHolder.getSamlObject();
+            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+        } else {
+            SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlResponse);
+            StatusResponseType statusResponse = (StatusResponseType) samlDocumentHolder.getSamlObject();
+            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+        }
+    }
+
+    private Response getSAMLEndpoint(String issuer,String samlRequest, String samlResponse, String relayState){
+        //issuer should be the entityId -> alias is the hashed entityid
         String alias = SAMLFederationProvider.getHash(issuer);
         SAMLIdentityProvider identityProvider = getSAMLIdentityProvider(session, realmModel, alias);
         SAMLEndpoint endpoint = new SAMLEndpoint(realmModel, identityProvider, identityProvider.getConfig(), this, identityProvider.getDestinationValidator());
