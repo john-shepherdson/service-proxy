@@ -457,18 +457,22 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path(ENDPOINT_PATH)
     public Response getIdpFederationEndpointPOST(@FormParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @FormParam(GeneralConstants.RELAY_STATE) String relayState) {
-        if (samlResponse == null && samlRequest == null)
+        if (samlResponse == null && samlRequest == null) {
             return errorForNullSamlResponse();
-        if (samlRequest != null) {
+        } else if (samlRequest != null) {
             byte[] samlBytes = PostBindingUtil.base64Decode(samlRequest);
             SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
             RequestAbstractType statusResponse = (RequestAbstractType) samlDocumentHolder.getSamlObject();
-            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            SAMLEndpoint endpoint = getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+            return endpoint.postBinding(samlRequest, samlResponse, relayState);
         } else {
             byte[] samlBytes = PostBindingUtil.base64Decode(samlResponse);
             SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
             StatusResponseType statusResponse = (StatusResponseType) samlDocumentHolder.getSamlObject();
-            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            SAMLEndpoint endpoint = getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+            return endpoint.postBinding(samlRequest, samlResponse, relayState);
         }
     }
 
@@ -476,27 +480,29 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path(ENDPOINT_PATH)
     public Response getIdpFederationEndpointGET(@QueryParam(GeneralConstants.SAML_REQUEST_KEY) String samlRequest, @QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse, @QueryParam(GeneralConstants.RELAY_STATE) String relayState) {
-        if (samlResponse == null && samlRequest == null)
+        if (samlResponse == null && samlRequest == null) {
             return errorForNullSamlResponse();
-        SAMLEndpoint endpoint = null;
-        if (samlRequest != null) {
+        } else if (samlRequest != null) {
             SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlRequest);
             RequestAbstractType statusResponse = (RequestAbstractType) samlDocumentHolder.getSamlObject();
-            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            SAMLEndpoint endpoint = getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+            return endpoint.redirectBinding(samlRequest, samlResponse, relayState);
         } else {
             SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlResponse);
             StatusResponseType statusResponse = (StatusResponseType) samlDocumentHolder.getSamlObject();
-            return getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            SAMLEndpoint endpoint = getSAMLEndpoint(statusResponse.getIssuer().getValue(), samlRequest, samlResponse, relayState);
+            ResteasyProviderFactory.getInstance().injectProperties(endpoint);
+            return endpoint.redirectBinding(samlRequest, samlResponse, relayState);
         }
     }
 
-    private Response getSAMLEndpoint(String issuer,String samlRequest, String samlResponse, String relayState){
+    private SAMLEndpoint getSAMLEndpoint(String issuer,String samlRequest, String samlResponse, String relayState){
         //issuer should be the entityId -> alias is the hashed entityid
         String alias = SAMLFederationProvider.getHash(issuer);
         SAMLIdentityProvider identityProvider = getSAMLIdentityProvider(session, realmModel, alias);
         SAMLEndpoint endpoint = new SAMLEndpoint(realmModel, identityProvider, identityProvider.getConfig(), this, identityProvider.getDestinationValidator());
-        ResteasyProviderFactory.getInstance().injectProperties(endpoint);
-        return endpoint.redirectBinding(samlRequest, samlResponse, relayState);
+        return  endpoint;
     }
 
     private Response errorForNullSamlResponse() {
