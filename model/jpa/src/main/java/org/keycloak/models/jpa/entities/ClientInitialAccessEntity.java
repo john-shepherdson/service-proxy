@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -59,6 +60,7 @@ public class ClientInitialAccessEntity {
     @Column(name="REMAINING_COUNT")
     private int remainingCount;
 
+    @BatchSize(size = 50)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;

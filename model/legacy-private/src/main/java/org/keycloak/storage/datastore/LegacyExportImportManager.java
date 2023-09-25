@@ -18,6 +18,8 @@
 package org.keycloak.storage.datastore;
 
 import org.jboss.logging.Logger;
+import org.keycloak.broker.federation.FederationProvider;
+import org.keycloak.broker.federation.SAMLFederationProviderFactory;
 import org.keycloak.common.enums.SslRequired;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
@@ -29,31 +31,7 @@ import org.keycloak.keys.KeyProvider;
 import org.keycloak.migration.MigrationProvider;
 import org.keycloak.migration.migrators.MigrateTo8_0_0;
 import org.keycloak.migration.migrators.MigrationUtils;
-import org.keycloak.models.AuthenticationExecutionModel;
-import org.keycloak.models.AuthenticationFlowModel;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.BrowserSecurityHeaders;
-import org.keycloak.models.CibaConfig;
-import org.keycloak.models.ClaimMask;
-import org.keycloak.models.ClientModel;
-import org.keycloak.models.ClientScopeModel;
-import org.keycloak.models.Constants;
-import org.keycloak.models.FederatedIdentityModel;
-import org.keycloak.models.GroupModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.LDAPConstants;
-import org.keycloak.models.ModelException;
-import org.keycloak.models.OAuth2DeviceConfig;
-import org.keycloak.models.OTPPolicy;
-import org.keycloak.models.ParConfig;
-import org.keycloak.models.PasswordPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.RequiredActionProviderModel;
-import org.keycloak.models.RoleModel;
-import org.keycloak.models.ScopeContainerModel;
-import org.keycloak.models.UserConsentModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.WebAuthnPolicy;
+import org.keycloak.models.*;
 import org.keycloak.models.utils.ComponentUtil;
 import org.keycloak.models.utils.DefaultAuthenticationFlows;
 import org.keycloak.models.utils.DefaultKeyProviders;
@@ -62,33 +40,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.partialimport.PartialImportResults;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
-import org.keycloak.representations.idm.ApplicationRepresentation;
-import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
-import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
-import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
-import org.keycloak.representations.idm.ClaimRepresentation;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ClientScopeRepresentation;
-import org.keycloak.representations.idm.ClientTemplateRepresentation;
-import org.keycloak.representations.idm.ComponentExportRepresentation;
-import org.keycloak.representations.idm.ComponentRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.FederatedIdentityRepresentation;
-import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
-import org.keycloak.representations.idm.IdentityProviderRepresentation;
-import org.keycloak.representations.idm.OAuthClientRepresentation;
-import org.keycloak.representations.idm.PartialImportRepresentation;
-import org.keycloak.representations.idm.ProtocolMapperRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.ScopeMappingRepresentation;
-import org.keycloak.representations.idm.SocialLinkRepresentation;
-import org.keycloak.representations.idm.UserConsentRepresentation;
-import org.keycloak.representations.idm.UserFederationMapperRepresentation;
-import org.keycloak.representations.idm.UserFederationProviderRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.*;
 import org.keycloak.storage.ExportImportManager;
 import org.keycloak.storage.ImportRealmFromRepresentationEvent;
 import org.keycloak.storage.PartialImportRealmFromRepresentationEvent;
@@ -316,6 +268,7 @@ public class LegacyExportImportManager implements ExportImportManager {
             DefaultRequiredActions.addActions(newRealm);
         }
 
+        importIdentityProvidersFederations(session,rep.getSamlFederations(),newRealm);
         importIdentityProviders(rep, newRealm, session);
         importIdentityProviderMappers(rep, newRealm);
 
@@ -533,6 +486,54 @@ public class LegacyExportImportManager implements ExportImportManager {
             appMap.put(app.getName(), app);
         }
         return appMap;
+    }
+
+    private static void importIdentityProvidersFederations(KeycloakSession session, List<SAMLFederationRepresentation> federations, RealmModel newRealm) {
+        if (federations != null) {
+            for (SAMLFederationRepresentation representation : federations) {
+                //set LastMetadataRefreshTimestamp to null in order to run immediately the schedule task
+                representation.setLastMetadataRefreshTimestamp(null);
+                FederationModel model = toModel(representation);
+                model.setFederationMapperModels(
+                        representation.getFederationMappers().stream().map(mapper -> toModel(mapper)).collect(Collectors.toList()));
+                newRealm.addSAMLFederation(model);
+                FederationProvider federationProvider = SAMLFederationProviderFactory
+                        .getSAMLFederationProviderFactoryById(session, model.getProviderId())
+                        .create(session, model, newRealm.getId());
+                federationProvider.enableUpdateTask();
+            }
+        }
+    }
+
+    public static FederationModel toModel(SAMLFederationRepresentation representation ) {
+        FederationModel model = new FederationModel();
+        model.setInternalId(representation.getInternalId());
+        model.setAlias(representation.getAlias());
+        model.setDisplayName(representation.getDisplayName());
+        model.setLastMetadataRefreshTimestamp(representation.getLastMetadataRefreshTimestamp());
+        model.setProviderId(representation.getProviderId());
+        model.setUpdateFrequencyInMins(representation.getUpdateFrequencyInMins());
+        model.setEntityIdDenyList(representation.getEntityIdDenyList());
+        model.setEntityIdAllowList(representation.getEntityIdAllowList());
+        model.setRegistrationAuthorityDenyList(representation.getRegistrationAuthorityDenyList());
+        model.setRegistrationAuthorityAllowList(representation.getRegistrationAuthorityAllowList());
+        model.setCategoryDenyList(representation.getCategoryDenyList());
+        model.setCategoryAllowList(representation.getCategoryAllowList());
+        model.setUrl(representation.getUrl());
+        model.setValidUntilTimestamp(representation.getValidUntilTimestamp());
+        model.setConfig(representation.getConfig());
+        return model;
+    }
+
+    public static FederationMapperModel toModel( FederationMapperRepresentation representation ) {
+        FederationMapperModel model = new FederationMapperModel();
+        model.setId(representation.getId());
+        model.setIdentityProviderMapper(representation.getIdentityProviderMapper());
+        model.setName(representation.getName());
+        model.setFederationId(representation.getFederationId());
+        model.setConfig(representation.getConfig());
+        return model;
+
     }
 
     private static void importIdentityProviders(RealmRepresentation rep, RealmModel newRealm, KeycloakSession session) {

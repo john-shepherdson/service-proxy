@@ -29,6 +29,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
@@ -91,6 +94,7 @@ import org.keycloak.theme.beans.MessagesPerFieldBean;
 import org.keycloak.theme.freemarker.FreeMarkerProvider;
 import org.keycloak.userprofile.UserProfileContext;
 import org.keycloak.userprofile.UserProfileProvider;
+import org.keycloak.urls.UrlType;
 import org.keycloak.utils.MediaType;
 
 /**
@@ -227,6 +231,19 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         }
 
         switch (page) {
+            case LOGIN:
+            case LOGIN_USERNAME:
+                //login-enhanced is the EGI theme (plugin).
+                if("eosc-kc".equals(theme.getName()))
+                    attributes.put("uriInfo", uriInfo);
+                else {
+                    try {
+                        attributes.put("identityProvidersSummary", new ObjectMapper().writeValueAsString(((IdentityProviderBean) attributes.get("social")).getProviders()));
+                    } catch (JsonProcessingException e) {
+                        logger.error("Failed to add identity providers summary", e);
+                    }
+                }
+        		break;
             case LOGIN_CONFIG_TOTP:
                 attributes.put("totp", new TotpBean(session, realm, user, getTotpUriBuilder()));
                 break;
@@ -467,9 +484,13 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
         if (realm != null) {
             attributes.put("realm", new RealmBean(realm));
 
-            List<IdentityProviderModel> identityProviders = LoginFormsUtil
-                    .filterIdentityProvidersForTheme(realm.getIdentityProvidersStream(), session, context);
-            attributes.put("social", new IdentityProviderBean(realm, session, identityProviders, baseUriWithCodeAndClientId));
+            if("eosc-kc".equals(theme.getName()))
+                attributes.put("idpLoginFullUrl", Urls.identityProviderAuthnRequest(baseUriWithCodeAndClientId, "_", realm.getName()));
+            else{
+                List<IdentityProviderModel> identityProviders = LoginFormsUtil
+                        .filterIdentityProviders(realm.getIdentityProvidersStream(), session, context);
+                attributes.put("social", new IdentityProviderBean(realm, session, identityProviders, baseUriWithCodeAndClientId));
+            }
 
             attributes.put("url", new UrlBean(realm, theme, baseUri, this.actionUri));
             attributes.put("requiredActionUrl", new RequiredActionUrlFormatterMethod(realm, baseUri));
@@ -538,7 +559,7 @@ public class FreeMarkerLoginFormsProvider implements LoginFormsProvider {
 
     /**
      * Process FreeMarker template and prepare Response. Some fields are used for rendering also.
-     * 
+     *
      * @param theme to be used (provided by <code>getTheme()</code>)
      * @param templateName name of the template to be rendered
      * @param locale to be used

@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.CollectionTable;
@@ -28,6 +29,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.util.Map;
 
@@ -37,6 +40,11 @@ import java.util.Map;
  */
 @Entity
 @Table(name="IDENTITY_PROVIDER_MAPPER")
+@NamedQueries({
+	@NamedQuery(name="findIdentityProviderMappersByRealm", query="select identityProviderMapper from IdentityProviderMapperEntity identityProviderMapper where identityProviderMapper.realm.id = :realmId"),
+    @NamedQuery(name="findIdentityProviderMappersByRealmAndAlias", query="select identityProviderMapper from IdentityProviderMapperEntity identityProviderMapper where identityProviderMapper.identityProviderAlias = :alias and identityProviderMapper.realm.id = :realmId"),
+    @NamedQuery(name="findIdentityProviderMappersByRealmAndAliasAndName", query="select identityProviderMapper from IdentityProviderMapperEntity identityProviderMapper where identityProviderMapper.realm.id = :realmId and identityProviderMapper.identityProviderAlias = :alias and identityProviderMapper.name = :name")
+})
 public class IdentityProviderMapperEntity {
 
     @Id
@@ -52,12 +60,14 @@ public class IdentityProviderMapperEntity {
     @Column(name = "IDP_MAPPER_NAME")
     protected String identityProviderMapper;
 
+    @BatchSize(size = 50)
     @ElementCollection
     @MapKeyColumn(name="NAME")
     @Column(name="VALUE")
     @CollectionTable(name="IDP_MAPPER_CONFIG", joinColumns={ @JoinColumn(name="IDP_MAPPER_ID") })
     private Map<String, String> config;
 
+    @BatchSize(size = 50)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     private RealmEntity realm;

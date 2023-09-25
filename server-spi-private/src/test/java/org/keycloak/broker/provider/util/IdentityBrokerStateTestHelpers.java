@@ -5,6 +5,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -1355,6 +1356,76 @@ public class IdentityBrokerStateTestHelpers {
         }
 
         @Override
+        public List<FederationModel> getSAMLFederations() {
+            return null;
+        }
+
+        @Override
+        public FederationModel getSAMLFederationById(String id) {
+            return null;
+        }
+
+        @Override
+        public FederationModel getSAMLFederationByAlias(String alias) {
+            return null;
+        }
+
+        @Override
+        public void addSAMLFederation(FederationModel federationModel) {
+
+        }
+
+        @Override
+        public void updateSAMLFederation(FederationModel federationModel) {
+
+        }
+
+        @Override
+        public void taskExecutionFederation(FederationModel federationModel, List<IdentityProviderModel> addIdPs, List<IdentityProviderModel> updatedIdPs, List<String> removedIdPs) {
+
+        }
+
+        @Override
+        public void removeSAMLFederation(String internalId) {
+
+        }
+
+        @Override
+        public List<FederationMapperModel> getIdentityProviderFederationMappers(String federationId) {
+            return null;
+        }
+
+        @Override
+        public FederationMapperModel getIdentityProviderFederationMapper(String federationId, String id) {
+            return null;
+        }
+
+        @Override
+        public void addIdentityProvidersFederationMapper(FederationMapperModel federationMapperModel) {
+
+        }
+
+        @Override
+        public void updateIdentityProvidersFederationMapper(FederationMapperModel federationMapperModel) {
+
+        }
+
+        @Override
+        public void removeIdentityProvidersFederationMapper(String id, String federationId) {
+
+        }
+
+        @Override
+        public IdentityProviderModel getIdentityProviderById(String internalId) {
+            return null;
+        }
+
+        @Override
+        public Stream<IdentityProviderModel> searchIdentityProviders(String keyword, Integer firstResult, Integer maxResults) {
+            return null;
+        }
+
+        @Override
         public Stream<IdentityProviderModel> getIdentityProvidersStream() {
             return null;
         }
@@ -1377,6 +1448,11 @@ public class IdentityBrokerStateTestHelpers {
         @Override
         public void updateIdentityProvider(IdentityProviderModel identityProvider) {
 
+        }
+
+        @Override
+        public List<String> getIdentityProvidersByFederation(String federationId) {
+            return null;
         }
 
         @Override
@@ -1412,6 +1488,11 @@ public class IdentityBrokerStateTestHelpers {
         @Override
         public IdentityProviderMapperModel getIdentityProviderMapperByName(String brokerAlias, String name) {
             return null;
+        }
+
+        @Override
+        public boolean removeFederationIdp(FederationModel federationModel, String idpAlias) {
+            return false;
         }
 
         @Override

@@ -16,6 +16,8 @@
  */
 package org.keycloak.services.resources;
 
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.http.HttpRequest;
@@ -25,6 +27,8 @@ import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticato
 import org.keycloak.authentication.authenticators.broker.util.PostBrokerLoginConstants;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
+import org.keycloak.broker.federation.FederationProvider;
+import org.keycloak.broker.federation.SAMLFederationProviderFactory;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityBrokerException;
@@ -34,6 +38,8 @@ import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.provider.IdentityProviderMapperSyncModeDelegate;
 import org.keycloak.broker.provider.util.IdentityBrokerState;
 import org.keycloak.broker.saml.SAMLEndpoint;
+import org.keycloak.broker.saml.SAMLIdentityProviderConfig;
+import org.keycloak.broker.saml.federation.SAMLFederationProvider;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Base64Url;
@@ -54,6 +60,7 @@ import org.keycloak.models.Constants;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.IdentityProviderSyncMode;
+import org.keycloak.models.FederationModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
@@ -70,6 +77,10 @@ import org.keycloak.protocol.oidc.utils.RedirectUtils;
 import org.keycloak.protocol.saml.SamlSessionUtils;
 import org.keycloak.protocol.saml.preprocessor.SamlAuthenticationPreprocessor;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.saml.SAMLRequestParser;
+import org.keycloak.saml.common.constants.GeneralConstants;
+import org.keycloak.saml.processing.core.saml.v2.common.SAMLDocumentHolder;
+import org.keycloak.saml.processing.web.util.RedirectBindingUtil;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.services.ErrorPageException;
 import org.keycloak.services.ErrorResponse;
@@ -91,18 +102,17 @@ import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.util.JsonSerialization;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.OPTIONS;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
+
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -115,7 +125,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -130,6 +139,9 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
     private static final String LINKING_IDENTITY_PROVIDER = "LINKING_IDENTITY_PROVIDER";
 
     private static final Logger logger = Logger.getLogger(IdentityBrokerService.class);
+
+    public static final String ENDPOINT_PATH = "/endpoint";
+
 
     private final RealmModel realmModel;
 
@@ -390,6 +402,10 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
             IdentityProvider identityProvider = providerFactory.create(session, identityProviderModel);
 
+            boolean isMemberOfAggregation = (identityProviderModel.getFederations() != null && identityProviderModel.getFederations().size() > 0) ? true : false;
+            if(isMemberOfAggregation)
+            	providerId = null;
+
             Response response = identityProvider.performLogin(createAuthenticationRequest(providerId, clientSessionCode));
 
             if (response != null) {
@@ -419,6 +435,70 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
         return identityProvider.callback(realmModel, this, event);
     }
+
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Path(ENDPOINT_PATH)
+    public void getIdpFederationEndpointPOST(@FormParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse) throws IOException {
+        checkForNullSamlResponse(samlResponse);
+        byte[] samlBytes = RedirectBindingUtil.urlBase64Decode(samlResponse);
+        SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseDocument(samlBytes);
+        StatusResponseType statusResponse = (StatusResponseType)samlDocumentHolder.getSamlObject();
+        String issuer = statusResponse.getIssuer().getValue(); //this should be the entityId
+        String alias = SAMLFederationProvider.getHash(issuer);
+        String fullUrl = Urls.identityProviderAuthnResponse(this.session.getContext().getUri().getBaseUri(), alias, this.realmModel.getName()).toString();
+        String path = fullUrl.replace(this.session.getContext().getUri().getBaseUri().toString(), "/"); //get the subpath from "realms" and on, prepending also a "/"
+       // request.forward(path);
+    }
+
+
+    @GET
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Path(ENDPOINT_PATH)
+    public void getIdpFederationEndpointGET(@QueryParam(GeneralConstants.SAML_RESPONSE_KEY) String samlResponse) {
+        checkForNullSamlResponse(samlResponse);
+        SAMLDocumentHolder samlDocumentHolder = SAMLRequestParser.parseResponseRedirectBinding(samlResponse);
+        StatusResponseType statusResponse = (StatusResponseType)samlDocumentHolder.getSamlObject();
+        String issuer = statusResponse.getIssuer().getValue(); //this should be the entityId
+        String alias = SAMLFederationProvider.getHash(issuer);
+        String fullUrl = Urls.identityProviderAuthnResponse(this.session.getContext().getUri().getBaseUri(), alias, this.realmModel.getName()).toString();
+        String path = fullUrl.replace(this.session.getContext().getUri().getBaseUri().toString(), "/"); //get the subpath from "realms" and on, prepending also a "/"
+       // request.forward(path);
+    }
+
+    private void checkForNullSamlResponse(String samlResponse){
+        if (samlResponse == null) {
+            event.event(EventType.LOGIN);
+            event.error(Errors.INVALID_REQUEST);
+            throw new ErrorPageException(session, Response.Status.BAD_REQUEST, Messages.INVALID_REQUEST);
+        }
+    }
+
+    @GET
+    @NoCache
+    @Path("/federation/{provider_id}" + ENDPOINT_PATH + "/descriptor")
+    public Response getIdpFederationService(@PathParam("provider_id") String providerId) {
+    	FederationModel idpFederationModel = realmModel.getSAMLFederationByAlias(providerId);
+    	if(idpFederationModel == null)
+    		idpFederationModel = realmModel.getSAMLFederationById(providerId);
+    	if (idpFederationModel == null)
+            throw new IdentityBrokerException("Could not find any federation for the identifier: " + providerId);
+    	FederationProvider federationProvider = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, idpFederationModel.getProviderId()).create(session, idpFederationModel, realmModel.getId());
+        Response response = federationProvider.export(session.getContext().getUri(), realmModel);
+    	String xsltOverride = idpFederationModel.getConfig().get("xsltOverride");
+    	if(xsltOverride == null || xsltOverride.isEmpty())
+            return response;
+    	// xslt is not null or empty, thus, apply the xslt before returning it
+        try {
+            return Response.ok(transform((String)response.getEntity(), xsltOverride), MediaType.APPLICATION_XML_TYPE).build();
+        }
+        catch (TransformerException e) {
+            logger.error("Tried to apply the configured xslt on the federation " + idpFederationModel.getAlias() + " exported SPSSODescriptor", e);
+            return response;
+        }
+    }
+
 
     @Path("{provider_id}/token")
     @OPTIONS
@@ -531,6 +611,9 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
                 .detail(Details.REDIRECT_URI, authenticationSession.getRedirectUri())
                 .detail(Details.IDENTITY_PROVIDER, providerId)
                 .detail(Details.IDENTITY_PROVIDER_USERNAME, context.getUsername());
+
+        if ("saml".equals(identityProviderConfig.getProviderId()) && identityProviderConfig.getConfig().get(SAMLIdentityProviderConfig.IDP_ENTITY_ID) != null)
+            this.event.detail(Details.IDENTITY_PROVIDER_ENTITYID,identityProviderConfig.getConfig().get(SAMLIdentityProviderConfig.IDP_ENTITY_ID));
 
         UserModel federatedUser = this.session.users().getUserByFederatedIdentity(this.realmModel, federatedIdentityModel);
         boolean shouldMigrateId = false;
@@ -1150,11 +1233,15 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
             encodedState = IdentityBrokerState.decoded(relayState, authSession.getClient().getId(), authSession.getClient().getClientId(), authSession.getTabId());
         }
 
-        return new AuthenticationRequest(this.session, this.realmModel, authSession, this.request, this.session.getContext().getUri(), encodedState, getRedirectUri(providerId));
+        return new AuthenticationRequest(this.session, this.realmModel, authSession, this.request, this.session.getContext().getUri(), encodedState, providerId==null ? getRedirectUri() : getRedirectUri(providerId));
     }
 
     private String getRedirectUri(String providerId) {
         return Urls.identityProviderAuthnResponse(this.session.getContext().getUri().getBaseUri(), providerId, this.realmModel.getName()).toString();
+    }
+
+    private String getRedirectUri() {
+        return Urls.identityProviderAuthnResponse(this.session.getContext().getUri().getBaseUri(), this.realmModel.getName()).toString();
     }
 
     private Response redirectToErrorPage(AuthenticationSessionModel authSession, Response.Status status, String message, Object ... parameters) {
@@ -1317,6 +1404,14 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         if (this.session.getTransactionManager().isActive()) {
             this.session.getTransactionManager().rollback();
         }
+    }
+
+    private String transform(String xml, String xslt) throws TransformerException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        TransformerFactory.newInstance()
+                .newTransformer(new StreamSource(new ByteArrayInputStream(xslt.getBytes())))
+                .transform(new StreamSource(new ByteArrayInputStream(xml.getBytes())), new StreamResult(output));
+        return output.toString();
     }
 
 }
