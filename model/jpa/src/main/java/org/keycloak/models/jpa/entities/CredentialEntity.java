@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -55,7 +56,8 @@ public class CredentialEntity {
 
     @Column(name="CREATED_DATE")
     protected Long createdDate;
-    
+
+    @BatchSize(size = 50)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="USER_ID")
     protected UserEntity user;

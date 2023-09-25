@@ -40,6 +40,8 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.FederatedIdentityRepresentation;
+import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
+import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.RolesRepresentation;
@@ -80,6 +82,13 @@ public class ExportUtils {
 
         // Project/product version
         rep.setKeycloakVersion(Version.VERSION);
+
+        List<IdentityProviderRepresentation> identityProviders = realm.getIdentityProvidersStream()
+                .map(idp -> ModelToRepresentation.toRepresentation(realm, idp)).collect(Collectors.toList());
+        rep.setIdentityProviders(identityProviders);
+        List<IdentityProviderMapperRepresentation> identityProviderMappers =  realm.getIdentityProviderMappersStream()
+                .map(idpMapper -> ModelToRepresentation.toRepresentation(idpMapper)).collect(Collectors.toList());
+        rep.setIdentityProviderMappers(identityProviderMappers);
 
         // Client Scopes
         rep.setClientScopes(realm.getClientScopesStream().map(ModelToRepresentation::toRepresentation).collect(Collectors.toList()));

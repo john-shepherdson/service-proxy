@@ -54,6 +54,7 @@ import org.keycloak.testsuite.util.SamlClientBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyPair;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -66,6 +67,7 @@ import org.apache.http.HttpHeaders;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.keycloak.util.JsonSerialization;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,9 +77,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.keycloak.saml.SignatureAlgorithm.RSA_SHA1;
-import static org.keycloak.testsuite.saml.AbstractSamlTest.REALM_NAME;
-import static org.keycloak.testsuite.saml.AbstractSamlTest.SAML_ASSERTION_CONSUMER_URL_SALES_POST;
-import static org.keycloak.testsuite.saml.AbstractSamlTest.SAML_CLIENT_ID_SALES_POST;
 import static org.keycloak.testsuite.util.Matchers.isSamlStatusResponse;
 import static org.keycloak.testsuite.util.SamlClient.Binding.POST;
 import static org.keycloak.testsuite.util.SamlClient.Binding.REDIRECT;
@@ -138,8 +137,12 @@ public class BrokerTest extends AbstractSamlTest {
         String firstBrokerLoginFlowAlias = null;
         final IdentityProviderRepresentation rep = addIdentityProvider("https://saml.idp/saml");
         rep.getConfig().put(SAMLIdentityProviderConfig.NAME_ID_POLICY_FORMAT, "undefined");
-        rep.getConfig().put(SAMLIdentityProviderConfig.PRINCIPAL_TYPE, SamlPrincipalType.ATTRIBUTE.toString());
-        rep.getConfig().put(SAMLIdentityProviderConfig.PRINCIPAL_ATTRIBUTE, "mail");
+        SAMLIdentityProviderConfig.Principal pr = new SAMLIdentityProviderConfig.Principal();
+        pr.setPrincipalType(SamlPrincipalType.ATTRIBUTE);
+        pr.setPrincipalAttribute("mail");
+        LinkedList<SAMLIdentityProviderConfig.Principal> principals = new LinkedList<>();
+        principals.add(pr);
+        rep.getConfig().put(SAMLIdentityProviderConfig.MULTIPLE_PRINCIPALS, JsonSerialization.writeValueAsString(principals));
 
         try (IdentityProviderCreator idp = new IdentityProviderCreator(realm, rep)) {
             IdentityProviderRepresentation idpRepresentation = idp.identityProvider().toRepresentation();
@@ -234,8 +237,12 @@ public class BrokerTest extends AbstractSamlTest {
         final RealmResource realm = adminClient.realm(REALM_NAME);
         final IdentityProviderRepresentation rep = addIdentityProvider("https://saml.idp/");
         rep.getConfig().put(SAMLIdentityProviderConfig.NAME_ID_POLICY_FORMAT, "undefined");
-        rep.getConfig().put(SAMLIdentityProviderConfig.PRINCIPAL_TYPE, SamlPrincipalType.ATTRIBUTE.toString());
-        rep.getConfig().put(SAMLIdentityProviderConfig.PRINCIPAL_ATTRIBUTE, "user");
+        SAMLIdentityProviderConfig.Principal pr = new SAMLIdentityProviderConfig.Principal();
+        pr.setPrincipalType(SamlPrincipalType.ATTRIBUTE);
+        pr.setPrincipalAttribute("user");
+        LinkedList<SAMLIdentityProviderConfig.Principal> principals = new LinkedList<>();
+        principals.add(pr);
+        rep.getConfig().put(SAMLIdentityProviderConfig.MULTIPLE_PRINCIPALS, JsonSerialization.writeValueAsString(principals));
 
         try (IdentityProviderCreator idp = new IdentityProviderCreator(realm, rep)) {
             new SamlClientBuilder()

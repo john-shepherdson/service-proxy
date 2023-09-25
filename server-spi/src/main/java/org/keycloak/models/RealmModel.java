@@ -24,6 +24,7 @@ import org.keycloak.provider.Provider;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.storage.SearchableModelField;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -436,6 +437,22 @@ public interface RealmModel extends RoleContainerModel {
     RequiredActionProviderModel getRequiredActionProviderById(String id);
     RequiredActionProviderModel getRequiredActionProviderByAlias(String alias);
 
+    List<FederationModel> getSAMLFederations();
+    FederationModel getSAMLFederationById(String id);
+    FederationModel getSAMLFederationByAlias(String alias);
+    void addSAMLFederation(FederationModel federationModel);
+    void updateSAMLFederation(FederationModel federationModel);
+    void taskExecutionFederation(FederationModel federationModel, List<IdentityProviderModel> addIdPs, List<IdentityProviderModel> updatedIdPs, List<String> removedIdPs);
+    void removeSAMLFederation(String internalId);
+    List<FederationMapperModel> getIdentityProviderFederationMappers(String federationId);
+    FederationMapperModel getIdentityProviderFederationMapper(String federationId, String id);
+    void addIdentityProvidersFederationMapper(FederationMapperModel federationMapperModel);
+    void updateIdentityProvidersFederationMapper(FederationMapperModel federationMapperModel);
+    void removeIdentityProvidersFederationMapper(String id, String federationId);
+
+    IdentityProviderModel getIdentityProviderById(String internalId);
+    Stream<IdentityProviderModel> searchIdentityProviders(String keyword, Integer firstResult, Integer maxResults);
+
     /**
      * Returns identity providers as a stream.
      * @return Stream of {@link IdentityProviderModel}. Never returns {@code null}.
@@ -446,6 +463,8 @@ public interface RealmModel extends RoleContainerModel {
     void addIdentityProvider(IdentityProviderModel identityProvider);
     void removeIdentityProviderByAlias(String alias);
     void updateIdentityProvider(IdentityProviderModel identityProvider);
+
+    List<String> getIdentityProvidersByFederation(String federationId);
 
     /**
      * Returns identity provider mappers as a stream.
@@ -465,6 +484,8 @@ public interface RealmModel extends RoleContainerModel {
     void updateIdentityProviderMapper(IdentityProviderMapperModel mapping);
     IdentityProviderMapperModel getIdentityProviderMapperById(String id);
     IdentityProviderMapperModel getIdentityProviderMapperByName(String brokerAlias, String name);
+
+    boolean removeFederationIdp(FederationModel federationModel, String idpAlias);
 
 
     /**
@@ -492,7 +513,7 @@ public interface RealmModel extends RoleContainerModel {
     /**
      * Removes given component. Will call preRemove() method of ComponentFactory.
      * Also calls {@code this.removeComponents(component.getId())}.
-     * 
+     *
      * @param component to be removed
      */
     void removeComponent(ComponentModel component);
@@ -686,7 +707,7 @@ public interface RealmModel extends RoleContainerModel {
     ClientScopeModel addClientScope(String name);
 
     /**
-     * Creates new client scope with the given internal ID and name. 
+     * Creates new client scope with the given internal ID and name.
      * If given name contains spaces, those are replaced by underscores.
      * @param id {@code String} id of the client scope.
      * @param name {@code String} name of the client scope.
@@ -709,10 +730,10 @@ public interface RealmModel extends RoleContainerModel {
     ClientScopeModel getClientScopeById(String id);
 
     /**
-     * Adds given client scope among default/optional client scopes of this realm. 
+     * Adds given client scope among default/optional client scopes of this realm.
      * The scope will be assigned to each new client.
      * @param clientScope to be added
-     * @param defaultScope if {@code true} the scope will be added among default client scopes, 
+     * @param defaultScope if {@code true} the scope will be added among default client scopes,
      * if {@code false} it will be added among optional client scopes
      */
     void addDefaultClientScope(ClientScopeModel clientScope, boolean defaultScope);
