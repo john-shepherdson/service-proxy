@@ -48,6 +48,7 @@ public interface MapIdentityProviderEntity extends UpdatableEntity, AbstractEnti
         entity.setAddReadTokenRoleOnCreate(model.isAddReadTokenRoleOnCreate());
         entity.setAuthenticateByDefault(model.isAuthenticateByDefault());
         entity.setConfig(model.getConfig());
+      //  entity.setFederations(model.getFederations());
         return entity;
     }
 
@@ -74,6 +75,7 @@ public interface MapIdentityProviderEntity extends UpdatableEntity, AbstractEnti
         model.setAuthenticateByDefault(authenticateByDefault == null ? false : authenticateByDefault);
         Map<String, String> config = entity.getConfig();
         model.setConfig(config == null ? new HashMap<>() : new HashMap<>(config));
+       // model.setFederations(entity.getFederations());
         return model;
     }
 
@@ -112,4 +114,8 @@ public interface MapIdentityProviderEntity extends UpdatableEntity, AbstractEnti
 
     Map<String, String> getConfig();
     void setConfig(Map<String, String> config);
+
+//    Set<String> getFederations() ;
+//
+//    void setFederations(Set<String> federations) ;
 }

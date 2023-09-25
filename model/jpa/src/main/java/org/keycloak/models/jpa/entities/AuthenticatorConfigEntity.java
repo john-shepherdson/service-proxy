@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.CollectionTable;
@@ -47,10 +48,12 @@ public class AuthenticatorConfigEntity {
     @Column(name="ALIAS")
     protected String alias;
 
+    @BatchSize(size = 50)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REALM_ID")
     protected RealmEntity realm;
 
+    @BatchSize(size = 50)
     @ElementCollection
     @MapKeyColumn(name="NAME")
     @Column(name="VALUE")

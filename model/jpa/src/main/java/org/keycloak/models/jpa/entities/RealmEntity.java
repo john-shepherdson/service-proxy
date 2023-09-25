@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import org.hibernate.annotations.BatchSize;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.CascadeType;
@@ -186,11 +187,17 @@ public class RealmEntity {
     @Column(name="DEFAULT_ROLE")
     protected String defaultRoleId;
 
+    @BatchSize(size = 50)
     @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
     protected List<IdentityProviderEntity> identityProviders = new LinkedList<>();
 
+    @BatchSize(size = 50)
     @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
     Collection<IdentityProviderMapperEntity> identityProviderMappers = new LinkedList<>();
+
+    @BatchSize(size = 50)
+    @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
+    protected List<FederationEntity> samlFederations = new LinkedList<>();
 
     @OneToMany(cascade ={CascadeType.REMOVE}, orphanRemoval = true, mappedBy = "realm")
     Collection<AuthenticatorConfigEntity> authenticators = new LinkedList<>();
@@ -631,6 +638,23 @@ public class RealmEntity {
         getIdentityProviders().add(entity);
     }
 
+    
+    public List<FederationEntity> getSamlFederations() {
+		return this.samlFederations;
+	}
+
+	public void setSamlFederations(List<FederationEntity> samlFederations) {
+		this.samlFederations = samlFederations;
+	}
+
+    
+    
+    public void addIdentityProvidersFederation(FederationEntity entity) {
+        entity.setRealm(this);
+        getSamlFederations().add(entity);
+    }
+    
+    
     public boolean isInternationalizationEnabled() {
         return internationalizationEnabled;
     }

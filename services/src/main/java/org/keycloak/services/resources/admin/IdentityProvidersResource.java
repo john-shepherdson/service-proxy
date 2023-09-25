@@ -18,6 +18,7 @@
 package org.keycloak.services.resources.admin;
 
 import com.google.common.collect.Streams;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -43,20 +44,13 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.KeycloakOpenAPI;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -165,8 +159,23 @@ public class IdentityProvidersResource {
         }
     }
 
+
     /**
-     * Get identity providers
+     * Get used (initiated) identity provider providerId(s).  i.e. ['saml', 'oidc', 'github']
+     *
+     * @return
+     */
+    @GET
+    @Path("types-used")
+    @NoCache
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<String> getUsedIdentityProviderIdTypes() {
+        this.auth.realm().requireViewIdentityProviders();
+        return realm.getIdentityProvidersStream().map(IdentityProviderModel::getProviderId).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    /**
+     * Get all or search identity providers
      *
      * @return
      */
@@ -176,11 +185,34 @@ public class IdentityProvidersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Tag(name = KeycloakOpenAPI.Admin.Tags.IDENTITY_PROVIDERS)
     @Operation( summary = "Get identity providers")
-    public Stream<IdentityProviderRepresentation> getIdentityProviders() {
+    public List<IdentityProviderRepresentation> getIdentityProviders(
+            @QueryParam("brief") @DefaultValue("false") Boolean brief,
+            @QueryParam("keyword") @DefaultValue("") String keyword,
+            @QueryParam("first") @DefaultValue("-1") Integer firstResult,
+            @QueryParam("max") @DefaultValue("-1") Integer maxResults
+    ) {
         this.auth.realm().requireViewIdentityProviders();
 
-        return realm.getIdentityProvidersStream()
-                .map(provider -> StripSecretsUtils.strip(ModelToRepresentation.toRepresentation(realm, provider)));
+        Stream<IdentityProviderModel> identityProviders = (keyword.isEmpty() && firstResult == -1 && maxResults == -1) ?
+                realm.getIdentityProvidersStream() :
+                realm.searchIdentityProviders(keyword, firstResult, maxResults);
+        return (brief) ?
+            identityProviders.map(idpModel -> StripSecretsUtils.strip(ModelToRepresentation.toBriefRepresentation(realm, idpModel))).collect(Collectors.toList()) :
+            identityProviders.map(idpModel -> StripSecretsUtils.strip(ModelToRepresentation.toRepresentation(realm, idpModel))).collect(Collectors.toList());
+    }
+
+    /**
+     * get IdPs alias per federation
+     * @param federationId
+     * @return
+     */
+    @Path("/federation/{federationId}")
+    @GET
+    @NoCache
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> getIdPsPerFederation(@PathParam("federationId") String federationId) {
+        this.auth.realm().requireViewIdentityProviders();
+       return realm.getIdentityProvidersByFederation(federationId);
     }
 
     /**
