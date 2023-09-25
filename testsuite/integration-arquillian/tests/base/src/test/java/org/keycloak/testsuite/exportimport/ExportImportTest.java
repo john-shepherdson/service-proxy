@@ -20,6 +20,7 @@ package org.keycloak.testsuite.exportimport;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -71,6 +72,8 @@ import org.junit.BeforeClass;
  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
  */
 public class ExportImportTest extends AbstractKeycloakTest {
+	
+	private static final Logger log = Logger.getLogger(ExportImportTest.class);
 
     @BeforeClass
     public static void checkNotMapStorage() {
@@ -160,9 +163,12 @@ public class ExportImportTest extends AbstractKeycloakTest {
         testingClient.testing().exportImport().setUsersPerFile(ExportImportConfig.DEFAULT_USERS_PER_FILE);
 
         testFullExportImport();
+        sleep(90000);
 
         RealmResource testRealmRealm = adminClient.realm("test-realm");
-        ExportImportUtil.assertDataImportedInRealm(adminClient, testingClient, testRealmRealm.toRepresentation());
+        RealmRepresentation realmRepresentation = testRealmRealm.toRepresentation();
+        realmRepresentation.setIdentityProviders(testRealmRealm.identityProviders().findAll(false,"",-1,-1));
+        ExportImportUtil.assertDataImportedInRealm(adminClient, testingClient, realmRepresentation);
 
         // There should be 6 files in target directory (3 realm, 3 user)
         assertEquals(6, new File(targetDirPath).listFiles().length);
@@ -179,9 +185,12 @@ public class ExportImportTest extends AbstractKeycloakTest {
         testingClient.testing().exportImport().setUsersPerFile(5);
 
         testRealmExportImport();
+        sleep(90000);
 
         RealmResource testRealmRealm = adminClient.realm("test-realm");
-        ExportImportUtil.assertDataImportedInRealm(adminClient, testingClient, testRealmRealm.toRepresentation());
+        RealmRepresentation realmRepresentation = testRealmRealm.toRepresentation();
+        realmRepresentation.setIdentityProviders(testRealmRealm.identityProviders().findAll(false,"",-1,-1));
+        ExportImportUtil.assertDataImportedInRealm(adminClient, testingClient, realmRepresentation);
 
         // There should be 4 files in target directory (1 realm, 12 users, 5 users per file)
         // (+ additional user service-account-test-app-authz that should not be there ???)
@@ -221,10 +230,14 @@ public class ExportImportTest extends AbstractKeycloakTest {
         testingClient.testing().exportImport().setAction(ExportImportConfig.ACTION_IMPORT);
 
         testingClient.testing().exportImport().runImport();
+        
+        //wait for trigger saml aggregate job
+        sleep(90000);
 
         RealmResource testRealmRealm = adminClient.realm("test-realm");
-
-        ExportImportUtil.assertDataImportedInRealm(adminClient, testingClient, testRealmRealm.toRepresentation());
+        RealmRepresentation realmRepresentation = testRealmRealm.toRepresentation();
+        realmRepresentation.setIdentityProviders(testRealmRealm.identityProviders().findAll(false,"",-1,-1));
+        ExportImportUtil.assertDataImportedInRealm(adminClient, testingClient, realmRepresentation);
     }
 
     @Test
@@ -529,4 +542,13 @@ public class ExportImportTest extends AbstractKeycloakTest {
 
         testingClient.testing().exportImport().runImport();
     }
+    
+    private static void sleep(long ms) {
+		try {
+			log.infof("Sleeping for %d ms", ms);
+			Thread.sleep(ms);
+		} catch (InterruptedException ie) {
+			throw new RuntimeException(ie);
+		}
+	}
 }

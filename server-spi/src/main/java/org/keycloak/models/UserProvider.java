@@ -24,6 +24,7 @@ import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -239,6 +240,14 @@ public interface UserProvider extends Provider,
      * @param provider provider model
      */
     void preRemove(RealmModel realm, IdentityProviderModel provider);
+
+    /**
+     * Called during SAML federation IdPs update.
+     * Should remove all federated identities assigned to users from the removed IdPs from SAML federation.
+     *
+     * @param idpAlias List<String> of all idp alias
+     */
+    default void preRemove(List<String> idpAlias){};
 
     /**
      * Called when a role is removed.

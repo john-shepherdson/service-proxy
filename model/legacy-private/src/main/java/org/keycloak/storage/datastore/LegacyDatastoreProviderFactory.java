@@ -17,12 +17,16 @@
 
 package org.keycloak.storage.datastore;
 
+import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.Config.Scope;
+import org.keycloak.broker.federation.FederationProvider;
+import org.keycloak.broker.federation.SAMLFederationProviderFactory;
+import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.Profile;
 import org.keycloak.migration.MigrationModelManager;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.*;
+import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderEvent;
@@ -32,14 +36,16 @@ import org.keycloak.services.scheduled.ClearExpiredClientInitialAccessTokens;
 import org.keycloak.services.scheduled.ClearExpiredEvents;
 import org.keycloak.services.scheduled.ClearExpiredUserSessions;
 import org.keycloak.services.scheduled.ClusterAwareScheduledTaskRunner;
-import org.keycloak.storage.DatastoreProvider;
-import org.keycloak.storage.DatastoreProviderFactory;
-import org.keycloak.storage.LegacyStoreMigrateRepresentationEvent;
-import org.keycloak.storage.LegacyStoreSyncEvent;
+import org.keycloak.storage.*;
 import org.keycloak.storage.managers.UserStorageSyncManager;
+import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.timer.TimerProvider;
 
+import java.util.stream.Stream;
+
 public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory, ProviderEventListener, EnvironmentDependentProviderFactory {
+
+    private static final Logger logger = Logger.getLogger(LegacyDatastoreProviderFactory.class);
 
     private static final String PROVIDER_ID = "legacy";
     private long clientStorageProviderTimeout;
@@ -74,7 +80,7 @@ public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory,
     public String getId() {
         return PROVIDER_ID;
     }
-    
+
     public long getClientStorageProviderTimeout() {
         return clientStorageProviderTimeout;
     }
@@ -94,7 +100,7 @@ public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory,
             LegacyStoreMigrateRepresentationEvent ev = (LegacyStoreMigrateRepresentationEvent) event;
             MigrationModelManager.migrateImport(ev.getSession(), ev.getRealm(), ev.getRep(), ev.isSkipUserDependent());
         }
-    }    
+    }
 
     public static void setupScheduledTasks(final KeycloakSessionFactory sessionFactory) {
         long interval = Config.scope("scheduled").getLong("interval", 900L) * 1000;
@@ -106,14 +112,28 @@ public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory,
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredAdminEvents(), interval), interval, "ClearExpiredAdminEvents");
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions(), interval), interval, ClearExpiredUserSessions.TASK_NAME);
+                updateFederation(sessionFactory, timer);
                 UserStorageSyncManager.bootstrapPeriodic(sessionFactory, timer);
             }
         }
     }
 
+    private static void updateFederation(final KeycloakSessionFactory sessionFactory, final TimerProvider timer) {
+        KeycloakModelUtils.runJobInTransaction(sessionFactory, new KeycloakSessionTask() {
+
+            @Override
+            public void run(KeycloakSession session) {
+                session.realms().getRealmsStream().forEach(realm -> realm.getSAMLFederations().stream().forEach(fedModel -> {
+                    FederationProvider federationProvider = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, fedModel.getProviderId()).create(session, fedModel, realm.getId());
+                    federationProvider.enableUpdateTask();
+                }));
+            }
+        });
+    }
+
     @Override
     public boolean isSupported() {
-        return ! Profile.isFeatureEnabled(Profile.Feature.MAP_STORAGE);
+        return !Profile.isFeatureEnabled(Profile.Feature.MAP_STORAGE);
     }
 
 }
