@@ -99,7 +99,6 @@ public class SAMLIdentityProviderFactory extends AbstractIdentityProviderFactory
 
                 if (idpDescriptor != null) {
                     SAMLIdentityProviderConfig samlIdentityProviderConfig = new SAMLIdentityProviderConfig();
-                    samlIdentityProviderConfig.setEntityId(entityType.getEntityID());
                     String singleSignOnServiceUrl = null;
                     boolean postBindingRequest = false;
                     boolean postBindingLogout = false;

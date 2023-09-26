@@ -79,13 +79,13 @@ public class RequiredActionResetIntervalTest extends AbstractTestRealmKeycloakTe
     public void testRequiredActionTnCIntervalReset() {
 
         //configure required action reset interval
-        RequiredActionProviderRepresentation rep = adminClient.realm("test").flows().getRequiredAction("terms_and_conditions");
+        RequiredActionProviderRepresentation rep = adminClient.realm("test").flows().getRequiredAction(TermsAndConditions.PROVIDER_ID);
         rep.setEnabled(true);
         Map<String, String> config = new HashMap<>();
         config.put(RequiredActionsResetTask.INTERVAL_NUM, "1");
         config.put(RequiredActionsResetTask.UNIT_MULTIPLIER, "1");
         rep.setConfig(config);
-        adminClient.realm("test").flows().updateRequiredAction("terms_and_conditions", rep);
+        adminClient.realm("test").flows().updateRequiredAction(TermsAndConditions.PROVIDER_ID, rep);
 
         //ensure user has no pending required actions already
         UserRepresentation user = ActionUtil.findUserWithAdminClient(adminClient, "test-user@localhost");
@@ -111,8 +111,10 @@ public class RequiredActionResetIntervalTest extends AbstractTestRealmKeycloakTe
         boolean requiredActionIsReset = false;
         for(int i=0;i<100;i++) {
             UserRepresentation user = ActionUtil.findUserWithAdminClient(adminClient, "test-user@localhost");
-            if(user.getRequiredActions().contains(TermsAndConditions.PROVIDER_ID))
+            if(user.getRequiredActions().contains(TermsAndConditions.PROVIDER_ID)) {
                 requiredActionIsReset = true;
+                break;
+            }
             try{
                 Thread.sleep(100);
             }
