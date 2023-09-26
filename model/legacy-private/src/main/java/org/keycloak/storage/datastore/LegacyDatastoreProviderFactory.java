@@ -31,11 +31,7 @@ import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.provider.EnvironmentDependentProviderFactory;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.provider.ProviderEventListener;
-import org.keycloak.services.scheduled.ClearExpiredAdminEvents;
-import org.keycloak.services.scheduled.ClearExpiredClientInitialAccessTokens;
-import org.keycloak.services.scheduled.ClearExpiredEvents;
-import org.keycloak.services.scheduled.ClearExpiredUserSessions;
-import org.keycloak.services.scheduled.ClusterAwareScheduledTaskRunner;
+import org.keycloak.services.scheduled.*;
 import org.keycloak.storage.*;
 import org.keycloak.storage.managers.UserStorageSyncManager;
 import org.keycloak.storage.user.ImportSynchronization;
@@ -112,6 +108,7 @@ public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory,
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredAdminEvents(), interval), interval, "ClearExpiredAdminEvents");
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredClientInitialAccessTokens(), interval), interval, "ClearExpiredClientInitialAccessTokens");
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions(), interval), interval, ClearExpiredUserSessions.TASK_NAME);
+                timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new RequiredActionsResetTask(), interval), interval, "RequiredActionsResetTask");
                 updateFederation(sessionFactory, timer);
                 UserStorageSyncManager.bootstrapPeriodic(sessionFactory, timer);
             }
