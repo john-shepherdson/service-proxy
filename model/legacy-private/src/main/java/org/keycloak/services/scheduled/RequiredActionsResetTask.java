@@ -5,6 +5,7 @@ import org.keycloak.models.RequiredActionProviderModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.timer.ScheduledTask;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class RequiredActionsResetTask implements ScheduledTask {
@@ -23,11 +24,9 @@ public class RequiredActionsResetTask implements ScheduledTask {
                 if(!requiredActionProviderModel.isEnabled() || requiredActionProviderModel.getConfig().get(INTERVAL_NUM)==null || requiredActionProviderModel.getConfig().get(UNIT_MULTIPLIER)==null)
                     return;
                 if(requiredActionProviderModel.getProviderId().equals(RequiredActions.terms_and_conditions.name())){
-                    session.users().getUsersStream(realmModel, false).forEach(user -> {
-                        if(expiredOrFirsttime(user, requiredActionProviderModel)) {
-                            session.userCache().evict(realmModel, user);
+                    session.users().searchForUserStream(realmModel, new HashMap<>()).forEach(user -> {
+                        if(expiredOrFirsttime(user, requiredActionProviderModel))
                             user.addRequiredAction(RequiredActions.terms_and_conditions.name());
-                        }
                     });
                 }
             });
