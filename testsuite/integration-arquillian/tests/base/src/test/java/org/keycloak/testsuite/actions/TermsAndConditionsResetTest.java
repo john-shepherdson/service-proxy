@@ -70,11 +70,11 @@ public class TermsAndConditionsResetTest extends AbstractTestRealmKeycloakTest {
         UserBuilder.edit(user).requiredAction(TermsAndConditions.PROVIDER_ID);
         adminClient.realm("test").users().get(user.getId()).update(user);
 
-        RequiredActionProviderRepresentation rep = adminClient.realm("test").flows().getRequiredAction("terms_and_conditions");
+        RequiredActionProviderRepresentation rep = adminClient.realm("test").flows().getRequiredAction(TermsAndConditions.PROVIDER_ID);
         rep.setEnabled(true);
-        adminClient.realm("test").flows().updateRequiredAction("terms_and_conditions", rep);
+        adminClient.realm("test").flows().updateRequiredAction(TermsAndConditions.PROVIDER_ID, rep);
 
-        createUser("test","test-user2@localhost", "password","terms_and_conditions");
+        createUser("test","test-user2@localhost", "password",TermsAndConditions.PROVIDER_ID);
         UserRepresentation user2 = ActionUtil.findUserWithAdminClient(adminClient, "test-user2@localhost");
     }
 
@@ -86,7 +86,7 @@ public class TermsAndConditionsResetTest extends AbstractTestRealmKeycloakTest {
         termsAndConditionsAccept("test-user2@localhost");
         deleteAllSessionsInRealm("test");
 
-        adminClient.realm("test").flows().resetRequiredAction("terms_and_conditions");
+        adminClient.realm("test").flows().resetRequiredAction(TermsAndConditions.PROVIDER_ID);
 
         termsAndConditionsAccept("test-user@localhost");
         deleteAllSessionsInRealm("test");

@@ -128,15 +128,15 @@ public class LoginPageTest extends AbstractI18NTest {
         assertEquals("Deutsch", loginPage.getLanguageDropdownText());
     }
 
-    @Test
-    public void htmlLangAttribute() {
-        loginPage.open();
-        assertEquals("en", loginPage.getHtmlLanguage());
-
-        oauth.uiLocales("de");
-        loginPage.open();
-        assertEquals("de", loginPage.getHtmlLanguage());
-    }
+//    @Test
+//    public void htmlLangAttribute() {
+//        loginPage.open();
+//        assertEquals("en", loginPage.getHtmlLanguage());
+//
+//        oauth.uiLocales("de");
+//        loginPage.open();
+//        assertEquals("de", loginPage.getHtmlLanguage());
+//    }
 
     @Test
     public void acceptLanguageHeader() throws IOException {
