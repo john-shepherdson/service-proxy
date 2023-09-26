@@ -1022,6 +1022,12 @@ public class UserResource {
         try {
             if (user.isMemberOf(group)){
                 user.leaveGroup(group);
+                try {
+                    GroupRepresentation rep = ModelToRepresentation.toRepresentation(group, false);
+                    session.getProvider(EmailTemplateProvider.class).setRealm(realm).setUser(user).sendGroupActionEmail(rep.getPath(),false);
+                } catch (EmailException e) {
+                    ServicesLogger.LOGGER.failedToSendEmail(e);
+                }
                 adminEvent.operation(OperationType.DELETE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
             }
         } catch (ModelException me) {
@@ -1045,6 +1051,12 @@ public class UserResource {
         auth.groups().requireManageMembership(group);
         if (!RoleUtils.isDirectMember(user.getGroupsStream(),group)){
             user.joinGroup(group);
+            try {
+                GroupRepresentation rep = ModelToRepresentation.toRepresentation(group, false);
+                session.getProvider(EmailTemplateProvider.class).setRealm(realm).setUser(user).sendGroupActionEmail(rep.getPath(),true);
+            } catch (EmailException e) {
+                ServicesLogger.LOGGER.failedToSendEmail(e);
+            }
             adminEvent.operation(OperationType.CREATE).resource(ResourceType.GROUP_MEMBERSHIP).representation(ModelToRepresentation.toRepresentation(group, true)).resourcePath(session.getContext().getUri()).success();
         }
     }
