@@ -1354,22 +1354,28 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
     	federationModel.setUpdateFrequencyInMins(entity.getUpdateFrequencyInMins());
     	federationModel.setValidUntilTimestamp(entity.getValidUntilTimestamp());
     	Set<String> denyList = new HashSet<>();
-    	denyList.addAll(entity.getEntityIdDenyList());
+        if (entity.getEntityIdDenyList() != null)
+    	  denyList.addAll(entity.getEntityIdDenyList());
     	federationModel.setEntityIdDenyList(denyList);
     	Set<String> allowList = new HashSet<>();
-    	allowList.addAll(entity.getEntityIdAllowList());
+        if (entity.getEntityIdAllowList() != null)
+    	  allowList.addAll(entity.getEntityIdAllowList());
         federationModel.setEntityIdAllowList(allowList);
         Set<String> registrationAuthorityDenyList = new HashSet<>();
-        registrationAuthorityDenyList.addAll(entity.getRegistrationAuthorityDenyList());
+        if (entity.getRegistrationAuthorityDenyList() != null)
+          registrationAuthorityDenyList.addAll(entity.getRegistrationAuthorityDenyList());
         federationModel.setRegistrationAuthorityDenyList(registrationAuthorityDenyList);
         Set<String> registrationAuthorityAllowList = new HashSet<>();
-        registrationAuthorityAllowList.addAll(entity.getRegistrationAuthorityAllowList());
+        if (entity.getRegistrationAuthorityAllowList() != null)
+          registrationAuthorityAllowList.addAll(entity.getRegistrationAuthorityAllowList());
         federationModel.setRegistrationAuthorityAllowList(registrationAuthorityAllowList);
         Map<String,List<String>> categoryDenyList = new HashMap<>();
-        categoryDenyList.putAll(entity.getCategoryDenyList());
+        if (entity.getCategoryDenyList() != null)
+          categoryDenyList.putAll(entity.getCategoryDenyList());
         federationModel.setCategoryDenyList(categoryDenyList);
         Map<String,List<String>> categoryAllowList = new HashMap<>();
-        categoryAllowList.putAll(entity.getCategoryAllowList());
+        if (entity.getCategoryAllowList() != null)
+          categoryAllowList.putAll(entity.getCategoryAllowList());
         federationModel.setCategoryAllowList(categoryAllowList);
     	federationModel.setUrl(entity.getUrl());
     	Map<String, String> copy = new HashMap<>();
@@ -1538,6 +1544,13 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
         entity.setPostBrokerLoginFlowId(identityProvider.getPostBrokerLoginFlowId());
         entity.setConfig(identityProvider.getConfig());
         entity.setLinkOnly(identityProvider.isLinkOnly());
+        if (identityProvider.getFederations() != null) {
+            entity.setFederations(identityProvider.getFederations().stream().map(id -> {
+                FederationEntity fed = new FederationEntity();
+                fed.setInternalId(id);
+                return fed;
+            }).collect(Collectors.toSet()));
+        }
 
     }
 

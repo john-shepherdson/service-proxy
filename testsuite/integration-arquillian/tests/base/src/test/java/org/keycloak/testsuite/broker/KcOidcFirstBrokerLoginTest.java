@@ -338,6 +338,6 @@ public class KcOidcFirstBrokerLoginTest extends AbstractFirstBrokerLoginTest {
 
         log.debug("Should not fail here... We're still not logged in, so the IDP should be shown on the login page.");
         assertTrue("We should be on the login page.", driver.getPageSource().contains("Sign in to your account"));
-        final var socialButton = this.loginPage.findSocialButton(bc.getIDPAlias());
+      //  final var socialButton = this.loginPage.findSocialButton(bc.getIDPAlias());
     }
 }

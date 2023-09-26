@@ -1256,9 +1256,6 @@ public class AuthenticationManagementResource {
         auth.realm().requireManageRealm();
         session.users().searchForUserStream(realm, new HashMap<>()).forEach(user -> user.addRequiredAction(alias));
         adminEvent.operation(OperationType.ACTION).resource(ResourceType.REQUIRED_ACTION).resourcePath(session.getContext().getUri()).success();
-        if (session.getTransactionManager().isActive()) {
-            session.getTransactionManager().commit();
-        }
     }
 
 

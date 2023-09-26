@@ -13,20 +13,16 @@ public class RequiredActionsResetTask implements ScheduledTask {
     public static String INTERVAL_NUM = "reset_every";
     public static String UNIT_MULTIPLIER = "reset_every_multiplier";
 
-    public enum RequiredActions {
-        terms_and_conditions;
-    }
-
     @Override
     public void run(KeycloakSession session) {
         session.realms().getRealmsStream().forEach(realmModel -> {
             realmModel.getRequiredActionProvidersStream().forEach(requiredActionProviderModel -> {
                 if(!requiredActionProviderModel.isEnabled() || requiredActionProviderModel.getConfig().get(INTERVAL_NUM)==null || requiredActionProviderModel.getConfig().get(UNIT_MULTIPLIER)==null)
                     return;
-                if(requiredActionProviderModel.getProviderId().equals(RequiredActions.terms_and_conditions.name())){
+                if(requiredActionProviderModel.getProviderId().equals(UserModel.RequiredAction.TERMS_AND_CONDITIONS.name())){
                     session.users().searchForUserStream(realmModel, new HashMap<>()).forEach(user -> {
                         if(expiredOrFirsttime(user, requiredActionProviderModel))
-                            user.addRequiredAction(RequiredActions.terms_and_conditions.name());
+                            user.addRequiredAction(UserModel.RequiredAction.TERMS_AND_CONDITIONS.name());
                     });
                 }
             });
