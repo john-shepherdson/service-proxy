@@ -778,7 +778,7 @@ public class SAMLEndpoint {
         }
         @Override
         protected SAMLDocumentHolder extractResponseDocument(String response) throws IOException {
-            byte[] samlBytes = RedirectBindingUtil.urlBase64Decode(response);
+            byte[] samlBytes = PostBindingUtil.base64Decode(response);
             return SAMLRequestParser.parseResponseDocument(samlBytes);
         }
 

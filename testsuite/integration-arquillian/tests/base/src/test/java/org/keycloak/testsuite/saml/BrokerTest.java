@@ -99,6 +99,17 @@ public class BrokerTest extends AbstractSamlTest {
           .setAttribute(SAMLIdentityProviderConfig.POST_BINDING_AUTHN_REQUEST, "false")
           .setAttribute(SAMLIdentityProviderConfig.BACKCHANNEL_SUPPORTED, "false")
           .build();
+
+        SAMLIdentityProviderConfig.Principal pr = new SAMLIdentityProviderConfig.Principal();
+        pr.setPrincipalType(SamlPrincipalType.ATTRIBUTE);
+        pr.setPrincipalAttribute("mail");
+        LinkedList<SAMLIdentityProviderConfig.Principal> principals = new LinkedList<>();
+        principals.add(pr);
+        try {
+            identityProvider.getConfig().put(SAMLIdentityProviderConfig.MULTIPLE_PRINCIPALS, JsonSerialization.writeValueAsString(principals));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return identityProvider;
     }
 
