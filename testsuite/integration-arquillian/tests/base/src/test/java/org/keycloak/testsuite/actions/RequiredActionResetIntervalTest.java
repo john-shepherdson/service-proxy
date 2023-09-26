@@ -24,11 +24,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.keycloak.authentication.requiredactions.TermsAndConditions;
-import org.keycloak.events.Details;
-import org.keycloak.events.EventType;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.UserModel.RequiredAction;
-import org.keycloak.models.sessions.infinispan.changes.sessions.CrossDCLastSessionRefreshStoreFactory;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -36,20 +31,14 @@ import org.keycloak.services.scheduled.ClusterAwareScheduledTaskRunner;
 import org.keycloak.services.scheduled.RequiredActionsResetTask;
 import org.keycloak.testsuite.AbstractTestRealmKeycloakTest;
 import org.keycloak.testsuite.AssertEvents;
-import org.keycloak.testsuite.admin.ApiUtil;
-import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude;
-import org.keycloak.testsuite.arquillian.annotation.AuthServerContainerExclude.AuthServer;
-import org.keycloak.testsuite.arquillian.annotation.ModelTest;
 import org.keycloak.testsuite.pages.*;
-import org.keycloak.testsuite.pages.AppPage.RequestType;
-import org.keycloak.testsuite.util.UserBuilder;
 import org.keycloak.timer.TimerProvider;
 
-import java.util.*;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-
-@AuthServerContainerExclude(AuthServer.REMOTE)
 public class RequiredActionResetIntervalTest extends AbstractTestRealmKeycloakTest {
 
     @Override
