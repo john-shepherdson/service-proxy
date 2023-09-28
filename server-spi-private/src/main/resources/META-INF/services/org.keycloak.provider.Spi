@@ -91,3 +91,4 @@ org.keycloak.services.clientpolicy.ClientPolicyManagerSpi
 org.keycloak.userprofile.UserProfileSpi
 org.keycloak.device.DeviceRepresentationSpi
 org.keycloak.broker.federation.SAMLFederationSpi
+org.keycloak.models.customcache.CustomCacheSpi
