@@ -24,6 +24,7 @@ import org.keycloak.broker.federation.FederationProvider;
 import org.keycloak.broker.federation.SAMLFederationProviderFactory;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.Profile;
+import org.keycloak.executors.ExecutorsProvider;
 import org.keycloak.migration.MigrationModelManager;
 import org.keycloak.models.*;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -37,6 +38,7 @@ import org.keycloak.storage.managers.UserStorageSyncManager;
 import org.keycloak.storage.user.ImportSynchronization;
 import org.keycloak.timer.TimerProvider;
 
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory, ProviderEventListener, EnvironmentDependentProviderFactory {
@@ -110,6 +112,10 @@ public class LegacyDatastoreProviderFactory implements DatastoreProviderFactory,
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new ClearExpiredUserSessions(), interval), interval, ClearExpiredUserSessions.TASK_NAME);
                 timer.schedule(new ClusterAwareScheduledTaskRunner(sessionFactory, new RequiredActionsResetTask(), interval), interval, "RequiredActionsResetTask");
                 updateFederation(sessionFactory, timer);
+                ExecutorService executor = session.getProvider(ExecutorsProvider.class).getExecutor("idp-scheduled tasks");
+                StartIdPScheduledTasks idPScheduledTasks = new StartIdPScheduledTasks();
+                ScheduledTaskRunner task = new ScheduledTaskRunner(sessionFactory, idPScheduledTasks);
+                executor.submit(task);
                 UserStorageSyncManager.bootstrapPeriodic(sessionFactory, timer);
             }
         }
