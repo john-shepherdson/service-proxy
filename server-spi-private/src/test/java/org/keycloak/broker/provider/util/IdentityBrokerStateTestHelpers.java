@@ -1425,6 +1425,11 @@ public class IdentityBrokerStateTestHelpers {
         }
 
         @Override
+        public Stream<IdentityProviderModel> getAutoUpdatedIdentityProvidersStream() {
+            return Stream.empty();
+        }
+
+        @Override
         public IdentityProviderModel getIdentityProviderByAlias(String alias) {
             return null;
         }
