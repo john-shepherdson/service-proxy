@@ -29,3 +29,6 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 - FreeMarkerLoginFormsProvider now has an additional common attribute passed to the ftl templates, the "uriInfo"
 - Change emailVerified User field with UserAttributeMappers (conditional trust email). [EOSC-KC-70](https://github.com/eosc-kc/keycloak/issues/70)
 - Offline_access scope return always refresh_token [RCIAM-744](https://jira.argo.grnet.gr/browse/RCIAM-744)
+
+### Fixed
+- Changes in account console and account rest service [RCIAM-860](https://jira.argo.grnet.gr/browse/RCIAM-860)

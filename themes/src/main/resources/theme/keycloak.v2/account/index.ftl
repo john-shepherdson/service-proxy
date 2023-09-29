@@ -45,6 +45,12 @@
                 isLinkedAccountsEnabled : ${realm.identityFederationEnabled?c},
                 isMyResourcesEnabled : ${(realm.userManagedAccessAllowed && isAuthorizationEnabled)?c},
                 deleteAccountAllowed : ${deleteAccountAllowed?c},
+                manageAccountAllowed : ${manageAccountAllowed?c},
+                manageAccountLinkAllowed : ${manageAccountLinkAllowed?c},
+                manageConsentAllowed : ${manageConsentAllowed?c},
+                manageAccountBasicAuthAllowed : ${manageAccountBasicAuthAllowed?c},
+                manageAccount2faAllowed : ${manageAccount2faAllowed?c},
+                viewApplicationAllowed : ${viewApplicationAllowed?c},
                 updateEmailFeatureEnabled: ${updateEmailFeatureEnabled?c},
                 updateEmailActionEnabled: ${updateEmailActionEnabled?c},
                 isViewGroupsEnabled : ${isViewGroupsEnabled?c}
