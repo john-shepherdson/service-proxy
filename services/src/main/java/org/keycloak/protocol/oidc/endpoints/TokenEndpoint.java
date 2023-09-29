@@ -463,7 +463,7 @@ public class TokenEndpoint {
         TokenManager.AccessTokenResponseBuilder responseBuilder = tokenManager
             .responseBuilder(realm, client, event, session, userSession, clientSessionCtx).accessToken(token);
         boolean useRefreshToken = OIDCAdvancedConfigWrapper.fromClientModel(client).isUseRefreshToken();
-        if (useRefreshToken) {
+        if (useRefreshToken || TokenUtil.isOfflineTokenRequested(scopeParam)) {
             responseBuilder.generateRefreshToken();
         }
 
