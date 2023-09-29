@@ -17,7 +17,10 @@
  */
 package org.keycloak.protocol.oidc;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.TokenVerifier;
@@ -29,11 +32,10 @@ import org.keycloak.common.util.Time;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureVerifierContext;
-import org.keycloak.models.ImpersonationSessionNote;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
-import org.keycloak.models.UserSessionModel;
+import org.keycloak.models.*;
+import org.keycloak.models.customcache.CustomCacheProvider;
+import org.keycloak.models.customcache.CustomCacheProviderFactory;
+import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.Urls;
 import org.keycloak.util.JsonSerialization;
@@ -41,6 +43,11 @@ import org.keycloak.protocol.oidc.utils.Key;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Base64;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
