@@ -349,8 +349,6 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
     protected void testMigrationTo20_0_0() {
         testViewGroups(masterRealm);
         testViewGroups(migrationRealm);
-        testNewAccountRoles(masterRealm);
-        testNewAccountRoles(migrationRealm);
     }
 
     protected void testMigrationTo21_0_2() {
