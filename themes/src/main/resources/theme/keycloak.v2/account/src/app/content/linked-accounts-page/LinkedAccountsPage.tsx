@@ -65,6 +65,9 @@ import {AccountServiceContext} from '../../account-service/AccountServiceContext
 import {Msg} from '../../widgets/Msg';
 import {ContentPage} from '../ContentPage';
 import {createRedirect} from '../../util/RedirectUri';
+import { Features } from '../../widgets/features';
+
+declare const features: Features;
 
 
 interface ResultsResponse {
@@ -265,89 +268,89 @@ class LinkedAccountsPage extends React.Component<LinkedAccountsPageProps, Linked
         return (
             <ContentPage title={Msg.localize('linkedAccountsTitle')} introMessage={Msg.localize('linkedAccountsIntroMessage')}>
                 <PageSection isFilled variant={PageSectionVariants.light}>
-                    <Stack hasGutter>
-                        <StackItem>
-                            <Title headingLevel="h2" className="pf-u-mb-lg" size='xl'>
-                                <Msg msgKey='linkedLoginProviders'/>
-                            </Title>
-                            <DataList id="linked-idps" aria-label={Msg.localize('linkedLoginProviders')} isCompact>
-                                {this.makeRows(this.state.linkedAccounts, true)}
-                            </DataList>
-                        </StackItem>
-                        { !this.state.linkedAccountsBarHidden &&
-                        <Flex>
-                            <FlexItem>
-                                <TextInput
-                                    type="search"
-                                    value={this.state.linkedAccountsKeyword}
-                                    id="linked-search"
-                                    name="linked-search"
-                                    onChange={this.onLinkedFilterChange}
-                                    aria-label="Search linked"
-                                    placeholder="Filter"
-                                    onKeyDown={this.filterLinkedKeyPress}
-                                />
-                            </FlexItem>
-                            <FlexItem>
-                                <Button variant="control" aria-label="filter-linked" onClick={this.filterLinkedButton}>
-                                    <SearchIcon />
-                                </Button>
-                            </FlexItem>
-                            <FlexItem>
-                                <Pagination
-                                    itemCount={this.state.linkedAccountsHits}
-                                    widgetId="pagination-linked"
-                                    perPage={this.state.linkedAccountsPerPage}
-                                    page={this.state.linkedAccountsPage}
-                                    variant={PaginationVariant.bottom}
-                                    onSetPage={this.onLinkedSetPage}
-                                    onPerPageSelect={this.onLinkedPerPageSelect}
-                                />
-                            </FlexItem>
-                        </Flex>
-                        }
-                        <StackItem/>
-                        <StackItem>
-                            <Title headingLevel="h2" className="pf-u-mt-xl pf-u-mb-lg" size='xl'>
-                                <Msg msgKey='unlinkedLoginProviders'/>
-                            </Title>
-                            <DataList id="unlinked-idps" aria-label={Msg.localize('unlinkedLoginProviders')} isCompact>
-                                {this.makeRows(this.state.unLinkedAccounts, false)}
-                            </DataList>
-                        </StackItem>
-                        { !this.state.unLinkedAccountsBarHidden &&
-                        <Flex>
-                            <FlexItem>
-                                <TextInput
-                                    type="search"
-                                    value={this.state.unLinkedAccountsKeyword}
-                                    id="unlinked-search"
-                                    name="unlinked-search"
-                                    onChange={this.onUnlinkedFilterChange}
-                                    aria-label="Search unlinked"
-                                    placeholder="Filter"
-                                    onKeyDown={this.filterUnlinkedKeyPress}
-                                />
-                            </FlexItem>
-                            <FlexItem>
-                                <Button variant="control" aria-label="filter-unlinked" onClick={this.filterUnlinkedButton}>
-                                    <SearchIcon />
-                                </Button>
-                            </FlexItem>
-                            <FlexItem>
-                                <Pagination
-                                    itemCount={this.state.unLinkedAccountsHits}
-                                    widgetId="pagination-unlinked"
-                                    perPage={this.state.unLinkedAccountsPerPage}
-                                    page={this.state.unLinkedAccountsPage}
-                                    variant={PaginationVariant.bottom}
-                                    onSetPage={this.onUnlinkedSetPage}
-                                    onPerPageSelect={this.onUnlinkedPerPageSelect}
-                                />
-                            </FlexItem>
-                        </Flex>
-                        }
-                    </Stack>
+                <Stack hasGutter>
+                    <StackItem>
+                        <Title headingLevel="h2" className="pf-u-mb-lg" size='xl'>
+                            <Msg msgKey='linkedLoginProviders'/>
+                        </Title>
+                        <DataList id="linked-idps" aria-label={Msg.localize('linkedLoginProviders')}>
+                            {this.makeRows(this.state.linkedAccounts, true)}
+                        </DataList>
+                    </StackItem>
+                    { !this.state.linkedAccountsBarHidden &&
+                    <Flex>
+                        <FlexItem>
+                            <TextInput
+                                type="search"
+                                value={this.state.linkedAccountsKeyword}
+                                id="linked-search"
+                                name="linked-search"
+                                onChange={this.onLinkedFilterChange}
+                                aria-label="Search linked"
+                                placeholder="Filter"
+                                onKeyDown={this.filterLinkedKeyPress}
+                            />
+                        </FlexItem>
+                        <FlexItem>
+                            <Button variant="control" aria-label="filter-linked" onClick={this.filterLinkedButton}>
+                                <SearchIcon />
+                            </Button>
+                        </FlexItem>
+                        <FlexItem>
+                            <Pagination
+                                itemCount={this.state.linkedAccountsHits}
+                                widgetId="pagination-linked"
+                                perPage={this.state.linkedAccountsPerPage}
+                                page={this.state.linkedAccountsPage}
+                                variant={PaginationVariant.bottom}
+                                onSetPage={this.onLinkedSetPage}
+                                onPerPageSelect={this.onLinkedPerPageSelect}
+                            />
+                        </FlexItem>
+                    </Flex>
+                    }
+                    <StackItem/>
+                    {features.manageAccountLinkAllowed && <StackItem>
+                        <Title headingLevel="h2" className="pf-u-mt-xl pf-u-mb-lg" size='xl'>
+                            <Msg msgKey='unlinkedLoginProviders'/>
+                        </Title>
+                        <DataList id="unlinked-idps" aria-label={Msg.localize('unlinkedLoginProviders')}>
+                            {this.makeRows(this.state.unLinkedAccounts, false)}
+                        </DataList>
+                    </StackItem>}
+                    { !this.state.unLinkedAccountsBarHidden &&
+                    <Flex>
+                        <FlexItem>
+                            <TextInput
+                                type="search"
+                                value={this.state.unLinkedAccountsKeyword}
+                                id="unlinked-search"
+                                name="unlinked-search"
+                                onChange={this.onUnlinkedFilterChange}
+                                aria-label="Search unlinked"
+                                placeholder="Filter"
+                                onKeyDown={this.filterUnlinkedKeyPress}
+                            />
+                        </FlexItem>
+                        <FlexItem>
+                            <Button variant="control" aria-label="filter-unlinked" onClick={this.filterUnlinkedButton}>
+                                <SearchIcon />
+                            </Button>
+                        </FlexItem>
+                        <FlexItem>
+                            <Pagination
+                                itemCount={this.state.unLinkedAccountsHits}
+                                widgetId="pagination-unlinked"
+                                perPage={this.state.unLinkedAccountsPerPage}
+                                page={this.state.unLinkedAccountsPage}
+                                variant={PaginationVariant.bottom}
+                                onSetPage={this.onUnlinkedSetPage}
+                                onPerPageSelect={this.onUnlinkedPerPageSelect}
+                            />
+                        </FlexItem>
+                    </Flex>
+                    }
+                </Stack>
                 </PageSection>
             </ContentPage>
         );
@@ -402,8 +405,8 @@ class LinkedAccountsPage extends React.Component<LinkedAccountsPageProps, Linked
                                         </Split>
                                     </DataListCell>,
                                 ]}/>
-                            <DataListAction aria-labelledby={Msg.localize('link')} aria-label={Msg.localize('unLink')} id='setPasswordAction'>
-                                {isLinked && <Button id={`${account.providerAlias}-idp-unlink`} variant='link' onClick={() => this.unLinkAccount(account)}><UnlinkIcon size='sm'/> <Msg msgKey='unLink'/></Button>}
+                           <DataListAction aria-labelledby={Msg.localize('link')} aria-label={Msg.localize('unLink')} id='setPasswordAction'>
+                                {isLinked && features.manageAccountLinkAllowed && <Button id={`${account.providerAlias}-idp-unlink`} variant='link' onClick={() => this.unLinkAccount(account)}><UnlinkIcon size='sm'/> <Msg msgKey='unLink'/></Button>}
                                 {!isLinked && <Button id={`${account.providerAlias}-idp-link`} variant='link' onClick={() => this.linkAccount(account)}><LinkIcon size='sm'/> <Msg msgKey='link'/></Button>}
                             </DataListAction>
                         </DataListItemRow>
