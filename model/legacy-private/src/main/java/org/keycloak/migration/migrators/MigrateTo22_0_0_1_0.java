@@ -1,7 +1,6 @@
 package org.keycloak.migration.migrators;
 
 import org.keycloak.migration.ModelVersion;
-import org.keycloak.models.AccountRoles;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
@@ -13,7 +12,7 @@ import static org.keycloak.models.AccountRoles.MANAGE_ACCOUNT_2FA;
 import static org.keycloak.models.AccountRoles.MANAGE_ACCOUNT_BASIC_AUTH;
 public class MigrateTo22_0_0_1_0 implements Migration {
 
-    public static final ModelVersion VERSION = new ModelVersion("22_0_0_1_0");
+    public static final ModelVersion VERSION = new ModelVersion("22.0.0-1.0");
 
     @Override
     public void migrate(KeycloakSession session) {
