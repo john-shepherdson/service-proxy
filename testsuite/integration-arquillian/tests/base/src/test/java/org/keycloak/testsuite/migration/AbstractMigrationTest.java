@@ -41,9 +41,11 @@ import org.keycloak.models.Constants;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.DefaultAuthenticationFlows;
+import org.keycloak.models.utils.RepresentationToModel;
 import org.keycloak.models.utils.TimeBasedOTP;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
+import org.keycloak.protocol.oidc.OIDCWellKnownProvider;
 import org.keycloak.protocol.saml.SamlConfigAttributes;
 import org.keycloak.protocol.saml.util.ArtifactBindingUtils;
 import org.keycloak.representations.AccessToken;
@@ -336,6 +338,8 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
     }
 
     protected void testMigrationTo18_0_0() {
+        testDefaultClaimsSupported(masterRealm);
+        testDefaultClaimsSupported(migrationRealm);
         // check that all expected scopes exist in the migrated realm.
         testRealmDefaultClientScopes(migrationRealm);
     }
@@ -1155,6 +1159,12 @@ public abstract class AbstractMigrationTest extends AbstractKeycloakTest {
                     + "     03800     03810     03820     03830     03840     03850     03860     03870     03880     03890"
                     + "     03900     03910     03920     03930     03940     03950     03960     03970     03980"));
           });
+    }
+
+    private void testDefaultClaimsSupported(RealmResource realm){
+        List<String> claimsSupported = realm.toRepresentation().getClaimsSupported();
+        Assert.assertNotNull(claimsSupported);
+        Assert.assertNames(claimsSupported, OIDCWellKnownProvider.DEFAULT_CLAIMS_SUPPORTED.toArray(new String[OIDCWellKnownProvider.DEFAULT_CLAIMS_SUPPORTED.size()]));
     }
 
     protected void testRealmAttributesMigration() {
