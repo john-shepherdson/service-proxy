@@ -175,6 +175,8 @@ public class CachedRealm extends AbstractExtendableRevisioned {
 
     protected Map<String, Map<String,String>> realmLocalizationTexts;
 
+    protected List<String> claimsSupported;
+
     public CachedRealm(Long revision, RealmModel model) {
         super(revision, model.getId());
         name = model.getName();
@@ -241,6 +243,7 @@ public class CachedRealm extends AbstractExtendableRevisioned {
 
         requiredCredentials = model.getRequiredCredentialsStream().collect(Collectors.toList());
         userActionTokenLifespans = Collections.unmodifiableMap(new HashMap<>(model.getUserActionTokenLifespans()));
+        claimsSupported = model.getClaimsSupported();
 
         this.federations  = model.getSAMLFederations();
 
@@ -747,5 +750,9 @@ public class CachedRealm extends AbstractExtendableRevisioned {
 
     public Map<String, Map<String, String>> getRealmLocalizationTexts() {
         return realmLocalizationTexts;
+    }
+
+    public List<String> getClaimsSupported() {
+        return claimsSupported;
     }
 }

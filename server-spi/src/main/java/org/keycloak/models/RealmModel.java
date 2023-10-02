@@ -240,6 +240,10 @@ public interface RealmModel extends RoleContainerModel {
 
     void setAccessCodeLifespanUserAction(int seconds);
 
+    List<String> getClaimsSupported();
+
+    void setClaimsSupported(List<String> claimsSupported);
+
     OAuth2DeviceConfig getOAuth2DeviceConfig();
 
     CibaConfig getCibaPolicy();
