@@ -52,5 +52,6 @@ public interface RealmAttributes {
     String WEBAUTHN_POLICY_ACCEPTABLE_AAGUIDS = "webAuthnPolicyAcceptableAaguids";
 
     String ADMIN_EVENTS_EXPIRATION = "adminEventsExpiration";
+    String CLAIMS_SUPPORTED = "claimsSupported";
 
 }
