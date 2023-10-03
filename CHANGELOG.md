@@ -43,3 +43,4 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 ### Fixed
 - Changes in account console and account rest service [RCIAM-860](https://jira.argo.grnet.gr/browse/RCIAM-860)
+- Scope parameter in refresh flow [RCIAM-990](https://jira.argo.grnet.gr/browse/RCIAM-990)
