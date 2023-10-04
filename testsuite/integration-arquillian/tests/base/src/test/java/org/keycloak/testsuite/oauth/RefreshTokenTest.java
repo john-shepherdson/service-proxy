@@ -495,7 +495,7 @@ public class RefreshTokenTest extends AbstractKeycloakTest {
 
         } finally {
             setTimeOffset(0);
-            oauth.scope(null);openid
+            oauth.scope(null);
         }
     }
 
