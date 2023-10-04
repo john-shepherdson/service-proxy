@@ -154,7 +154,7 @@ public interface UserSessionProvider extends Provider {
     void removeUserSessions(RealmModel realm);
 
     void onRealmRemoved(RealmModel realm);
-    void onClientRemoved(RealmModel realm, ClientModel client);
+    void onClientRemoved(RealmModel realm, String id);
 
     /** Newly created userSession won't contain attached AuthenticatedClientSessions **/
     UserSessionModel createOfflineUserSession(UserSessionModel userSession);

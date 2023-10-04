@@ -17,11 +17,7 @@
 
 package org.keycloak.models.map.client;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -190,6 +186,11 @@ public class MapClientProvider implements ClientProvider {
                  .compare(SearchableFields.ALWAYS_DISPLAY_IN_CONSOLE, Operator.EQ, Boolean.TRUE);
         return storeWithRealm(realm).read(withCriteria(mcb).orderBy(SearchableFields.CLIENT_ID, ASCENDING))
                   .map(entityToAdapterFunc(realm));
+    }
+
+    @Override
+    public List<ClientModel> getFederationClientsStream(RealmModel realm, String federationId){
+        return Collections.emptyList();
     }
 
     @Override

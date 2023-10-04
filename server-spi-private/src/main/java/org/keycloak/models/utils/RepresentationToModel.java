@@ -371,7 +371,7 @@ public class RepresentationToModel {
         if (Objects.nonNull(resourceRep.getSecret())) {
             client.setSecret(resourceRep.getSecret());
         } else {
-            if (client.isPublicClient() || client.isBearerOnly()) {
+            if ("saml".equals(client.getProtocol()) || client.isPublicClient() || client.isBearerOnly()) {
                 client.setSecret(null);
             } else {
                 KeycloakModelUtils.generateSecret(client);
@@ -389,6 +389,8 @@ public class RepresentationToModel {
                     || !resourceRep.getAttributes().containsKey("saml.artifact.binding.identifier"))) {
             client.setAttribute("saml.artifact.binding.identifier", computeArtifactBindingIdentifierString(resourceRep.getClientId()));
         }
+
+        client.setFederations(resourceRep.getFederations());
 
         if (resourceRep.getAuthenticationFlowBindingOverrides() != null) {
             for (Map.Entry<String, String> entry : resourceRep.getAuthenticationFlowBindingOverrides().entrySet()) {
@@ -595,6 +597,7 @@ public class RepresentationToModel {
                 resource.setSecret(newSecret);
             }
         }
+        resource.setFederations(rep.getFederations());
 
         resource.updateClient();
 

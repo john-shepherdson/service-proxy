@@ -371,7 +371,7 @@ public class MapUserSessionProvider implements UserSessionProvider {
     }
 
     @Override
-    public void onClientRemoved(RealmModel realm, ClientModel client) {
+    public void onClientRemoved(RealmModel realm, String id) {
 
     }
 

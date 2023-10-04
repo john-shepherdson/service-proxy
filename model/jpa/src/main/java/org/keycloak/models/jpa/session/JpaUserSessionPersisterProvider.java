@@ -200,8 +200,8 @@ public class JpaUserSessionPersisterProvider implements UserSessionPersisterProv
     }
 
     @Override
-    public void onClientRemoved(RealmModel realm, ClientModel client) {
-        onClientRemoved(client.getId());
+    public void onClientRemoved(RealmModel realm, String id) {
+        onClientRemoved(id);
     }
 
     private void onClientRemoved(String clientUUID) {
