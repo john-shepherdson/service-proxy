@@ -92,7 +92,7 @@ public class DisabledUserSessionPersisterProvider implements UserSessionPersiste
     }
 
     @Override
-    public void onClientRemoved(RealmModel realm, ClientModel client) {
+    public void onClientRemoved(RealmModel realm, String id) {
 
     }
 

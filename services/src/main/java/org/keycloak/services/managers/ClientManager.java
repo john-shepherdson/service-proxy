@@ -100,7 +100,7 @@ public class ClientManager {
         if (!isInternalClient(realm.getName(), client.getClientId()) && realm.removeClient(client.getId())) {
             UserSessionProvider sessions = realmManager.getSession().sessions();
             if (sessions != null) {
-                sessions.onClientRemoved(realm, client);
+                sessions.onClientRemoved(realm, client.getId());
             }
 
             AuthenticationSessionProvider authSessions = realmManager.getSession().authenticationSessions();
@@ -112,6 +112,26 @@ public class ClientManager {
             if (serviceAccountUser != null) {
                 new UserManager(realmManager.getSession()).removeUser(realm, serviceAccountUser);
             }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean removeFederatedClient(RealmModel realm, ClientModel client) {
+        String id = client.getId();
+        if (realm.removeClient(id)) {
+            UserSessionProvider sessions = realmManager.getSession().sessions();
+            if (sessions != null) {
+                sessions.onClientRemoved(realm, id);
+            }
+
+            //this do nothing now!!!
+//            AuthenticationSessionProvider authSessions = realmManager.getSession().authenticationSessions();
+//            if (authSessions != null) {
+//                authSessions.onClientRemoved(realm, client);
+//            }
 
             return true;
         } else {

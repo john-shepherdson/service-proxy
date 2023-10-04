@@ -500,6 +500,11 @@ public class LegacyExportImportManager implements ExportImportManager {
                 model.setFederationMapperModels(
                         representation.getFederationMappers().stream().map(mapper -> toModel(mapper)).collect(Collectors.toList()));
                 newRealm.addSAMLFederation(model);
+                representation.getFederationMappers().stream().forEach(mapper -> {
+                    mapper.setFederationId(representation.getInternalId());
+                    FederationMapperModel mapperModel = toModel(mapper);
+                    newRealm.addIdentityProvidersFederationMapper(mapperModel);
+                });
                 FederationProvider federationProvider = SAMLFederationProviderFactory
                         .getSAMLFederationProviderFactoryById(session, model.getProviderId())
                         .create(session, model, newRealm.getId());
@@ -524,6 +529,7 @@ public class LegacyExportImportManager implements ExportImportManager {
         model.setCategoryAllowList(representation.getCategoryAllowList());
         model.setUrl(representation.getUrl());
         model.setValidUntilTimestamp(representation.getValidUntilTimestamp());
+        model.setCategory(representation.getCategory());
         model.setConfig(representation.getConfig());
         return model;
     }
