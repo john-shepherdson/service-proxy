@@ -434,6 +434,26 @@ public class IdentityBrokerStateTestHelpers {
         }
 
         @Override
+        public List<String> getFederations() {
+            return null;
+        }
+
+        @Override
+        public void setFederations(List<String> federations) {
+
+        }
+
+        @Override
+        public void addFederation(String federation) {
+
+        }
+
+        @Override
+        public void removeFederation(String federation) {
+
+        }
+
+        @Override
         public Stream<ProtocolMapperModel> getProtocolMappersStream() {
             return null;
         }

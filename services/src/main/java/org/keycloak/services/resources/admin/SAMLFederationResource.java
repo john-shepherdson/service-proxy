@@ -167,7 +167,7 @@ public class SAMLFederationResource {
         }
     	FederationProvider federationProvider = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, model.getProviderId()).create(session,model,this.realm.getId());
 
-    	federationProvider.removeFederation();
+        federationProvider.removeFederation();
 
         adminEvent.operation(OperationType.DELETE).resourcePath(session.getContext().getUri()).success();
         return Response.noContent().build();

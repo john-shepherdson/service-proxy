@@ -754,6 +754,7 @@ public class ModelToRepresentation {
         rep.setNotBefore(clientModel.getNotBefore());
         rep.setNodeReRegistrationTimeout(clientModel.getNodeReRegistrationTimeout());
         rep.setClientAuthenticatorType(clientModel.getClientAuthenticatorType());
+        rep.setFederations(clientModel.getFederations());
 
         // adding the secret if non public or bearer only
         if (clientModel.isBearerOnly() || clientModel.isPublicClient()) {
@@ -852,6 +853,7 @@ public class ModelToRepresentation {
     	representation.setInternalId(model.getInternalId());
     	representation.setAlias(model.getAlias());
     	representation.setDisplayName(model.getDisplayName());
+        representation.setCategory(model.getCategory());
     	representation.setLastMetadataRefreshTimestamp(model.getLastMetadataRefreshTimestamp());
     	representation.setProviderId(model.getProviderId());
     	representation.setUpdateFrequencyInMins(model.getUpdateFrequencyInMins());

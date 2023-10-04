@@ -716,13 +716,13 @@ public class InfinispanUserSessionProvider implements UserSessionProvider {
     }
 
     @Override
-    public void onClientRemoved(RealmModel realm, ClientModel client) {
+    public void onClientRemoved(RealmModel realm, String id) {
 //        clusterEventsSenderTx.addEvent(
 //                ClientRemovedSessionEvent.createEvent(ClientRemovedSessionEvent.class, InfinispanUserSessionProviderFactory.CLIENT_REMOVED_SESSION_EVENT, session, realm.getId(), true),
 //                ClusterProvider.DCNotify.LOCAL_DC_ONLY);
         UserSessionPersisterProvider sessionsPersister = session.getProvider(UserSessionPersisterProvider.class);
         if (sessionsPersister != null) {
-            sessionsPersister.onClientRemoved(realm, client);
+            sessionsPersister.onClientRemoved(realm, id);
         }
     }
 
