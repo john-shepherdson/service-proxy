@@ -1381,6 +1381,7 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
     	federationModel.setInternalId(entity.getInternalId());
     	federationModel.setAlias(entity.getAlias());
     	federationModel.setDisplayName(entity.getDisplayName());
+        federationModel.setCategory(entity.getCategory());
     	federationModel.setLastMetadataRefreshTimestamp(entity.getLastMetadataRefreshTimestamp());
     	federationModel.setProviderId(entity.getProviderId());
     	federationModel.setUpdateFrequencyInMins(entity.getUpdateFrequencyInMins());
@@ -1471,6 +1472,7 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
 		federationEntity.setProviderId(federationModel.getProviderId());
 		
 		//federationEntity.setLastMetadataRefreshTimestamp(new Date().getTime());
+        federationEntity.setCategory(federationModel.getCategory());
 		federationEntity.setUrl(federationModel.getUrl());
         federationEntity.setEntityIdDenyList(federationModel.getEntityIdDenyList());
         federationEntity.setEntityIdAllowList(federationModel.getEntityIdAllowList());
@@ -1515,6 +1517,7 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
 		//and not if user change some federation fields
 		federationEntity.setLastMetadataRefreshTimestamp(federationModel.getLastMetadataRefreshTimestamp());
 		federationEntity.setUrl(federationModel.getUrl());
+        federationEntity.setCategory(federationModel.getCategory());
 		federationEntity.setEntityIdDenyList(federationModel.getEntityIdDenyList());
 		federationEntity.setEntityIdAllowList(federationModel.getEntityIdAllowList());
 		federationEntity.setRegistrationAuthorityDenyList(federationModel.getRegistrationAuthorityDenyList());
