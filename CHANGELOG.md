@@ -45,6 +45,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - User attribute value as text in database [RCIAM-1032](https://jira.argo.grnet.gr/browse/RCIAM-1032)
 - Client description as text in database
 - Client attribute value as text in database [RCIAM-1026)](https://jira.argo.grnet.gr/browse/RCIAM-1026)
+- SAML IdP InResponseTo missing, warning instead of error
 
 ### Fixed
 - Changes in account console and account rest service [RCIAM-860](https://jira.argo.grnet.gr/browse/RCIAM-860)
