@@ -30,8 +30,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.Nationalized;
-
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -51,7 +49,6 @@ public class ClientAttributeEntity {
     @Column(name="NAME")
     protected String name;
 
-    @Nationalized
     @Column(name = "VALUE")
     protected String value;
 
