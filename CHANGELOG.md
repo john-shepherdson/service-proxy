@@ -8,6 +8,8 @@ For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/
 [Keycloak announcement for version 16.1.0](https://www.keycloak.org/2021/12/keycloak-1610-released)
 Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
+Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
+
 ## [Unreleased]
 
 ### Added
@@ -40,7 +42,9 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 - Specific error page for no principals [RCIAM-766](https://jira.argo.grnet.gr/browse/RCIAM-766)
 - Refresh token revoke per client and correct refresh flow [RCIAM-920](https://jira.argo.grnet.gr/browse/RCIAM-920)
 - SAML entityID/OIDC issuer showing in user if IdP display name does not exist [RCIAM-887](https://jira.argo.grnet.gr/browse/RCIAM-887)
-- Set Client Description length to 2048
+- User attribute value as text in database [RCIAM-1032](https://jira.argo.grnet.gr/browse/RCIAM-1032)
+- Client description as text in database
+- Client attribute value as text in database [RCIAM-1026)](https://jira.argo.grnet.gr/browse/RCIAM-1026)
 
 ### Fixed
 - Changes in account console and account rest service [RCIAM-860](https://jira.argo.grnet.gr/browse/RCIAM-860)
