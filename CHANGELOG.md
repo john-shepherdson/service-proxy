@@ -13,6 +13,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ## [Unreleased]
 ### Fixed
 - Fix refresh flow with scope parameter problem[Feedback from CESNET about EOSC Keycloak federation support](https://trello.com/c/VTJNB9Gu/2116-feedback-from-cesnet-about-eosc-keycloak-federation-support)
+- Client Signature Required true requires also AuthnRequestsSigned be true[Keycloak requires signed authN requests when WantAuthNSigned=false](https://trello.com/c/XpLOXiz2/2177-keycloak-requires-signed-authn-requests-when-wantauthnsignedfalse)
 
 ### Changed
 - Add regex support in 'Condition - User attribute' execution[Add regex support in Keycloak attribute condition](https://trello.com/c/P8Dvw6ir/2121-add-regex-support-in-keycloak-attribute-condition)
