@@ -856,16 +856,16 @@ public class ClientTest extends AbstractAdminTest {
         ClientResource clientResource = ApiUtil.findClientResourceByClientId(realm, entityIdClient);
         ClientRepresentation found = clientResource.toRepresentation();
         assertExistSAMLClients(found);
-        found.getAttributes().put(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE, "false");
+        found.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPT, "false");
         clientResource.update(found);
         clientResource = ApiUtil.findClientResourceByClientId(realm, entityIdClient);
         found = clientResource.toRepresentation();
-        assertEquals("false", found.getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
+        assertEquals("false", found.getAttributes().get(SamlConfigAttributes.SAML_ENCRYPT));
 
         sleep(120000);
         clientResource = ApiUtil.findClientResourceByClientId(realm, entityIdClient);
         found = clientResource.toRepresentation();
-        assertEquals("true", found.getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
+        assertEquals("true", found.getAttributes().get(SamlConfigAttributes.SAML_ENCRYPT));
 
         rep.setId(id);
     }
@@ -904,7 +904,7 @@ public class ClientTest extends AbstractAdminTest {
         assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_ASSERTION_SIGNATURE));
         assertEquals("username", client.getAttributes().get(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE));
         assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_ENCRYPT));
-        assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
+        assertEquals("false", client.getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
         assertEquals("https://project-seal.eu/node/141", client.getAttributes().get("policyUri"));
         assertEquals("https://eid-proxy.aai-dev.grnet.gr/Edugain/acs/post", client.getAttributes().get(SamlProtocol.SAML_ASSERTION_CONSUMER_URL_POST_ATTRIBUTE));
         //no protocol mappers with SAML_SKIP_REQUESTED_ATTRIBUTES true

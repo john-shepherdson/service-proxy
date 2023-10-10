@@ -505,7 +505,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 			String certPem = KeycloakModelUtils.getPemFromCertificate(cert);
 			if (keyDescriptor.getUse() == KeyTypes.SIGNING) {
 				app.getAttributes().put(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE, certPem);
-			    signing = Boolean.TRUE;
+			    signing = spDescriptorType.isAuthnRequestsSigned() ? Boolean.TRUE : Boolean.FALSE;
 			} else if (keyDescriptor.getUse() == KeyTypes.ENCRYPTION) {
 				app.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPTION_CERTIFICATE_ATTRIBUTE, certPem);
 				encrypt = Boolean.TRUE;
@@ -516,7 +516,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 		//use key for both uses if exists and no signing or encryption specific key exists
 		if (certFullUse != null && !signing){
 			app.getAttributes().put(SamlConfigAttributes.SAML_SIGNING_CERTIFICATE_ATTRIBUTE, certFullUse);
-			signing = true;
+			signing = spDescriptorType.isAuthnRequestsSigned() ? Boolean.TRUE : Boolean.FALSE;
 		}
 		if (certFullUse != null && !encrypt){
 			app.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPTION_CERTIFICATE_ATTRIBUTE, certFullUse);
