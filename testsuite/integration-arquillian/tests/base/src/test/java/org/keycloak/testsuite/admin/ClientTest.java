@@ -51,6 +51,8 @@ import org.keycloak.protocol.oidc.OIDCAdvancedConfigWrapper;
 import org.keycloak.protocol.oidc.OIDCConfigAttributes;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
+import org.keycloak.protocol.saml.SamlConfigAttributes;
+import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.representations.adapters.action.GlobalRequestResult;
 import org.keycloak.representations.adapters.action.PushNotBeforeAction;
 import org.keycloak.representations.adapters.action.TestAvailabilityAction;
@@ -60,6 +62,7 @@ import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.representations.idm.UserSessionRepresentation;
+import org.keycloak.saml.SignatureAlgorithm;
 import org.keycloak.testsuite.Assert;
 import org.keycloak.testsuite.util.AdminEventPaths;
 import org.keycloak.testsuite.util.ClientBuilder;
@@ -70,14 +73,7 @@ import org.keycloak.testsuite.util.RoleBuilder;
 import org.keycloak.testsuite.util.UserBuilder;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.ws.rs.BadRequestException;
@@ -88,6 +84,8 @@ import jakarta.ws.rs.core.Response;
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class ClientTest extends AbstractAdminTest {
+
+    private static final String entityIdClient="https://eid-proxy.aai-dev.grnet.gr/Edugain/proxy.xml";
 
     @Test
     public void getClients() {
@@ -548,7 +546,7 @@ public class ClientTest extends AbstractAdminTest {
         realm.users().get(userId).resetPassword(CredentialBuilder.create().password("password").build());
 
         Map<String, Long> offlineSessionCount = realm.clients().get(id).getOfflineSessionCount();
-        assertEquals(new Long(0), offlineSessionCount.get("count"));
+        assertEquals(Long.valueOf(0), offlineSessionCount.get("count"));
 
         List<UserSessionRepresentation> userSessions = realm.users().get(userId).getOfflineSessions(id);
         assertEquals("There should be no offline sessions", 0, userSessions.size());
@@ -561,7 +559,7 @@ public class ClientTest extends AbstractAdminTest {
         assertEquals(200, accessTokenResponse.getStatusCode());
 
         offlineSessionCount = realm.clients().get(id).getOfflineSessionCount();
-        assertEquals(new Long(1), offlineSessionCount.get("count"));
+        assertEquals(Long.valueOf(1), offlineSessionCount.get("count"));
 
         List<UserSessionRepresentation> offlineUserSessions = realm.clients().get(id).getOfflineUserSessions(0, 100);
         assertEquals(1, offlineUserSessions.size());
@@ -854,6 +852,91 @@ public class ClientTest extends AbstractAdminTest {
 
         ClientRepresentation storedClient = realm.clients().get(client.getId()).toRepresentation();
         assertClient(client, storedClient);
+    }
+
+//    @Test
+//    public void testSAMLAutoUpdatedClient() {
+//
+//        ClientRepresentation rep = new ClientRepresentation();
+//        rep.setProtocol("saml");
+//        rep.setEnabled(true);
+//        Map<String, String> attributes = new HashMap<>();
+//        attributes.put(SamlConfigAttributes.SAML_AUTO_UPDATED, "true");
+//        attributes.put(SamlConfigAttributes.SAML_METADATA_URL, entityIdClient);
+//        attributes.put(SamlConfigAttributes.SAML_REFRESH_PERIOD, "80");
+//        attributes.put(SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES,"true");
+//        rep.setAttributes(attributes);
+//        Response response = realm.clients().create(rep);
+//        response.close();
+//        String id = ApiUtil.getCreatedId(response);
+//        getCleanup().addClientUuid(id);
+//
+//        sleep(60000);
+//        ClientResource clientResource = ApiUtil.findClientResourceByClientId(realm, entityIdClient);
+//        ClientRepresentation found = clientResource.toRepresentation();
+//        assertExistSAMLClients(found);
+//        found.getAttributes().put(SamlConfigAttributes.SAML_ENCRYPT, "false");
+//        clientResource.update(found);
+//        clientResource = ApiUtil.findClientResourceByClientId(realm, entityIdClient);
+//        found = clientResource.toRepresentation();
+//        assertEquals("false", found.getAttributes().get(SamlConfigAttributes.SAML_ENCRYPT));
+//
+//        sleep(120000);
+//        clientResource = ApiUtil.findClientResourceByClientId(realm, entityIdClient);
+//        found = clientResource.toRepresentation();
+//        assertEquals("true", found.getAttributes().get(SamlConfigAttributes.SAML_ENCRYPT));
+//
+//        rep.setId(id);
+//    }
+
+    private void assertExistSAMLClients(ClientRepresentation client) {
+        assertEquals("False SAML Protocol", "saml", client.getProtocol());
+        assertTrue("Enabled Client", client.isEnabled());
+        assertEquals("one redirect uris", 1, client.getRedirectUris().size());
+        assertThat(client.getAttributes().keySet(), containsInAnyOrder(
+                "saml.assertion.signature",
+                "saml.force.post.binding",
+                "saml.encrypt",
+                "saml_assertion_consumer_url_post",
+                "saml.server.signature",
+                "saml.server.signature.keyinfo.ext",
+                "saml.signing.certificate",
+                "saml.artifact.binding.identifier",
+                "saml.signature.algorithm",
+                "policyUri",
+                "saml_force_name_id_format",
+                "saml.client.signature",
+                "saml.encryption.certificate",
+                "saml.authnstatement",
+                "saml_name_id_format",
+                "saml.allow.ecp.flow",
+                "saml_signature_canonicalization_method",
+                SamlConfigAttributes.SAML_AUTO_UPDATED,
+                SamlConfigAttributes.SAML_METADATA_URL,
+                SamlConfigAttributes.SAML_REFRESH_PERIOD,
+                SamlConfigAttributes.SAML_LAST_REFRESH_TIME,
+                SamlConfigAttributes.SAML_SKIP_REQUESTED_ATTRIBUTES
+        ));
+        assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_SERVER_SIGNATURE));
+        assertEquals(SignatureAlgorithm.RSA_SHA256.toString(), client.getAttributes().get(SamlConfigAttributes.SAML_SIGNATURE_ALGORITHM));
+        assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_AUTHNSTATEMENT));
+        assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_ASSERTION_SIGNATURE));
+        assertEquals("username", client.getAttributes().get(SamlConfigAttributes.SAML_NAME_ID_FORMAT_ATTRIBUTE));
+        assertEquals("true", client.getAttributes().get(SamlConfigAttributes.SAML_ENCRYPT));
+        assertEquals("false", client.getAttributes().get(SamlConfigAttributes.SAML_CLIENT_SIGNATURE_ATTRIBUTE));
+        assertEquals("https://project-seal.eu/node/141", client.getAttributes().get("policyUri"));
+        assertEquals("https://eid-proxy.aai-dev.grnet.gr/Edugain/acs/post", client.getAttributes().get(SamlProtocol.SAML_ASSERTION_CONSUMER_URL_POST_ATTRIBUTE));
+        //no protocol mappers with SAML_SKIP_REQUESTED_ATTRIBUTES true
+        assertNull(client.getProtocolMappers());
+
+    }
+
+    private static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ie) {
+            throw new RuntimeException(ie);
+        }
     }
 
     public static void assertClient(ClientRepresentation client, ClientRepresentation storedClient) {
