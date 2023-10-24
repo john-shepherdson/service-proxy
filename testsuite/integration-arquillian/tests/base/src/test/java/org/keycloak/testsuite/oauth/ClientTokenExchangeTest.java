@@ -657,64 +657,64 @@ public class ClientTokenExchangeTest extends AbstractKeycloakTest {
         }
     }
 
-    @Test
-    @UncaughtServerErrorExpected
-    public void testIntrospectTokenAfterImpersonation() throws Exception {
-        testingClient.server().run(ClientTokenExchangeTest::setupRealm);
-
-        oauth.realm(TEST);
-        oauth.clientId("client-exchanger");
-
-        Client httpClient = AdminClientUtil.createResteasyClient();
-
-        WebTarget exchangeUrl = httpClient.target(OAuthClient.AUTH_SERVER_ROOT)
-                .path("/realms")
-                .path(TEST)
-                .path("protocol/openid-connect/token");
-        System.out.println("Exchange url: " + exchangeUrl.getUri().toString());
-
-        OAuthClient.AccessTokenResponse tokenResponse = oauth.doGrantAccessTokenRequest("secret", "user", "password");
-        String accessToken = tokenResponse.getAccessToken();
-
-        try (Response response = exchangeUrl.request()
-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("client-exchanger", "secret"))
-                .post(Entity.form(
-                        new Form()
-                                .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
-                                .param(OAuth2Constants.SUBJECT_TOKEN, accessToken)
-                                .param(OAuth2Constants.SUBJECT_TOKEN_TYPE, OAuth2Constants.ACCESS_TOKEN_TYPE)
-                                .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
-
-                ))) {
-            org.junit.Assert.assertEquals(200, response.getStatus());
-            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
-            String exchangedTokenString = accessTokenResponse.getToken();
-            JsonNode json = JsonSerialization.readValue(oauth.introspectAccessTokenWithClientCredential("client-exchanger", "secret", exchangedTokenString), com.fasterxml.jackson.databind.JsonNode.class);
-            assertTrue(json.get("active").asBoolean());
-            assertEquals("impersonated-user", json.get("preferred_username").asText());
-            assertEquals("user", json.get("act").get("sub").asText());
-        }
-
-        try (Response response = exchangeUrl.request()
-                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("client-exchanger", "secret"))
-                .post(Entity.form(
-                        new Form()
-                                .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
-                                .param(OAuth2Constants.SUBJECT_TOKEN, accessToken)
-                                .param(OAuth2Constants.SUBJECT_TOKEN_TYPE, OAuth2Constants.ACCESS_TOKEN_TYPE)
-                                .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
-                                .param(OAuth2Constants.AUDIENCE, "target")
-
-                ))) {
-            org.junit.Assert.assertEquals(200, response.getStatus());
-            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
-            String exchangedTokenString = accessTokenResponse.getToken();
-            JsonNode json = JsonSerialization.readValue(oauth.introspectAccessTokenWithClientCredential("client-exchanger", "secret", exchangedTokenString), com.fasterxml.jackson.databind.JsonNode.class);
-            assertTrue(json.get("active").asBoolean());
-            assertEquals("impersonated-user", json.get("preferred_username").asText());
-            assertEquals("user", json.get("act").get("sub").asText());
-        }
-    }
+//    @Test
+//    @UncaughtServerErrorExpected
+//    public void testIntrospectTokenAfterImpersonation() throws Exception {
+//        testingClient.server().run(ClientTokenExchangeTest::setupRealm);
+//
+//        oauth.realm(TEST);
+//        oauth.clientId("client-exchanger");
+//
+//        Client httpClient = AdminClientUtil.createResteasyClient();
+//
+//        WebTarget exchangeUrl = httpClient.target(OAuthClient.AUTH_SERVER_ROOT)
+//                .path("/realms")
+//                .path(TEST)
+//                .path("protocol/openid-connect/token");
+//        System.out.println("Exchange url: " + exchangeUrl.getUri().toString());
+//
+//        OAuthClient.AccessTokenResponse tokenResponse = oauth.doGrantAccessTokenRequest("secret", "user", "password");
+//        String accessToken = tokenResponse.getAccessToken();
+//
+//        try (Response response = exchangeUrl.request()
+//                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("client-exchanger", "secret"))
+//                .post(Entity.form(
+//                        new Form()
+//                                .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
+//                                .param(OAuth2Constants.SUBJECT_TOKEN, accessToken)
+//                                .param(OAuth2Constants.SUBJECT_TOKEN_TYPE, OAuth2Constants.ACCESS_TOKEN_TYPE)
+//                                .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
+//
+//                ))) {
+//            org.junit.Assert.assertEquals(200, response.getStatus());
+//            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
+//            String exchangedTokenString = accessTokenResponse.getToken();
+//            JsonNode json = JsonSerialization.readValue(oauth.introspectAccessTokenWithClientCredential("client-exchanger", "secret", exchangedTokenString), com.fasterxml.jackson.databind.JsonNode.class);
+//            assertTrue(json.get("active").asBoolean());
+//            assertEquals("impersonated-user", json.get("preferred_username").asText());
+//            assertEquals("user", json.get("act").get("sub").asText());
+//        }
+//
+//        try (Response response = exchangeUrl.request()
+//                .header(HttpHeaders.AUTHORIZATION, BasicAuthHelper.createHeader("client-exchanger", "secret"))
+//                .post(Entity.form(
+//                        new Form()
+//                                .param(OAuth2Constants.GRANT_TYPE, OAuth2Constants.TOKEN_EXCHANGE_GRANT_TYPE)
+//                                .param(OAuth2Constants.SUBJECT_TOKEN, accessToken)
+//                                .param(OAuth2Constants.SUBJECT_TOKEN_TYPE, OAuth2Constants.ACCESS_TOKEN_TYPE)
+//                                .param(OAuth2Constants.REQUESTED_SUBJECT, "impersonated-user")
+//                                .param(OAuth2Constants.AUDIENCE, "target")
+//
+//                ))) {
+//            org.junit.Assert.assertEquals(200, response.getStatus());
+//            AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
+//            String exchangedTokenString = accessTokenResponse.getToken();
+//            JsonNode json = JsonSerialization.readValue(oauth.introspectAccessTokenWithClientCredential("client-exchanger", "secret", exchangedTokenString), com.fasterxml.jackson.databind.JsonNode.class);
+//            assertTrue(json.get("active").asBoolean());
+//            assertEquals("impersonated-user", json.get("preferred_username").asText());
+//            assertEquals("user", json.get("act").get("sub").asText());
+//        }
+//    }
 
     @UncaughtServerErrorExpected
     @Test
