@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.jboss.logging.Logger;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.TokenVerifier;
 import org.keycloak.broker.oidc.OIDCIdentityProvider;
 import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
@@ -32,12 +33,17 @@ import org.keycloak.common.util.Time;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.crypto.SignatureProvider;
 import org.keycloak.crypto.SignatureVerifierContext;
+import org.keycloak.events.Details;
+import org.keycloak.events.EventBuilder;
+import org.keycloak.events.EventType;
 import org.keycloak.models.*;
 import org.keycloak.models.customcache.CustomCacheProvider;
 import org.keycloak.models.customcache.CustomCacheProviderFactory;
 import org.keycloak.protocol.oidc.representations.OIDCConfigurationRepresentation;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.Urls;
+import org.keycloak.services.util.DefaultClientSessionContext;
+import org.keycloak.services.util.UserSessionUtil;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.protocol.oidc.utils.Key;
 
@@ -113,11 +119,17 @@ public class AccessTokenIntrospectionProvider implements TokenIntrospectionProvi
         try {
 
             AccessToken accessToken = verifyAccessToken(token);
+            accessToken = transformAccessToken(accessToken);
             ObjectNode tokenMetadata;
 
             if (accessToken != null) {
                 tokenMetadata = JsonSerialization.createObjectNode(accessToken);
                 tokenMetadata.put("client_id", accessToken.getIssuedFor());
+
+                String scope = accessToken.getScope();
+                if (scope != null && scope.trim().isEmpty()) {
+                    tokenMetadata.remove("scope");
+                }
 
                 if (!tokenMetadata.has("username")) {
                     if (accessToken.getPreferredUsername() != null) {
@@ -144,6 +156,9 @@ public class AccessTokenIntrospectionProvider implements TokenIntrospectionProvi
                         }
                     }
                 }
+
+                tokenMetadata.put(OAuth2Constants.TOKEN_TYPE, accessToken.getType());
+
             } else {
                 tokenMetadata = JsonSerialization.createObjectNode();
             }
@@ -154,6 +169,55 @@ public class AccessTokenIntrospectionProvider implements TokenIntrospectionProvi
         } catch (Exception e) {
             throw new RuntimeException("Error creating token introspection response.", e);
         }
+    }
+
+    private AccessToken transformAccessToken(AccessToken token) {
+        if (token == null) {
+            return null;
+        }
+
+        ClientModel client = realm.getClientByClientId(token.getIssuedFor());
+        EventBuilder event = new EventBuilder(realm, session, session.getContext().getConnection())
+                .event(EventType.INTROSPECT_TOKEN)
+                .detail(Details.AUTH_METHOD, Details.VALIDATE_ACCESS_TOKEN);
+        UserSessionModel userSession;
+        try {
+            userSession = UserSessionUtil.findValidSession(session, realm, token, event, client);
+        } catch (Exception e) {
+            logger.infof("Can not get user session: %s", e.getMessage());
+            return null;
+        }
+        if (userSession.getUser() == null) {
+            logger.infof("User not found");
+            return null;
+        }
+        AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
+        ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession, session);
+        AccessToken smallToken = getAccessTokenFromStoredData(token, userSession);
+        return tokenManager.transformIntrospectionAccessToken(session, smallToken, userSession, clientSessionCtx);
+    }
+
+    private AccessToken getAccessTokenFromStoredData(AccessToken token, UserSessionModel userSession) {
+        // Copy just "basic" claims from the initial token. The same like filled in TokenManager.initToken. The rest should be possibly added by protocol mappers (only if configured for introspection response)
+        AccessToken newToken = new AccessToken();
+        newToken.id(token.getId());
+        newToken.type(token.getType());
+        newToken.subject(token.getSubject() != null ? token.getSubject() : userSession.getUser().getId());
+        newToken.iat(token.getIat());
+        newToken.exp(token.getExp());
+        newToken.issuedFor(token.getIssuedFor());
+        newToken.issuer(token.getIssuer());
+        newToken.setNonce(token.getNonce());
+        newToken.setScope(token.getScope());
+        newToken.setAuth_time(token.getAuth_time());
+        newToken.setSessionState(token.getSessionState());
+
+        // In the case of a refresh token, aud is a basic claim.
+        newToken.audience(token.getAudience());
+
+        // The cnf is not a claim controlled by the protocol mapper.
+        newToken.setCertConf(token.getCertConf());
+        return newToken;
     }
 
     protected AccessToken verifyAccessToken(String token) {
