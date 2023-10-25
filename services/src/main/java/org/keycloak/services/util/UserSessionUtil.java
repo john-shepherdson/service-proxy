@@ -1,5 +1,6 @@
 package org.keycloak.services.util;
 
+import org.jboss.logging.Logger;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.constants.ServiceAccountConstants;
 import org.keycloak.events.Errors;
@@ -11,6 +12,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.protocol.oidc.AccessTokenIntrospectionProvider;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.TokenManager;
 import org.keycloak.representations.AccessToken;
@@ -23,6 +25,8 @@ import org.keycloak.sessions.RootAuthenticationSessionModel;
 import org.keycloak.utils.OAuth2Error;
 
 public class UserSessionUtil {
+
+    private static final Logger logger = Logger.getLogger(UserSessionUtil.class);
 
     public static UserSessionModel findValidSession(KeycloakSession session, RealmModel realm, AccessToken token, EventBuilder event, ClientModel client) {
         OAuth2Error error = new OAuth2Error().json(false).realm(realm);
@@ -46,6 +50,7 @@ public class UserSessionUtil {
         }
 
         if (userSession == null && offlineUserSession == null) {
+            logger.warn("User session not found or doesn't have client attached on it");
             event.error(Errors.USER_SESSION_NOT_FOUND);
             throw error.invalidToken("User session not found or doesn't have client attached on it");
         }
@@ -56,6 +61,7 @@ public class UserSessionUtil {
             event.session(offlineUserSession);
         }
 
+        logger.warn("Session expired");
         event.error(Errors.SESSION_EXPIRED);
         throw error.invalidToken("Session expired");
     }
@@ -65,6 +71,7 @@ public class UserSessionUtil {
         // create a transient session
         UserModel user = TokenManager.lookupUserFromStatelessToken(session, realm, token);
         if (user == null) {
+            logger.warn("Transient User not found");
             throw error.invalidToken("User not found");
         }
         ClientConnection clientConnection = session.getContext().getConnection();
@@ -84,12 +91,14 @@ public class UserSessionUtil {
     private static void checkTokenIssuedAt(RealmModel realm, AccessToken token, UserSessionModel userSession, EventBuilder event, ClientModel client) {
         OAuth2Error error = new OAuth2Error().json(false).realm(realm);
         if (token.isIssuedBeforeSessionStart(userSession.getStarted())) {
+            logger.warn("Stale token for user session");
             event.error(Errors.INVALID_TOKEN);
             throw error.invalidToken("Stale token");
         }
 
         AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
         if (token.isIssuedBeforeSessionStart(clientSession.getStarted())) {
+            logger.warn("Stale token for client session");
             event.error(Errors.INVALID_TOKEN);
             throw error.invalidToken("Stale token");
         }
