@@ -17,8 +17,8 @@
 
 package org.keycloak.protocol.oidc;
 
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
+
 import org.jboss.logging.Logger;
 import org.keycloak.http.HttpRequest;
 import org.keycloak.OAuth2Constants;
@@ -88,13 +88,6 @@ import org.keycloak.services.util.MtlsHoKTokenUtil;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.util.TokenUtil;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -691,8 +684,14 @@ public class TokenManager {
 
         Map<String, ClientScopeModel> allOptionalScopes = client.getClientScopes(false);
         // Add optional client scopes requested by scope parameter
-        return Stream.concat(parseScopeParameter(scopeParam).map(allOptionalScopes::get).filter(Objects::nonNull),
-                clientScopes).distinct();
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES)) {
+            List<String> scopeList = Arrays.asList(scopeParam.split(" "));
+            return Stream.concat(allOptionalScopes.values().stream().filter(sp -> scopeList.contains(sp.getName()) || (sp.isDynamicScope() && scopeList.stream().anyMatch(Pattern.compile(sp.getDynamicScopeRegexp().replace(":*", ":(.*)")).asPredicate()))),
+                    clientScopes).distinct();
+        } else {
+            return Stream.concat(TokenManager.parseScopeParameter(scopeParam).map(allOptionalScopes::get).filter(Objects::nonNull),
+                    clientScopes).distinct();
+        }
     }
 
     /**
@@ -730,6 +729,7 @@ public class TokenManager {
         for (String requestedScope : requestedScopes) {
             // We keep the check to the getDynamicClientScope for the OpenshiftSAClientAdapter
             if (!rarScopes.contains(requestedScope) && client.getDynamicClientScope(requestedScope) == null) {
+                logger.warn("Dynamic scopes enabled: Problem validating requested scope: "+requestedScope);
                 return false;
             }
         }
@@ -792,13 +792,44 @@ public class TokenManager {
 
     public AccessToken transformAccessToken(KeycloakSession session, AccessToken token,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        return ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof OIDCAccessTokenMapper)
+        AccessToken newToken =  ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof OIDCAccessTokenMapper)
                 .collect(new TokenCollector<AccessToken>(token) {
                     @Override
                     protected AccessToken applyMapper(AccessToken token, Map.Entry<ProtocolMapperModel, ProtocolMapper> mapper) {
                         return ((OIDCAccessTokenMapper) mapper.getValue()).transformAccessToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
+
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && newToken.getOtherClaims() != null) {
+            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+        }
+        return newToken;
+    }
+
+      public static void dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream,AccessToken finalToken){
+        //filtering based on dynamic scopes
+        List<String> scopeList = new ArrayList<>(Arrays.asList(scope.split(" ")));
+        clientScopeStream.filter(cs -> Boolean.valueOf(cs.getAttribute(ClientScopeModel.IS_DYNAMIC_SCOPE))).forEach(cs -> {
+            //we could have multiple time this dynamic scope requested with different values
+            //for multiple times requested this dynamic scope,  returned claim values consist all the requested values - if they exist
+            //if a value is not containing in final value parameter -> remove this scope
+            if (finalToken.getOtherClaims().containsKey(cs.getName())) {
+                Object value = finalToken.getOtherClaims().get(cs.getName());
+                List<String> requestedValues = scopeList.stream().filter(x -> x.contains(cs.getName()+":")).map(x -> x.replace(cs.getName()+":","")).collect(Collectors.toList());
+                if (requestedValues.size() >0 && value instanceof List<?>) {
+                    //filter with all possible values
+                    List<?> list = ((ArrayList<?>) value).stream().filter(x -> requestedValues.contains(x.toString())).collect(Collectors.toList());
+                    if (list.isEmpty()) {
+                        finalToken.getOtherClaims().remove(cs.getName());
+                    } else {
+                        finalToken.getOtherClaims().put(cs.getName(), list);
+                    }
+                } else  if (requestedValues.size() >0 ) {
+                    if (!requestedValues.contains(value.toString()))
+                        finalToken.getOtherClaims().remove(cs.getName());
+                }
+            }
+        });
     }
 
     public AccessTokenResponse transformAccessTokenResponse(KeycloakSession session, AccessTokenResponse accessTokenResponse,
@@ -815,24 +846,32 @@ public class TokenManager {
 
     public AccessToken transformUserInfoAccessToken(KeycloakSession session, AccessToken token,
                                                     UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        return ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof UserInfoTokenMapper)
+        AccessToken newToken = ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof UserInfoTokenMapper)
                 .collect(new TokenCollector<AccessToken>(token) {
                     @Override
                     protected AccessToken applyMapper(AccessToken token, Map.Entry<ProtocolMapperModel, ProtocolMapper> mapper) {
                         return ((UserInfoTokenMapper) mapper.getValue()).transformUserInfoToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && newToken.getOtherClaims() != null) {
+            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+        }
+        return newToken;
     }
 
     public AccessToken transformIntrospectionAccessToken(KeycloakSession session, AccessToken token,
                                                          UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        return ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof TokenIntrospectionTokenMapper)
+        AccessToken newToken =  ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof TokenIntrospectionTokenMapper)
                 .collect(new TokenCollector<AccessToken>(token) {
                     @Override
                     protected AccessToken applyMapper(AccessToken token, Map.Entry<ProtocolMapperModel, ProtocolMapper> mapper) {
                         return ((TokenIntrospectionTokenMapper) mapper.getValue()).transformIntrospectionToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && newToken.getOtherClaims() != null) {
+            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+        }
+        return newToken;
     }
 
     public Map<String, Object> generateUserInfoClaims(AccessToken userInfo, UserModel userModel) {
