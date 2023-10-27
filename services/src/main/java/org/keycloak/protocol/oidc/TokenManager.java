@@ -845,7 +845,7 @@ public class TokenManager {
     }
 
     public AccessToken transformUserInfoAccessToken(KeycloakSession session, AccessToken token,
-                                                    UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                                    UserSessionModel userSession, ClientSessionContext clientSessionCtx, String scope) {
         AccessToken newToken = ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof UserInfoTokenMapper)
                 .collect(new TokenCollector<AccessToken>(token) {
                     @Override
@@ -853,14 +853,14 @@ public class TokenManager {
                         return ((UserInfoTokenMapper) mapper.getValue()).transformUserInfoToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && newToken.getOtherClaims() != null) {
-            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null && newToken.getOtherClaims() != null) {
+            dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken);
         }
         return newToken;
     }
 
     public AccessToken transformIntrospectionAccessToken(KeycloakSession session, AccessToken token,
-                                                         UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+                                                         UserSessionModel userSession, ClientSessionContext clientSessionCtx, String scope) {
         AccessToken newToken =  ProtocolMapperUtils.getSortedProtocolMappers(session, clientSessionCtx, mapper -> mapper.getValue() instanceof TokenIntrospectionTokenMapper)
                 .collect(new TokenCollector<AccessToken>(token) {
                     @Override
@@ -868,8 +868,8 @@ public class TokenManager {
                         return ((TokenIntrospectionTokenMapper) mapper.getValue()).transformIntrospectionToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && newToken.getOtherClaims() != null) {
-            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null && newToken.getOtherClaims() != null) {
+            dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken);
         }
         return newToken;
     }
