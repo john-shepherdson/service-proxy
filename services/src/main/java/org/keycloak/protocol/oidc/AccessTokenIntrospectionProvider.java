@@ -214,7 +214,7 @@ public class AccessTokenIntrospectionProvider implements TokenIntrospectionProvi
         AuthenticatedClientSessionModel clientSession = userSession.getAuthenticatedClientSessionByClient(client.getId());
         ClientSessionContext clientSessionCtx = DefaultClientSessionContext.fromClientSessionScopeParameter(clientSession, session);
         AccessToken smallToken = getAccessTokenFromStoredData(token, userSession);
-        return tokenManager.transformIntrospectionAccessToken(session, smallToken, userSession, clientSessionCtx);
+        return tokenManager.transformIntrospectionAccessToken(session, smallToken, userSession, clientSessionCtx, smallToken.getScope());
     }
 
     private AccessToken getAccessTokenFromStoredData(AccessToken token, UserSessionModel userSession) {
