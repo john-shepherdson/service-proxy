@@ -219,11 +219,15 @@ public class ResourceOwnerPasswordCredentialsGrantTest extends AbstractKeycloakT
 
         OAuthClient.AccessTokenResponse response = oauth.doGrantAccessTokenRequest("secret", "direct-login", "password");
 
-        assertTrue(response.getScope().contains("dynamic-scope:123 dynamic-scope:789"));
+        assertTrue(response.getScope().contains("dynamic-scope:123"));
+        AccessToken accessToken = oauth.verifyToken(response.getAccessToken());
+        List<String> claimValue =(List) accessToken.getOtherClaims().get("dynamic-scope");
+        assertEquals(claimValue.size(),1);
+        assertEquals(claimValue.get(0),"123");
 
         assertEquals(200, response.getStatusCode());
 
-        AccessToken accessToken = oauth.verifyToken(response.getAccessToken());
+        accessToken = oauth.verifyToken(response.getAccessToken());
         RefreshToken refreshToken = oauth.parseRefreshToken(response.getRefreshToken());
 
         events.expectLogin()
@@ -239,8 +243,8 @@ public class ResourceOwnerPasswordCredentialsGrantTest extends AbstractKeycloakT
                 .removeDetail(Details.CONSENT)
                 .assertEvent();
 
-        assertTrue(accessToken.getScope().contains("dynamic-scope:123 dynamic-scope:789"));
-        List<String> claimValue =(List) accessToken.getOtherClaims().get("dynamic-scope");
+        assertTrue(accessToken.getScope().contains("dynamic-scope:123"));
+        claimValue =(List) accessToken.getOtherClaims().get("dynamic-scope");
         assertEquals(claimValue.size(),1);
         assertEquals(claimValue.get(0),"123");
 

@@ -800,21 +800,24 @@ public class TokenManager {
                     }
                 });
 
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null && newToken.getOtherClaims() != null) {
-            dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null ) {
+            String newScope = dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+            token.setScope(newScope);
+            clientSessionCtx.getClientSession().setNote(OAuth2Constants.SCOPE,newScope);
         }
         return newToken;
     }
 
-      public static void dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream,AccessToken finalToken){
+      public static String dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream,AccessToken finalToken){
         //filtering based on dynamic scopes
         List<String> scopeList = new ArrayList<>(Arrays.asList(scope.split(" ")));
+
         clientScopeStream.filter(cs -> Boolean.valueOf(cs.getAttribute(ClientScopeModel.IS_DYNAMIC_SCOPE))).forEach(cs -> {
             //we could have multiple time this dynamic scope requested with different values
             //for multiple times requested this dynamic scope,  returned claim values consist all the requested values - if they exist
             //if a value is not containing in final value parameter -> remove this scope
-            if (finalToken.getOtherClaims().containsKey(cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName())) {
-                String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
+            String filterClaim = cs.getFilteredClaim() != null && !cs.getFilteredClaim().isEmpty() ? cs.getFilteredClaim() : cs.getName();
+            if (finalToken.getOtherClaims() != null && finalToken.getOtherClaims().containsKey(filterClaim)) {
                 Object value = finalToken.getOtherClaims().get(filterClaim);
                 List<String> requestedValues = scopeList.stream().filter(x -> x.contains(cs.getName()+":")).map(x -> x.replace(cs.getName()+":","")).collect(Collectors.toList());
                 if (requestedValues.size() >0 && value instanceof List<?>) {
@@ -825,12 +828,18 @@ public class TokenManager {
                     } else {
                         finalToken.getOtherClaims().put(filterClaim, list);
                     }
-                } else  if (requestedValues.size() >0 ) {
-                    if (!requestedValues.contains(value.toString()))
+                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(x.replace(cs.getName()+ ":",""))));
+                } else if (requestedValues.size() > 0) {
+                    if (!requestedValues.contains(value.toString())) {
                         finalToken.getOtherClaims().remove(filterClaim);
+                    }
+                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.replace(cs.getName()+ ":","")));
                 }
+            } else {
+                scopeList.removeIf(x -> x.contains(cs.getName() + ":"));
             }
         });
+        return scopeList.stream().collect(Collectors.joining(" "));
     }
 
     public AccessTokenResponse transformAccessTokenResponse(KeycloakSession session, AccessTokenResponse accessTokenResponse,
@@ -854,7 +863,7 @@ public class TokenManager {
                         return ((UserInfoTokenMapper) mapper.getValue()).transformUserInfoToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null && newToken.getOtherClaims() != null) {
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null) {
             dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken);
         }
         return newToken;
@@ -869,7 +878,7 @@ public class TokenManager {
                         return ((TokenIntrospectionTokenMapper) mapper.getValue()).transformIntrospectionToken(token, mapper.getKey(), session, userSession, clientSessionCtx);
                     }
                 });
-        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null && newToken.getOtherClaims() != null) {
+        if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null) {
             dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken);
         }
         return newToken;
