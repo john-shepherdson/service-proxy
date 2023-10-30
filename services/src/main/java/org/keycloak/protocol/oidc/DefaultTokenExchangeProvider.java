@@ -160,6 +160,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
 
             if (subjectIssuer != null && !realmIssuerUrl.equals(subjectIssuer)) {
                 event.detail(OAuth2Constants.SUBJECT_ISSUER, subjectIssuer);
+                logger.info("external token exvhange with subjectIssuer === "+subjectIssuer);
                 return exchangeExternalToken(subjectIssuer, subjectToken);
 
             }
@@ -227,6 +228,8 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
 
                 // see https://issues.redhat.com/browse/KEYCLOAK-5492
                 disallowOnHolderOfTokenMismatch = false;
+                logger.info("token exchange with requestedSubject === "+requestedSubject);
+
             }
 
             tokenSession = new UserSessionManager(session).createUserSession(realm, requestedUser, requestedUser.getUsername(), clientConnection.getRemoteAddr(), "impersonate", false, null, null);
@@ -243,6 +246,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             return exchangeClientToClient(tokenUser, tokenSession, token, disallowOnHolderOfTokenMismatch);
         } else {
             try {
+                logger.info("token exchange with idp with tokenUser === "+tokenUser.getUsername() + " and requestedIssuer ==="+requestedIssuer);
                 return exchangeToIdentityProvider(tokenUser, tokenSession, requestedIssuer);
             } finally {
                 if (subjectToken == null) { // we are naked! So need to clean up user session
@@ -357,6 +361,7 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             scope = Arrays.stream(scope.split(" ")).filter(s -> "openid".equals(s) || (targetClientScopes.contains(Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) ? s.split(":")[0] : s))).collect(Collectors.joining(" "));
         }
         scope= TokenManager.clientScopePolicy(scope, targetUser, realm.getClientScopesStream().collect(Collectors.toList()));
+        logger.info("oauth token exchange with idp with targetUser === "+targetUser.getUsername() + " and client ==="+client.getClientId()+ " and audience ==="+audience+" and scope =="+scope);
         switch (requestedTokenType) {
             case OAuth2Constants.ACCESS_TOKEN_TYPE:
             case OAuth2Constants.REFRESH_TOKEN_TYPE:
