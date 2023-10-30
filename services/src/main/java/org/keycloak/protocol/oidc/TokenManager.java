@@ -801,14 +801,14 @@ public class TokenManager {
                 });
 
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && clientSessionCtx.getScopeString() != null ) {
-            String newScope = dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken);
+            String newScope = dynamicScopeFiltering( clientSessionCtx.getScopeString(),clientSessionCtx.getClientScopesStream(), newToken, userSession.getUser(), true);
             token.setScope(newScope);
             clientSessionCtx.getClientSession().setNote(OAuth2Constants.SCOPE,newScope);
         }
         return newToken;
     }
 
-      public static String dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream,AccessToken finalToken){
+      public static String dynamicScopeFiltering(String scope, Stream<ClientScopeModel> clientScopeStream,AccessToken finalToken, UserModel user, boolean filtering){
         //filtering based on dynamic scopes
         List<String> scopeList = new ArrayList<>(Arrays.asList(scope.split(" ")));
 
@@ -828,15 +828,17 @@ public class TokenManager {
                     } else {
                         finalToken.getOtherClaims().put(filterClaim, list);
                     }
-                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(x.replace(cs.getName()+ ":",""))));
+                    if (filtering)
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && list.stream().noneMatch(val -> val.toString().equals(x.replace(cs.getName()+ ":",""))) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttributeStream(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).collect(Collectors.toList()).contains(x.replace(cs.getName()+ ":","")))));
                 } else if (requestedValues.size() > 0) {
                     if (!requestedValues.contains(value.toString())) {
                         finalToken.getOtherClaims().remove(filterClaim);
                     }
-                    scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.replace(cs.getName()+ ":","")));
+                    if (filtering)
+                        scopeList.removeIf(x -> x.contains(cs.getName() + ":") && !value.toString().equals(x.replace(cs.getName()+ ":","")) && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttributeStream(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).collect(Collectors.toList()).contains(x.replace(cs.getName()+ ":","")))));
                 }
-            } else {
-                scopeList.removeIf(x -> x.contains(cs.getName() + ":"));
+            } else if (filtering) {
+                scopeList.removeIf(x -> x.contains(cs.getName() + ":") && (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) == null || (cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE) != null && ! user.getAttributeStream(cs.getAttribute(ClientScopeModel.DYNAMIC_SCOPE_USER_ATTRIBUTE)).collect(Collectors.toList()).contains(x.replace(cs.getName()+ ":","")))));
             }
         });
         return scopeList.stream().collect(Collectors.joining(" "));
@@ -864,7 +866,7 @@ public class TokenManager {
                     }
                 });
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null) {
-            dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken);
+            dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken, userSession.getUser(), false);
         }
         return newToken;
     }
@@ -879,7 +881,7 @@ public class TokenManager {
                     }
                 });
         if (Profile.isFeatureEnabled(Profile.Feature.DYNAMIC_SCOPES) && scope != null) {
-            dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken);
+            dynamicScopeFiltering(scope ,clientSessionCtx.getClientScopesStream(), newToken, userSession.getUser(), false);
         }
         return newToken;
     }
