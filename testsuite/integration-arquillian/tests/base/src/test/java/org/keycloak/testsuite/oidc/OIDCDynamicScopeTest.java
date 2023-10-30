@@ -63,6 +63,7 @@ public class OIDCDynamicScopeTest extends OIDCScopeTest {
 
     private static String userId;
     private static final String scopeName ="dynamic";
+    private static final String scopeName2 ="dynclaim";
     private static final String userAttributeName ="dyn";
 
     @Override
@@ -167,6 +168,25 @@ public class OIDCDynamicScopeTest extends OIDCScopeTest {
     }
 
     @Test
+    public void testGetAccessTokenWithDynamicScopeWithFilteredClaim() {
+        Response response = createDynamicScopeWithFilteredClaim();
+        String scopeId = ApiUtil.getCreatedId(response);
+        getCleanup().addClientScopeId(scopeId);
+        response.close();
+
+        ClientResource testApp = ApiUtil.findClientByClientId(testRealm(), "test-app");
+        ClientRepresentation testAppRep = testApp.toRepresentation();
+        testApp.update(testAppRep);
+        testApp.addOptionalClientScope(scopeId);
+
+        oauth.scope("dynclaim:scope");
+        testLoginAndClientScopesPermissions("johnNormal", "dynclaim:scope", "role-1");
+
+        //cleanup
+        testApp.removeOptionalClientScope(scopeId);
+    }
+
+    @Test
     public void testGetAccessTokenWithDynamicScopeWithPermittedRoleScope() {
         Response response = createDynamicScope();
         String scopeId = ApiUtil.getCreatedId(response);
@@ -225,6 +245,21 @@ public class OIDCDynamicScopeTest extends OIDCScopeTest {
             put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
             put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, String.format("%1s:*", scopeName));
         }});
+        return createDynamicScopeResponse(clientScope);
+    }
+
+    private Response createDynamicScopeWithFilteredClaim() {
+        ClientScopeRepresentation clientScope = new ClientScopeRepresentation();
+        clientScope.setName(scopeName2);
+        clientScope.setAttributes(new HashMap<String, String>() {{
+            put(ClientScopeModel.IS_DYNAMIC_SCOPE, "true");
+            put(ClientScopeModel.DYNAMIC_SCOPE_REGEXP, String.format("%1s:*", scopeName2));
+            put(ClientScopeModel.FILTERED_CLAIM, scopeName);
+        }});
+        return createDynamicScopeResponse(clientScope);
+    }
+
+    private Response createDynamicScopeResponse(ClientScopeRepresentation clientScope) {
         clientScope.setProtocol(OIDCLoginProtocol.LOGIN_PROTOCOL);
 
         // create the attribute mapper
@@ -257,7 +292,7 @@ public class OIDCDynamicScopeTest extends OIDCScopeTest {
         if (expectedRoleScopes.isEmpty()) {
             Assert.assertNull(claimValue);
         } else {
-            String expectedValue = StringUtils.remove(expectedRoleScopes,scopeName+":");
+            String expectedValue = expectedRoleScopes.split(":")[1];
             Assert.assertEquals(claimValue.size(), 1);
             Assert.assertEquals(claimValue.get(0), expectedValue);
         }

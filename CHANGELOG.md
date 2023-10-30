@@ -35,6 +35,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Login events type for add, remove, suspend user from a group [RCIAM-1292](https://jira.argo.grnet.gr/browse/RCIAM-1292)
 - Include claim in token introspection response only [RCIAM-742](https://jira.argo.grnet.gr/browse/RCIAM-742)
 - Enhanced TokenIntrospection and UserInfo events and logs
+- Configurable Claims for dynamic scopes [RCIAM-1190](https://jira.argo.grnet.gr/browse/RCIAM-1190)
 
 ### Changed
 - Increase User Attribute Value length to 4000 [EOSC-KC-132](https://github.com/eosc-kc/keycloak/issues/132)
