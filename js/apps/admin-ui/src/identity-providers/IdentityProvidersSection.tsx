@@ -24,7 +24,6 @@ import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { IconMapper } from "ui-shared";
-
 import { adminClient } from "../admin-client";
 import { useAlerts } from "../components/alert/Alerts";
 import { useConfirmDialog } from "../components/confirm-dialog/ConfirmDialog";
@@ -42,6 +41,7 @@ import { useFetch } from "../utils/useFetch";
 import { ManageOrderDialog } from "./ManageOrderDialog";
 import { toIdentityProvider } from "./routes/IdentityProvider";
 import { toIdentityProviderCreate } from "./routes/IdentityProviderCreate";
+import { IdentityProvidersQuery } from "libs/keycloak-admin-client/lib/resources/identityProviders";
 
 const DetailLink = (identityProvider: IdentityProviderRepresentation) => {
   const { t } = useTranslation("identity-providers");
@@ -81,7 +81,6 @@ export default function IdentityProvidersSection() {
   const navigate = useNavigate();
   const [key, setKey] = useState(0);
   const refresh = () => setKey(key + 1);
-
   const [addProviderOpen, setAddProviderOpen] = useState(false);
   const [manageDisplayDialog, setManageDisplayDialog] = useState(false);
   const [providers, setProviders] =
@@ -92,17 +91,30 @@ export default function IdentityProvidersSection() {
 
   useFetch(
     async () => {
-      const provider = await adminClient.realms.findOne({ realm });
-      if (!provider) {
+      const providers = await adminClient.identityProviders.find();
+      if (!providers) {
         throw new Error(t("common:notFound"));
       }
-      return provider.identityProviders!;
+      return providers;
     },
     (providers) => {
       setProviders(sortBy(providers, ["config.guiOrder", "alias"]));
     },
-    [key],
+    [],
   );
+
+  const loader = async (first?: number, max?: number, search?: string) => {
+    const params: IdentityProvidersQuery = {
+      first: first!,
+      max: max!,
+    };
+    if (search) {
+      params.search = search;
+    }
+    const providers = await adminClient.identityProviders.find({ ...params });
+    setProviders(sortBy(providers, ["config.guiOrder", "alias"]));
+    return providers;
+  };
 
   const navigateToCreate = (providerId: string) =>
     navigate(
@@ -145,9 +157,6 @@ export default function IdentityProvidersSection() {
         await adminClient.identityProviders.del({
           alias: selectedProvider!.alias!,
         });
-        setProviders([
-          ...providers!.filter((p) => p.alias !== selectedProvider?.alias),
-        ]);
         refresh();
         addAlert(t("deletedSuccess"), AlertVariant.success);
       } catch (error) {
@@ -218,7 +227,9 @@ export default function IdentityProvidersSection() {
         )}
         {providers.length !== 0 && (
           <KeycloakDataTable
-            loader={providers}
+            key={key}
+            loader={loader}
+            isPaginated
             ariaLabelKey="common:identityProviders"
             searchPlaceholderKey="identity-providers:searchForProvider"
             toolbarItem={
