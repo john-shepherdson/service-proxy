@@ -189,7 +189,7 @@ public class RedirectUtils {
         String redirectUri = null;
         if (uri != null) {
             redirectUri = uri.normalize().toString();
-            redirectUri = lowerCaseHostname(redirectUri);
+           // redirectUri = lowerCaseHostname(redirectUri);
         }
         return redirectUri;
     }
