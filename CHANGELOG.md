@@ -78,3 +78,4 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Update changes related to service account with Client registration 
 - Dynamic scopes( default enabled): bug corrections, filtering and consent [RCIAM-848](https://jira.argo.grnet.gr/browse/RCIAM-848)
 - redirect_uri must be exact much[Keycloak redirect_uri has problem with uppercase](https://trello.com/c/GvamXLYM/2322-keycloak-redirecturi-has-problem-with-uppercase)
+- Fix Token Exchange without scope parameter bug in scope 
