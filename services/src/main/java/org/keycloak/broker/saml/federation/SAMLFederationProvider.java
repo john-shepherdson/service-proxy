@@ -94,6 +94,7 @@ import org.keycloak.saml.processing.core.saml.v2.writers.SAMLMetadataWriter;
 import org.keycloak.services.managers.ClientManager;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.scheduled.ClusterAwareScheduledTaskRunner;
+import org.keycloak.services.scheduled.RemoveFederation;
 import org.keycloak.services.scheduled.UpdateFederation;
 import org.keycloak.timer.TimerProvider;
 import org.keycloak.utils.StringUtil;
@@ -711,10 +712,9 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 			});
 		}
 
-		List<String> existingIdps = realm.getIdentityProvidersByFederation(model.getInternalId());
-		existingIdps.stream().forEach(idpAlias -> realm.removeFederationIdp(model, idpAlias));
-
-		realm.removeSAMLFederation(model.getInternalId());
+		RemoveFederation removeFederationTask = new RemoveFederation(model.getInternalId(),realmId);
+		ClusterAwareScheduledTaskRunner taskRunner = new ClusterAwareScheduledTaskRunner(session.getKeycloakSessionFactory(), removeFederationTask,60 * 1000);
+		timer.scheduleOnce(taskRunner, 60 * 1000, "RemoveFederation" + model.getInternalId());
 	}
 
 
