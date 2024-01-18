@@ -188,5 +188,6 @@
   "principals": "Principals",
   "actions": "Actions",
   "order": "Order",
-  "promotedLoginbutton": "Promoted login button"
+  "promotedLoginbutton": "Promoted login button",
+  "autoUpdate":"Auto Update"
 }
