@@ -51,7 +51,7 @@ const Fields = ({ readOnly }: DiscoverySettingsProps) => {
 
   return (
     <div className="pf-c-form pf-m-horizontal">
-      {!readOnly && <AutoUpdateFields />}
+      {!readOnly && <AutoUpdateFields protocol={"oidc"} />}
       <FormGroup
         label={t("authorizationUrl")}
         fieldId="kc-authorization-url"
