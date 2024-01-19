@@ -164,7 +164,7 @@ export const DiscoveryEndpointField = ({
 
       {discovery && !errors.discoveryError && children(true)}
       {discovery && (id === "saml" || id === "oidc") && (
-        <AutoUpdateFields hideMetadata />
+        <AutoUpdateFields hideMetadata protocol={id} />
       )}
       {!discovery && children(false)}
     </>
