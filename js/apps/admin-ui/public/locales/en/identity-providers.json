@@ -105,7 +105,8 @@
   "disableUserInfo": "Disable user info",
   "userInfoUrl": "User Info URL",
   "issuer": "Issuer",
-  "scopes": "Scopes",
+  "passScope": "Pass scope request parameter",
+  "scopes": "Default scopes",
   "prompt": "Prompt",
   "prompts": {
     "unspecified": "Unspecified",
