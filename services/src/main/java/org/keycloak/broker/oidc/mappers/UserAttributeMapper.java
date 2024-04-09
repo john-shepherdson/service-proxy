@@ -186,8 +186,9 @@ public class UserAttributeMapper extends AbstractClaimMapper {
             if (!CollectionUtil.collectionEquals(values, current) ) {
                 if (values.isEmpty()) {
                     Boolean passScope = Boolean.valueOf(context.getIdpConfig().getConfig().get(OAuth2IdentityProviderConfig.PASS_SCOPE));
-                    if (passScope) {
-                        List<String> relatedScopes = Arrays.asList(mapperModel.getConfig().get(RELATED_SCOPES).split(Constants.CFG_DELIMITER));
+                    String relatedScopesStr = mapperModel.getConfig().get(RELATED_SCOPES);
+                    if (passScope && relatedScopesStr != null) {
+                        List<String> relatedScopes = Arrays.asList(relatedScopesStr.split(Constants.CFG_DELIMITER));
                         Set<String> scopeSet =  context.getAuthenticationSession().getClient().getClientScopes(true).keySet();
                         String scopeParameter = context.getAuthenticationSession().getClientNote(OIDCLoginProtocol.SCOPE_PARAM);
                         if (scopeParameter != null && !scopeParameter.isEmpty())
