@@ -189,7 +189,7 @@ public class UserAttributeMapper extends AbstractClaimMapper {
                     String relatedScopesStr = mapperModel.getConfig().get(RELATED_SCOPES);
                     if (passScope && relatedScopesStr != null) {
                         List<String> relatedScopes = Arrays.asList(relatedScopesStr.split(Constants.CFG_DELIMITER));
-                        Set<String> scopeSet =  context.getAuthenticationSession().getClient().getClientScopes(true).keySet();
+                        Set<String> scopeSet =  new HashSet(context.getAuthenticationSession().getClient().getClientScopes(true).keySet());
                         String scopeParameter = context.getAuthenticationSession().getClientNote(OIDCLoginProtocol.SCOPE_PARAM);
                         if (scopeParameter != null && !scopeParameter.isEmpty())
                             scopeSet.addAll(Arrays.stream(scopeParameter.split(" ")).map(x -> x.split(":")[0]).collect(Collectors.toSet()));
