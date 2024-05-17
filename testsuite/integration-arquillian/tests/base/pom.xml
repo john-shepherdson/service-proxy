@@ -549,7 +549,7 @@
         <profile>
             <id>app-server-wildfly</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
                 <property>
                     <name>app.server</name>
                     <value>wildfly</value>
