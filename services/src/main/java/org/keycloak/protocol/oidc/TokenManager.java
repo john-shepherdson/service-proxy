@@ -241,11 +241,11 @@ public class TokenManager {
                     OIDCIdentityProvider oidcIssuerProvider = new OIDCIdentityProvider(session, oidcIssuerIdp);
                     SimpleHttp.Response response = oidcIssuerProvider.authenticateTokenRequest(SimpleHttp.doPost(tokenIntrospectionIdPUrl, session).param(PARAM_TOKEN, refreshTokenIdP)).asResponse();
                     if (response.getResponse().getStatusLine().getStatusCode() > 300 || !mapper.readTree(response.getResponse().getEntity().getContent()).get("active").asBoolean()) {
-                        throw new OAuthErrorException(OAuthErrorException.INVALID_TOKEN, "Invalid IdP Refresh Token Error");
+                        throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Invalid IdP Refresh Token Error");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    throw new OAuthErrorException(OAuthErrorException.INVALID_TOKEN, "Invalid IdP Refresh Token Error");
+                    throw new OAuthErrorException(OAuthErrorException.INVALID_GRANT, "Invalid IdP Refresh Token Error");
                 }
             }
         }
