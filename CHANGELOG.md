@@ -10,6 +10,10 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
+## [Unreleased]
+### Changed
+- No permission check for token exchange with audience
+
 ## [18.0.1-2.17] - 2023-10-10
 ### Fixed
 - Fix refresh flow with scope parameter problem[Feedback from CESNET about EOSC Keycloak federation support](https://trello.com/c/VTJNB9Gu/2116-feedback-from-cesnet-about-eosc-keycloak-federation-support)
