@@ -50,7 +50,9 @@ public class HardcodedClaim extends AbstractOIDCProtocolMapper implements OIDCAc
         ProviderConfigProperty property = new ProviderConfigProperty();
         property.setName(CLAIM_VALUE);
         property.setLabel("Claim value");
-        property.setType(ProviderConfigProperty.STRING_TYPE);
+        property.setType(ProviderConfigProperty.MULTIVALUED_STRING_TYPE);
+        property.setStringify(Boolean.TRUE);
+        property.setDefaultValue("");
         property.setHelpText("Value of the claim you want to hard code.  'true' and 'false can be used for boolean values.");
         configProperties.add(property);
 

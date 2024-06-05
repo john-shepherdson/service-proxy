@@ -77,7 +77,7 @@ public class UserAttributeMapper extends AbstractIdentityProviderMapper implemen
         property.setName(ATTRIBUTE_NAME);
         property.setLabel("Attribute Name");
         property.setHelpText("Name of attribute to search for in assertion.  You can leave this blank and specify a friendly name instead.");
-        property.setType(ProviderConfigProperty.STRING_TYPE);
+        property.setType(ProviderConfigProperty.MULTIVALUED_STRING_TYPE);
         configProperties.add(property);
         property = new ProviderConfigProperty();
         property.setName(ATTRIBUTE_FRIENDLY_NAME);

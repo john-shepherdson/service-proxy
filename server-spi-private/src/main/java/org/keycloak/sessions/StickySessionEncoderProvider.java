@@ -44,4 +44,5 @@ public interface StickySessionEncoderProvider extends Provider {
      */
     boolean shouldAttachRoute();
 
+    boolean isSupported();
 }
