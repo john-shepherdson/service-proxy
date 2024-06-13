@@ -272,11 +272,11 @@ public class DefaultTokenExchangeProvider implements TokenExchangeProvider {
             event.error(Errors.UNKNOWN_IDENTITY_PROVIDER);
             throw new CorsErrorResponseException(cors, OAuthErrorException.INVALID_REQUEST, "Issuer does not support token exchange", Response.Status.BAD_REQUEST);
         }
-//        if (!AdminPermissions.management(session, realm).idps().canExchangeTo(client, providerModel)) {
-//            event.detail(Details.REASON, "client not allowed to exchange for requested_issuer");
-//            event.error(Errors.NOT_ALLOWED);
-//            throw new CorsErrorResponseException(cors, OAuthErrorException.ACCESS_DENIED, "Client not allowed to exchange", Response.Status.FORBIDDEN);
-//        }
+        if (!AdminPermissions.management(session, realm).idps().canExchangeTo(client, providerModel)) {
+            event.detail(Details.REASON, "client not allowed to exchange for requested_issuer");
+            event.error(Errors.NOT_ALLOWED);
+            throw new CorsErrorResponseException(cors, OAuthErrorException.ACCESS_DENIED, "Client not allowed to exchange", Response.Status.FORBIDDEN);
+        }
         Response response = ((ExchangeTokenToIdentityProviderToken)provider).exchangeFromToken(session.getContext().getUri(), event, client, targetUserSession, targetUser, formParams);
         return cors.builder(Response.fromResponse(response)).build();
 
