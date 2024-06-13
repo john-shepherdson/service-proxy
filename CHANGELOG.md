@@ -10,7 +10,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version.
 
 Our Keycloak version is working well with PostgreSQL database. For using other SQL databases, text field in database need to be evaluated.
 
-## [18.0.1-2.18rc2]
+## [Unreleased]
 ### Changed
 - Disable default dynamic scopes
 
