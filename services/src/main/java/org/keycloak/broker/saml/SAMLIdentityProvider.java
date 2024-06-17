@@ -507,4 +507,10 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
     public DestinationValidator getDestinationValidator() {
         return destinationValidator;
     }
+
+    @Override
+    public boolean supportsLongStateParameter() {
+        // SAML RelayState parameter has limits of 80 bytes per SAML specification
+        return false;
+    }
 }

@@ -51,12 +51,13 @@ public class Urls {
     }
     
     public static URI identityProviderAuthnResponse(URI baseUri, String realmName) {
+
         return realmBase(baseUri).path(RealmsResource.class, "getBrokerService")
                 .path(IdentityBrokerService.ENDPOINT_PATH)
                 .build(realmName);
     }
 
-    public static URI identityProviderAuthnRequest(URI baseUri, String providerId, String realmName, String accessCode, String clientId, String tabId) {
+    public static URI identityProviderAuthnRequest(URI baseUri, String providerId, String realmName, String accessCode, String clientId, String tabId, String clientData) {
         UriBuilder uriBuilder = realmBase(baseUri).path(RealmsResource.class, "getBrokerService")
                 .path(IdentityBrokerService.class, "performLogin");
 
@@ -68,6 +69,9 @@ public class Urls {
         }
         if (tabId != null) {
             uriBuilder.replaceQueryParam(Constants.TAB_ID, tabId);
+        }
+        if (clientData != null) {
+            uriBuilder.replaceQueryParam(Constants.CLIENT_DATA, clientData);
         }
 
         return uriBuilder.build(realmName, providerId);
@@ -88,23 +92,25 @@ public class Urls {
     }
 
     public static URI identityProviderAuthnRequest(URI baseURI, String providerId, String realmName) {
-        return identityProviderAuthnRequest(baseURI, providerId, realmName, null, null, null);
+        return identityProviderAuthnRequest(baseURI, providerId, realmName, null, null, null, null);
     }
 
-    public static URI identityProviderAfterFirstBrokerLogin(URI baseUri, String realmName, String accessCode, String clientId, String tabId) {
+    public static URI identityProviderAfterFirstBrokerLogin(URI baseUri, String realmName, String accessCode, String clientId, String tabId, String clientData) {
         return realmBase(baseUri).path(RealmsResource.class, "getBrokerService")
                 .path(IdentityBrokerService.class, "afterFirstBrokerLogin")
                 .replaceQueryParam(LoginActionsService.SESSION_CODE, accessCode)
                 .replaceQueryParam(Constants.CLIENT_ID, clientId)
                 .replaceQueryParam(Constants.TAB_ID, tabId)
+                .replaceQueryParam(Constants.CLIENT_DATA, clientData)
                 .build(realmName);
     }
 
-    public static URI identityProviderAfterPostBrokerLogin(URI baseUri, String realmName, String accessCode, String clientId, String tabId) {
+    public static URI identityProviderAfterPostBrokerLogin(URI baseUri, String realmName, String accessCode, String clientId, String tabId, String clientData) {
         return realmBase(baseUri).path(RealmsResource.class, "getBrokerService")
                 .path(IdentityBrokerService.class, "afterPostBrokerLoginFlow")
                 .replaceQueryParam(LoginActionsService.SESSION_CODE, accessCode)
                 .replaceQueryParam(Constants.CLIENT_ID, clientId)
+                .replaceQueryParam(Constants.CLIENT_DATA, clientData)
                 .replaceQueryParam(Constants.TAB_ID, tabId)
                 .build(realmName);
     }
@@ -121,24 +127,16 @@ public class Urls {
         return loginActionsBase(baseUri).path(LoginActionsService.class, "requiredAction");
     }
 
-
-    public static URI loginActionUpdateProfile(URI baseUri, String realmName) {
-        return loginActionsBase(baseUri).path(LoginActionsService.class, "updateProfile").build(realmName);
-    }
-
-    public static UriBuilder loginActionEmailVerificationBuilder(URI baseUri) {
-        return loginActionsBase(baseUri).path(LoginActionsService.class, "emailVerification");
-    }
-
     public static URI loginResetCredentials(URI baseUri, String realmName) {
         return loginResetCredentialsBuilder(baseUri).build(realmName);
     }
 
-    public static UriBuilder actionTokenBuilder(URI baseUri, String tokenString, String clientId, String tabId) {
+    public static UriBuilder actionTokenBuilder(URI baseUri, String tokenString, String clientId, String tabId, String clientData) {
         return loginActionsBase(baseUri).path(LoginActionsService.class, "executeActionToken")
                 .queryParam(Constants.KEY, tokenString)
                 .queryParam(Constants.CLIENT_ID, clientId)
-                .queryParam(Constants.TAB_ID, tabId);
+                .queryParam(Constants.TAB_ID, tabId)
+                .queryParam(Constants.CLIENT_DATA, clientData);
 
     }
 
