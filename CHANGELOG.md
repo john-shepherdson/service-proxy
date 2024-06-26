@@ -12,6 +12,9 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ## [Unreleased]
 
+### Added
+- Handling authenticating authority(ies) in user session
+
 ### Fixed
 - Check for offline refresh token grant based on refresh token request parameter
 
