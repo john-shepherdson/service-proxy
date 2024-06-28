@@ -26,12 +26,18 @@ import org.keycloak.services.managers.UserSessionCrossDCManager;
 import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.sessions.RootAuthenticationSessionModel;
+import org.keycloak.social.facebook.FacebookIdentityProviderFactory;
 import org.keycloak.social.google.GoogleIdentityProviderFactory;
+import org.keycloak.social.linkedin.LinkedInOIDCIdentityProviderFactory;
 import org.keycloak.utils.OAuth2Error;
 
 public class UserSessionUtil {
 
     private static final Logger logger = Logger.getLogger(UserSessionUtil.class);
+    private static final String GOOGLE_ISSUER = "https://accounts.google.com";
+    private static final String LINKEDIN_ISSUER = "https://www.linkedin.com/oauth";
+    private static final String ORCID_ISSUER = "https://orcid.org";
+    private static final String FACEBOOK_ISSUER = "https://www.facebook.com";
 
     public static UserSessionModel findValidSession(KeycloakSession session, RealmModel realm, AccessToken token, EventBuilder event, ClientModel client) {
         OAuth2Error error = new OAuth2Error().json(false).realm(realm);
@@ -116,8 +122,10 @@ public class UserSessionUtil {
                     idp.getConfig().get(SAMLIdentityProviderConfig.IDP_ENTITY_ID) != null ? idp.getConfig().get(SAMLIdentityProviderConfig.IDP_ENTITY_ID) : idp.getAlias();
             case OIDCIdentityProviderFactory.PROVIDER_ID ->
                     idp.getConfig().get("issuer") != null ? idp.getConfig().get("issuer") : idp.getAlias();
-            case GoogleIdentityProviderFactory.PROVIDER_ID -> "google";
-            case "orcid" -> "orcid";
+            case GoogleIdentityProviderFactory.PROVIDER_ID -> GOOGLE_ISSUER;
+            case "orcid" -> ORCID_ISSUER;
+            case LinkedInOIDCIdentityProviderFactory.PROVIDER_ID -> LINKEDIN_ISSUER;
+            case FacebookIdentityProviderFactory.PROVIDER_ID -> FACEBOOK_ISSUER;
             default -> idp.getAlias();
         };
     }
