@@ -1224,7 +1224,7 @@ public class TokenManager {
         }
 
         public boolean isOfflineToken() {
-            return offlineToken;
+            return refreshToken != null && TokenUtil.TOKEN_TYPE_OFFLINE.equals(refreshToken.getType());
         }
 
         public AccessTokenResponse build() {
