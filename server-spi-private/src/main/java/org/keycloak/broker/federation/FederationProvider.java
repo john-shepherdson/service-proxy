@@ -16,7 +16,7 @@ public interface FederationProvider<C extends FederationModel> extends Provider 
 
 	String updateFederation();
 
-	void updateSamlEntities();
+	void updateSamlEntities(boolean autoUpdated);
 
 	void removeFederation();
 

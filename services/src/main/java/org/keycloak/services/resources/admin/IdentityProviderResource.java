@@ -30,6 +30,7 @@ import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.social.SocialIdentityProvider;
+import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.models.FederatedIdentityModel;
@@ -55,6 +56,7 @@ import org.keycloak.services.resources.admin.permissions.AdminPermissionManageme
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.services.scheduled.AutoUpdateIdentityProviders;
 import org.keycloak.services.scheduled.ClusterAwareScheduledTaskRunner;
+import org.keycloak.services.util.ResourcesUtil;
 import org.keycloak.timer.TimerProvider;
 
 import jakarta.ws.rs.Consumes;
@@ -69,6 +71,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -189,6 +193,30 @@ public class IdentityProviderResource {
         } catch (ModelDuplicateException e) {
             throw ErrorResponse.exists("Identity Provider " + providerRep.getAlias() + " already exists");
         }
+    }
+
+    @POST
+    @Path("refresh")
+    @Tag(name = KeycloakOpenAPI.Admin.Tags.IDENTITY_PROVIDERS)
+    @Operation( summary = "Refresh autoupdated identity provider")
+    public Response refreshIdP() throws IOException {
+        this.auth.realm().requireManageIdentityProviders();
+
+        if (identityProviderModel == null) {
+            throw new jakarta.ws.rs.NotFoundException();
+        }
+
+        if (identityProviderModel.getConfig().get(IdentityProviderModel.METADATA_URL) == null) {
+            throw ErrorResponse.error("This is not auto updated IdP", BAD_REQUEST);
+        }
+
+        InputStream inputStream = session.getProvider(HttpClientProvider.class).get(identityProviderModel.getConfig().get(IdentityProviderModel.METADATA_URL));
+        IdentityProviderModel idp = ResourcesUtil.getProviderFactoryById(session, identityProviderModel.getProviderId()).parseConfig(session, inputStream, identityProviderModel);
+
+        realm.updateIdentityProvider(idp);
+        inputStream.close();
+
+        return Response.noContent().build();
     }
 
     private void updateIdpFromRep(IdentityProviderRepresentation providerRep, RealmModel realm, KeycloakSession session) {

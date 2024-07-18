@@ -1233,6 +1233,20 @@ public class IdentityProviderTest extends AbstractAdminTest {
             rep = provider.toRepresentation();
             Assert.assertEquals("enabled", true, rep.isEnabled());
             assertSamlConfigAutoUpdated(rep.getConfig(), true);
+            String lastRefreshTime = rep.getConfig().get("lastRefreshTime");
+
+            //change idp values and check refresh button
+            rep.getConfig().put(SAMLIdentityProviderConfig.POST_BINDING_LOGOUT, "false");
+            rep.getConfig().put(SAMLIdentityProviderConfig.POST_BINDING_AUTHN_REQUEST, "false");
+            provider.update(rep);
+            rep = provider.toRepresentation();
+            assertThat(rep.getConfig(), hasEntry(SAMLIdentityProviderConfig.POST_BINDING_AUTHN_REQUEST, "false"));
+            assertThat(rep.getConfig(), hasEntry(SAMLIdentityProviderConfig.POST_BINDING_LOGOUT, "false"));
+
+            provider.refreshIdP();
+            rep = provider.toRepresentation();
+            assertSamlConfigAutoUpdated(rep.getConfig(), true);
+            Assert.assertEquals("lastRefreshTime", lastRefreshTime, rep.getConfig().get("lastRefreshTime"));
 
         } finally {
             httpService.stop();
@@ -1292,6 +1306,21 @@ public class IdentityProviderTest extends AbstractAdminTest {
             assertThat(rep.getConfig(), hasEntry("authorizationUrl", "https://aai.egi.eu/oidc/authorize"));
             assertThat(rep.getConfig(), hasEntry("tokenUrl", "https://aai.egi.eu/oidc/token"));
             assertOidcConfig(rep.getConfig(), true);
+            String lastRefreshTime = rep.getConfig().get("lastRefreshTime");
+
+            //change idp values and check refresh button
+            rep.getConfig().put("authorizationUrl", "https://aai.egi.eu/oidc/authorize/new");
+            rep.getConfig().put("tokenUrl", "https://aai.egi.eu/oidc/token/new");
+            provider.update(rep);
+            rep = provider.toRepresentation();
+            assertThat(rep.getConfig(), hasEntry("authorizationUrl", "https://aai.egi.eu/oidc/authorize/new"));
+            assertThat(rep.getConfig(), hasEntry("tokenUrl", "https://aai.egi.eu/oidc/token/new"));
+
+            provider.refreshIdP();
+            rep = provider.toRepresentation();
+            assertThat(rep.getConfig(), hasEntry("authorizationUrl", "https://aai.egi.eu/oidc/authorize"));
+            assertThat(rep.getConfig(), hasEntry("tokenUrl", "https://aai.egi.eu/oidc/token"));
+            Assert.assertEquals("lastRefreshTime", lastRefreshTime, rep.getConfig().get("lastRefreshTime"));
 
         } finally {
             httpService.stop();

@@ -51,6 +51,9 @@ public interface IdentityProviderResource {
     @DELETE
     void remove();
 
+    @POST
+    Response refreshIdP();
+
     @GET
     @Path("export")
     Response export(@QueryParam("format") String format);
