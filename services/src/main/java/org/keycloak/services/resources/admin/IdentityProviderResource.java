@@ -199,7 +199,7 @@ public class IdentityProviderResource {
     @Path("refresh")
     @Tag(name = KeycloakOpenAPI.Admin.Tags.IDENTITY_PROVIDERS)
     @Operation( summary = "Refresh autoupdated identity provider")
-    public Response refreshIdP() throws IOException {
+    public Response refreshIdP() {
         this.auth.realm().requireManageIdentityProviders();
 
         if (identityProviderModel == null) {
@@ -210,11 +210,17 @@ public class IdentityProviderResource {
             throw ErrorResponse.error("This is not auto updated IdP", BAD_REQUEST);
         }
 
-        InputStream inputStream = session.getProvider(HttpClientProvider.class).get(identityProviderModel.getConfig().get(IdentityProviderModel.METADATA_URL));
-        IdentityProviderModel idp = ResourcesUtil.getProviderFactoryById(session, identityProviderModel.getProviderId()).parseConfig(session, inputStream, identityProviderModel);
+        try {
+            InputStream inputStream = session.getProvider(HttpClientProvider.class).get(identityProviderModel.getConfig().get(IdentityProviderModel.METADATA_URL));
+            IdentityProviderModel idp = ResourcesUtil.getProviderFactoryById(session, identityProviderModel.getProviderId()).parseConfig(session, inputStream, identityProviderModel);
 
-        realm.updateIdentityProvider(idp);
-        inputStream.close();
+            realm.updateIdentityProvider(idp);
+
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
 
         return Response.noContent().build();
     }

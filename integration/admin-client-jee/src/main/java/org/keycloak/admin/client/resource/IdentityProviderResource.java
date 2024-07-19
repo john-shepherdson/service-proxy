@@ -52,6 +52,7 @@ public interface IdentityProviderResource {
     void remove();
 
     @POST
+    @Path("refresh")
     Response refreshIdP();
 
     @GET
