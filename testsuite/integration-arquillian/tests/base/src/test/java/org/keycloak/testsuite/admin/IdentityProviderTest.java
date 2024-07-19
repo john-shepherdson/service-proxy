@@ -442,7 +442,7 @@ public class IdentityProviderTest extends AbstractAdminTest {
                 Response response = ClientErrorException.class.cast(e).getResponse();
                 assertEquals( Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
                 ErrorRepresentation error = ((ClientErrorException) e).getResponse().readEntity(ErrorRepresentation.class);
-                assertEquals("The url [token_url] requires secure connections", error.getErrorMesFsage());
+                assertEquals("The url [token_url] requires secure connections", error.getErrorMessage());
             }
 
             oidcConfig.setAuthorizationUrl(null);
