@@ -32,7 +32,7 @@ public class UpdateFederation implements ScheduledTask {
 			FederationModel federationModel = realm.getSAMLFederationById(federationId);
 			SAMLFederationProviderFactory samlFederationProviderFactory = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, federationModel.getProviderId());
 			FederationProvider federationProvider = samlFederationProviderFactory.create(session, federationModel, realmId);
-			federationProvider.updateSamlEntities(true);
+			federationProvider.updateSamlEntities();
 		} else {
 			//realm has been removed. remove this task
 			TimerProvider timer = session.getProvider(TimerProvider.class);

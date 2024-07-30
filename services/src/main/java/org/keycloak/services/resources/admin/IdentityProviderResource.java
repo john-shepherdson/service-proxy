@@ -272,7 +272,7 @@ public class IdentityProviderResource {
     private void createScheduleTask(TimerProvider timer, String alias, long delay, long interval) {
         AutoUpdateIdentityProviders autoUpdateProvider = new AutoUpdateIdentityProviders(alias, realm.getId());
         ClusterAwareScheduledTaskRunner taskRunner = new ClusterAwareScheduledTaskRunner(session.getKeycloakSessionFactory(), autoUpdateProvider, interval);
-        timer.schedule(taskRunner, delay < 0 ? 0 : delay, interval, realm.getId()+"_AutoUpdateIdP_" + alias);
+        timer.schedule(taskRunner, delay < 1000 ? 1000  : delay, interval, realm.getId()+"_AutoUpdateIdP_" + alias);
     }
 
     // return ID of IdentityProvider from realm based on internalId of this provider
