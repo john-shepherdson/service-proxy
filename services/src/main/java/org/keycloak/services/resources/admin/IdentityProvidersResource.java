@@ -24,6 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.broker.provider.IdentityProviderFactory;
+import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.connections.httpclient.HttpClientProvider;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -242,7 +243,7 @@ public class IdentityProvidersResource {
 
             representation.setInternalId(identityProvider.getInternalId());
             //for autoupdated IdPs create schedule task
-            if (identityProvider.getConfig().get(IdentityProviderModel.REFRESH_PERIOD) != null)
+            if ("true".equals(identityProvider.getConfig().get(IdentityProviderModel.AUTO_UPDATE)))
                 createScheduleTask(identityProvider.getAlias(), Long.parseLong(identityProvider.getConfig().get(IdentityProviderModel.REFRESH_PERIOD)) * 1000);
             adminEvent.operation(OperationType.CREATE).resourcePath(session.getContext().getUri(), identityProvider.getAlias())
                     .representation(StripSecretsUtils.strip(representation)).success();
