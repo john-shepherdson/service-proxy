@@ -151,7 +151,7 @@ public class SAMLFederationResource {
 
     @POST
     @Path("instances/{id}/refresh")
-    public void resfreshFederation(@PathParam("id") String internalId) {
+    public Response resfreshFederation(@PathParam("id") String internalId) {
         this.auth.realm().requireManageIdentityProviders();
         //create alias representation
         FederationModel model = realm.getSAMLFederationById(internalId);
@@ -161,7 +161,7 @@ public class SAMLFederationResource {
 
         FederationProvider federationProvider = SAMLFederationProviderFactory.getSAMLFederationProviderFactoryById(session, model.getProviderId()).create(session,model,this.realm.getId());
         federationProvider.updateSamlEntities();
-
+        return Response.noContent().build();
     }
 
     /**
