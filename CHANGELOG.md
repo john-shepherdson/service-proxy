@@ -24,6 +24,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Fixed
 - Fix bugs in AutoUpdated schedule task
 - Correct query for autoUpdated IdP
+- Do not change lastRefreshTime during IdP update
 
 ## [22.0.10-1.7] - 2024-07-10
 

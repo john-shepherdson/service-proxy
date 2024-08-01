@@ -241,6 +241,9 @@ public class IdentityProviderResource {
         if (updated.getConfig() != null && ComponentRepresentation.SECRET_VALUE.equals(updated.getConfig().get("clientSecret"))) {
             updated.getConfig().put("clientSecret", identityProviderModel.getConfig() != null ? identityProviderModel.getConfig().get("clientSecret") : null);
         }
+        if (oldIdP != null) {
+            updated.getConfig().put(IdentityProviderModel.LAST_REFRESH_TIME, oldIdP.getConfig().get(IdentityProviderModel.LAST_REFRESH_TIME));
+        }
 
         realm.updateIdentityProvider(updated);
 
