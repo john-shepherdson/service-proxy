@@ -20,6 +20,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Changed
 - Change condition for parsing NameIDPolicy in autoUpdated IdP
+- Improve/ change update IdP REST API
 
 ### Fixed
 - Fix bugs in AutoUpdated schedule task
