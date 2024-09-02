@@ -126,7 +126,7 @@ public class LinkedAccountsResource {
         } else {
             List<String> linkedIdPs = session.users().getFederatedIdentitiesStream(realm, user).map(FederatedIdentityModel::getIdentityProvider).collect(Collectors.toList());
             List<LinkedAccountRepresentation> accounts = session.identityProviders().getAllStream(search, firstResult, maxResults)
-                    .map(provider -> toUnLinkedAccountRepresentation(provider, socialIds))
+                    .map(provider -> toLinkedAccountRepresentation(provider, socialIds, null))
                     .collect(Collectors.toList());
 
             return Cors.builder().auth().allowedOrigins(auth.getToken()).add(Response.ok(new ResultSet(accounts.stream().skip(firstResult).limit(maxResults).collect(Collectors.toList()), accounts.size())));
@@ -142,61 +142,38 @@ public class LinkedAccountsResource {
     @Deprecated
     private SortedSet<LinkedAccountRepresentation> getLinkedAccounts(Set<String> socialIds) {
         return realm.getIdentityProvidersStream().filter(IdentityProviderModel::isEnabled)
-                .map(provider -> toLinkedAccountRepresentation(provider, socialIds, session.users().getFederatedIdentitiesStream(realm, user)))
+                .map(provider -> toOldLinkedAccountRepresentation(provider, socialIds, session.users().getFederatedIdentitiesStream(realm, user)))
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    private LinkedAccountRepresentation toLinkedAccountRepresentation(IdentityProviderModel provider, Set<String> socialIds,
+    @Deprecated
+    private LinkedAccountRepresentation toOldLinkedAccountRepresentation(IdentityProviderModel provider, Set<String> socialIds,
                                                                       Stream<FederatedIdentityModel> identities) {
-        String providerAlias = provider.getAlias();
-
-        FederatedIdentityModel identity = getIdentity(identities, providerAlias);
-
-        String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, provider);
-        String guiOrder = provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null;
-
-        LinkedAccountRepresentation rep = new LinkedAccountRepresentation();
-        rep.setConnected(identity != null);
-        rep.setSocial(socialIds.contains(provider.getProviderId()));
-        rep.setProviderAlias(providerAlias);
-        rep.setDisplayName(displayName);
-        rep.setGuiOrder(guiOrder);
-        rep.setProviderName(provider.getAlias());
+        FederatedIdentityModel identity = getIdentity(identities, provider.getAlias());
+        LinkedAccountRepresentation rep = toLinkedAccountRepresentation(provider, socialIds, identity != null);
         if (identity != null) {
             rep.setLinkedUsername(identity.getUserName());
         }
         return rep;
     }
 
-    private LinkedAccountRepresentation toUnLinkedAccountRepresentation(IdentityProviderModel provider, Set<String> socialIds) {
-        String providerAlias = provider.getAlias();
-
-        String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, provider);
-        String guiOrder = provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null;
-
-        LinkedAccountRepresentation rep = new LinkedAccountRepresentation();
-        rep.setConnected(false);
-        rep.setSocial(socialIds.contains(provider.getProviderId()));
-        rep.setProviderAlias(providerAlias);
-        rep.setDisplayName(displayName);
-        rep.setGuiOrder(guiOrder);
-        rep.setProviderName(provider.getAlias());
+    private LinkedAccountRepresentation toLinkedAccountRepresentation(IdentityProviderModel provider, Set<String> socialIds, String username) {
+        LinkedAccountRepresentation rep = toLinkedAccountRepresentation(provider, socialIds, username != null);
+        rep.setLinkedUsername(username);
         return rep;
     }
 
-    private LinkedAccountRepresentation toLinkedAccountRepresentation(IdentityProviderModel provider, Set<String> socialIds, String username) {
-        String providerAlias = provider.getAlias();
-
+    private LinkedAccountRepresentation toLinkedAccountRepresentation(IdentityProviderModel provider, Set<String> socialIds, boolean connected){
         String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, provider);
         String guiOrder = provider.getConfig() != null ? provider.getConfig().get("guiOrder") : null;
 
         LinkedAccountRepresentation rep = new LinkedAccountRepresentation();
-        rep.setConnected(false);
+        rep.setConnected(connected);
         rep.setSocial(socialIds.contains(provider.getProviderId()));
-        rep.setProviderAlias(providerAlias);
+        rep.setProviderAlias(provider.getAlias());
         rep.setDisplayName(displayName);
         rep.setGuiOrder(guiOrder);
-        rep.setLinkedUsername(username);
+        rep.setProviderName(provider.getAlias());
         return rep;
     }
 
