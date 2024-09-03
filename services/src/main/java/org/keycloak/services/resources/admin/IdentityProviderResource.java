@@ -207,8 +207,8 @@ public class IdentityProviderResource {
             throw new jakarta.ws.rs.NotFoundException();
         }
 
-        if (!"true".equals(identityProviderModel.getConfig().get(IdentityProviderModel.AUTO_UPDATE))) {
-            throw ErrorResponse.error("This is not auto updated IdP", BAD_REQUEST);
+        if (identityProviderModel.getConfig().get(IdentityProviderModel.METADATA_URL) == null) {
+            throw ErrorResponse.error("Metadata url does not exist for this IdP", BAD_REQUEST);
         }
 
         try {
