@@ -165,7 +165,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 	@Override
 	public synchronized void updateSamlEntities() {
 
-		logger.info("Started updating the SAML federation (id): " + model.getInternalId());
+		logger.info("Started updating the SAML federation (id): " + model.getAlias());
 
 		RealmModel realm = session.realms().getRealm(realmId);
 
@@ -353,6 +353,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 				}
 			});
 
+			logger.info("finish parsing the SAML federation (id): " + model.getAlias());
 			model.setLastMetadataRefreshTimestamp(new Date().getTime());
 			realm.taskExecutionFederation(model, addedIdps, updatedIdps, existingIdps);
 

@@ -26,6 +26,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Fix bugs in AutoUpdated schedule task
 - Correct query for autoUpdated IdP
 - Do not change lastRefreshTime during IdP update
+- Improvements and logs in SAML federation task execution
 
 ## [22.0.10-1.7] - 2024-07-10
 
