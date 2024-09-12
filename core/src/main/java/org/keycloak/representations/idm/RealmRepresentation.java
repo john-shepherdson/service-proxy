@@ -217,6 +217,8 @@ public class RealmRepresentation {
 
     protected Boolean organizationsEnabled;
     private List<OrganizationRepresentation> organizations;
+    protected Long autoUpdatedIdPsInterval;
+    protected Long autoUpdatedIdPsLastRefreshTime;
 
     @Deprecated
     protected Boolean social;
@@ -1460,7 +1462,23 @@ public class RealmRepresentation {
         organizations.add(org);
     }
 
-    public enum BruteForceStrategy {
+     public enum BruteForceStrategy {
         LINEAR, MULTIPLE;
+    }
+
+    public Long getAutoUpdatedIdPsInterval() {
+        return autoUpdatedIdPsInterval;
+    }
+
+    public void setAutoUpdatedIdPsInterval(Long autoUpdatedIdPsInterval) {
+        this.autoUpdatedIdPsInterval = autoUpdatedIdPsInterval;
+    }
+
+    public Long getAutoUpdatedIdPsLastRefreshTime() {
+        return autoUpdatedIdPsLastRefreshTime;
+    }
+
+    public void setAutoUpdatedIdPsLastRefreshTime(Long autoUpdatedIdPsLastRefreshTime) {
+        this.autoUpdatedIdPsLastRefreshTime = autoUpdatedIdPsLastRefreshTime;
     }
 }

@@ -1818,5 +1818,25 @@ public class IdentityBrokerStateTestHelpers {
         @Override
         public void setOrganizationsEnabled(boolean organizationsEnabled) {
         }
+
+        @Override
+        public Long getAutoUpdatedIdPsInterval() {
+            return null;
+        }
+
+        @Override
+        public void setAutoUpdatedIdPsInterval(Long autoUpdatedIdPsInterval) {
+
+        }
+
+        @Override
+        public Long getAutoUpdatedIdPsLastRefreshTime() {
+            return null;
+        }
+
+        @Override
+        public void setAutoUpdatedIdPsLastRefreshTime(Long autoUpdatedIdPsLastRefreshTime) {
+
+        }
     }
 }
