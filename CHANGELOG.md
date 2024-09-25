@@ -15,6 +15,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 ### Fixed
 - Small fixes and extra logs to saml federation parsing
 - Link federated IdPs
+- Messages for group events
 
 ### Changed
 - Remove indexes from federation and IdP related tables
