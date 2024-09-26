@@ -551,25 +551,31 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 		return model.getEntityIdAllowList().contains(entity.getEntityID())
 				|| (authority != null && model.getRegistrationAuthorityAllowList().contains(authority))
 				|| (model.getCategoryAllowList() != null && entity.getExtensions()!= null && entity.getExtensions().getEntityAttributes() != null
-				&& containsAttribute(model.getCategoryAllowList(), entity.getExtensions().getEntityAttributes().getAttribute()))
+				&& containsAttributeAll(model.getCategoryAllowList(), entity.getExtensions().getEntityAttributes().getAttribute()))
 				|| (model.getEntityIdAllowList().isEmpty() && model.getRegistrationAuthorityAllowList().isEmpty()
 				&& model.getCategoryAllowList().isEmpty()
 				&& (model.getEntityIdDenyList().isEmpty() || !model.getEntityIdDenyList().contains(entity.getEntityID()))
 				&& (model.getCategoryDenyList().isEmpty() || entity.getExtensions()== null ||entity.getExtensions().getEntityAttributes() == null
-				|| !containsAttribute(model.getCategoryDenyList(),
+				|| !containsAttributeAtLeastOne(model.getCategoryDenyList(),
 				entity.getExtensions().getEntityAttributes().getAttribute()))
 				&& (model.getRegistrationAuthorityDenyList().isEmpty()
 				|| !model.getRegistrationAuthorityDenyList().contains(authority)));
     }
 
-    private boolean containsAttribute(Map<String, List<String>> map, List<AttributeType> attributes) {
+    private boolean containsAttributeAll(Map<String, List<String>> map, List<AttributeType> attributes) {
         return attributes.stream()
-            .filter(attr -> map.containsKey(attr.getName()) && attr.getAttributeValue().size() == map.get(attr.getName()).size()
-                && attr.getAttributeValue().stream().map(Object::toString).collect(Collectors.toList())
+            .filter(attr -> map.containsKey(attr.getName()) && attr.getAttributeValue().stream().map(Object::toString).collect(Collectors.toList())
                     .containsAll(map.get(attr.getName())))
             .count() > 0;
 
     }
+
+	private boolean containsAttributeAtLeastOne(Map<String, List<String>> map, List<AttributeType> attributes) {
+		return attributes.stream()
+				.filter(attr -> map.containsKey(attr.getName()) && attr.getAttributeValue().stream().map(Object::toString).anyMatch(map.get(attr.getName())::contains))
+				.count() > 0;
+
+	}
 
     private void parseIdP(IdentityProviderModel identityProviderModel, Date validUntil, EntityDescriptorType entity,
 							 IDPSSODescriptorType idpDescriptor, String preferredLang) throws IOException {

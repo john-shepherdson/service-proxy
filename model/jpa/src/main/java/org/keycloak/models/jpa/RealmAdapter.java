@@ -55,6 +55,8 @@ import static org.keycloak.utils.StreamsUtil.closing;
  */
 public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
     protected static final Logger logger = Logger.getLogger(RealmAdapter.class);
+    private static final int BATCH_SIZE = 1000;
+
     protected RealmEntity realm;
     protected EntityManager em;
     protected KeycloakSession session;
@@ -1557,8 +1559,9 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
     @Override
     public void taskExecutionFederation(FederationModel federationModel, List<IdentityProviderModel> addIdPs, List<IdentityProviderModel> updatedIdPs, List<String> removedIdPs) {
 
-        logger.info("Strating updating in database the SAML federation (id): " + federationModel.getAlias());
-	    addIdPs.stream().forEach(idp -> {
+        logger.info("Starting updating in database the SAML federation (id): " + federationModel.getAlias());
+        int batchCount = 0;
+        for (IdentityProviderModel idp : addIdPs) {
             this.addIdentityProviderMain(idp);
             //add mappers from federation for new identity providers
             federationModel.getFederationMapperModels().stream().map(mapper -> new IdentityProviderMapperModel(mapper, idp.getAlias())).forEach(mapper ->{
@@ -1569,14 +1572,27 @@ public class RealmAdapter implements LegacyRealmModel, JpaModel<RealmEntity> {
                     logger.warn("Previously removed IdP mapper with alias "+mapper.getIdentityProviderAlias()+ " and name "+mapper.getName()+" still exists!" );
                 }
             });
-        });
-        updatedIdPs.stream().forEach(this::updateIdentityProviderFromFed);
+            batchCount++;
+            if (batchCount % BATCH_SIZE == 0) {
+                em.flush();
+            }
+        }
+        for (IdentityProviderModel idp : updatedIdPs) {
+            this.updateIdentityProviderFromFed(idp);
+            batchCount++;
+            if (batchCount % BATCH_SIZE == 0) {
+                em.flush();
+            }
+        }
         if(removedIdPs != null && !removedIdPs.isEmpty()) {
-            removedIdPs.stream().forEach(alias -> {
-                //remove mappers also
-                logger.info("Removing idp with alias = " + alias);
+            for (String alias : removedIdPs) {
                 this.removeFederationIdp(federationModel, alias);
-            });
+                batchCount++;
+                if (batchCount % BATCH_SIZE == 0) {
+                    em.flush();
+                }
+            }
+
         }
         logger.info("Finish updating IdPs of the SAML federation (id): " + federationModel.getAlias());
         this.updateSAMLFederation(federationModel);
