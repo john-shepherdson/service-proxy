@@ -16,7 +16,7 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 - Small fixes and extra logs to saml federation parsing
 - Link federated IdPs
 - Messages for group events
-- Fix way saving SAML Federation
+- Add specific IdPs number during SAML Federation creation
 - Fix allow/deny Entity Categories filtering for SAML federations
 
 ### Changed

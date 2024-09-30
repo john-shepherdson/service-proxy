@@ -108,6 +108,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 	private static final String CATEGORY_CLIENTS= "Clients";
 	private static final String CATEGORY_IDPS= "Identity Providers";
 	private static final int MAX_LOGO_LENGTH = 4000;
+	private static final int DEFAULT_BATCH_SIZE = 3000;
 	private List<ProtocolMapperModel> defaultSAMLMappers;
 
 	public SAMLFederationProvider(KeycloakSession session, SAMLFederationModel model, String realmId) {
@@ -163,7 +164,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 	}
 
 	@Override
-	public synchronized void updateSamlEntities() {
+	public void updateSamlEntities() {
 
 		logger.info("Started updating the SAML federation (id): " + model.getAlias());
 
@@ -356,6 +357,10 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 			});
 
 			model.setLastMetadataRefreshTimestamp(new Date().getTime());
+			Integer addIdPsBatchSize = realm.getAttribute("addIdPsBatchSize",DEFAULT_BATCH_SIZE);
+			if (addedIdps.size() > addIdPsBatchSize) {
+				addedIdps = addedIdps.subList(0, addIdPsBatchSize -1);
+			}
 			realm.taskExecutionFederation(model, addedIdps, updatedIdps, existingIdps);
 
 			logger.info("Finished updating IdPs of federation (id): " + model.getInternalId());
