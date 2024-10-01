@@ -212,7 +212,6 @@ export default function DetailSettings() {
       if (!fetchedProvider) {
         throw new Error(t("common:notFound"));
       }
-
       reset(fetchedProvider);
       setProvider(fetchedProvider);
       setRefreshEnabled(fetchedProvider.config!.metadataUrl);
