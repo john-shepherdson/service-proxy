@@ -213,6 +213,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 
 		logger.info("Start parsing the SAML federation (id): " + model.getAlias());
 		try {
+			Integer addIdPsBatchSize = realm.getAttribute("addIdPsBatchSize",DEFAULT_BATCH_SIZE);
 			for (EntityDescriptorType entity : entities) {
 
 				if (!parseEntity(entity)) {
@@ -258,6 +259,10 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 							if (identityProviderModel != null) {
 								identityProviderModel = new SAMLIdentityProviderConfig(identityProviderModel);
 							} else {
+								if (addedIdps.size() > addIdPsBatchSize) {
+									//do not parse and add more than addIdPsBatchSize IdPs
+									return;
+								}
 								// initialize idp values
 								// set alias and default values
 								identityProviderModel = new SAMLIdentityProviderConfig();
@@ -357,10 +362,6 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 			});
 
 			model.setLastMetadataRefreshTimestamp(new Date().getTime());
-			Integer addIdPsBatchSize = realm.getAttribute("addIdPsBatchSize",DEFAULT_BATCH_SIZE);
-			if (addedIdps.size() > addIdPsBatchSize) {
-				addedIdps = addedIdps.subList(0, addIdPsBatchSize -1);
-			}
 			realm.taskExecutionFederation(model, addedIdps, updatedIdps, existingIdps);
 
 			logger.info("Finished updating IdPs of federation (id): " + model.getInternalId());
