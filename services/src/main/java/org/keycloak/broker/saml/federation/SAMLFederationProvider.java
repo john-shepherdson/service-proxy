@@ -262,7 +262,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 							} else {
 								if (addedIdps.size() > addIdPsBatchSize) {
 									//do not parse and add more than addIdPsBatchSize IdPs
-									return;
+									continue;
 								}
 								// initialize idp values
 								// set alias and default values
