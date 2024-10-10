@@ -109,6 +109,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 	private static final String CATEGORY_IDPS= "Identity Providers";
 	private static final int MAX_LOGO_LENGTH = 4000;
 	private static final int DEFAULT_BATCH_SIZE = 1000;
+	private static final String FEDERATION_INSERT_BATCH_SIZE = "federationInsertBatchSize";
 	private List<ProtocolMapperModel> defaultSAMLMappers;
 
 	public SAMLFederationProvider(KeycloakSession session, SAMLFederationModel model, String realmId) {
@@ -213,7 +214,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 
 		logger.info("Start parsing the SAML federation (id): " + model.getAlias());
 		try {
-			Integer addIdPsBatchSize = realm.getAttribute("addIdPsBatchSize",DEFAULT_BATCH_SIZE);
+			Integer addIdPsBatchSize = realm.getAttribute(FEDERATION_INSERT_BATCH_SIZE, DEFAULT_BATCH_SIZE);
 			for (EntityDescriptorType entity : entities) {
 
 				if (!parseEntity(entity)) {
