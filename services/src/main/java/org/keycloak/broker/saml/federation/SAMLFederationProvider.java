@@ -173,8 +173,9 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 
 		List<EntityDescriptorType> entities = new ArrayList<EntityDescriptorType>();
 		Date validUntil = null;
+		InputStream inputStream = null;
 		try {
-			InputStream inputStream = session.getProvider(HttpClientProvider.class).get(model.getUrl());
+			inputStream = session.getProvider(HttpClientProvider.class).get(model.getUrl());
 			Object parsedObject = SAMLParser.getInstance().parse(inputStream);
 			EntitiesDescriptorType entitiesDescriptorType = (EntitiesDescriptorType) parsedObject;
 			if (entitiesDescriptorType.getValidUntil() != null ) {
@@ -184,10 +185,18 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 	        entities = getEntityDescriptors(entitiesDescriptorType);
 		} catch (ParsingException | IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if (inputStream != null)
+					inputStream.close();
+			}
+			catch (IOException e) {
+				logger.error("Cannot close InputStream");
+			}
 		}
 
 		if(entities.isEmpty())
-         {
+		{
             return;
         }
 
@@ -215,6 +224,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 		logger.info("Start parsing the SAML federation (id): " + model.getAlias());
 		try {
 			Integer addIdPsBatchSize = realm.getAttribute(FEDERATION_INSERT_BATCH_SIZE, DEFAULT_BATCH_SIZE);
+			boolean reExecute = false;
 			for (EntityDescriptorType entity : entities) {
 
 				if (!parseEntity(entity)) {
@@ -261,6 +271,7 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 								identityProviderModel = new SAMLIdentityProviderConfig(identityProviderModel);
 							} else {
 								if (addedIdps.size() > addIdPsBatchSize) {
+									reExecute = true;
 									//do not parse and add more than addIdPsBatchSize IdPs
 									continue;
 								}
@@ -364,6 +375,12 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 
 			model.setLastMetadataRefreshTimestamp(new Date().getTime());
 			realm.taskExecutionFederation(model, addedIdps, updatedIdps, existingIdps);
+			if (reExecute) {
+				TimerProvider timer = session.getProvider(TimerProvider.class);
+				UpdateFederation updateFederation = new UpdateFederation(model.getInternalId(),realmId);
+				ClusterAwareScheduledTaskRunner taskRunner = new ClusterAwareScheduledTaskRunner(session.getKeycloakSessionFactory(), updateFederation,180 * 1000);
+				timer.scheduleOnce(taskRunner, 180 * 1000, "UpdateFederationPart" + Instant.now().toString());
+			}
 
 			logger.info("Finished updating IdPs of federation (id): " + model.getInternalId());
 		} catch (Exception e) {
