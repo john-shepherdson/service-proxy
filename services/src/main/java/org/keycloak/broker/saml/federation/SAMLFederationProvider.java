@@ -378,8 +378,8 @@ public class SAMLFederationProvider extends AbstractIdPFederationProvider <SAMLF
 			if (reExecute) {
 				TimerProvider timer = session.getProvider(TimerProvider.class);
 				UpdateFederation updateFederation = new UpdateFederation(model.getInternalId(),realmId);
-				ClusterAwareScheduledTaskRunner taskRunner = new ClusterAwareScheduledTaskRunner(session.getKeycloakSessionFactory(), updateFederation,180 * 1000);
-				timer.scheduleOnce(taskRunner, 180 * 1000, "UpdateFederationPart" + Instant.now().toString());
+				ClusterAwareScheduledTaskRunner taskRunner = new ClusterAwareScheduledTaskRunner(session.getKeycloakSessionFactory(), updateFederation,300 * 1000);
+				timer.scheduleOnce(taskRunner, 300 * 1000, "UpdateFederationPart" + Instant.now().toString());
 			}
 
 			logger.info("Finished updating IdPs of federation (id): " + model.getInternalId());
