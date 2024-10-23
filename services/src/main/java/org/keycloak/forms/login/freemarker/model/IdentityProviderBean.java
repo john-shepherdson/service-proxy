@@ -73,7 +73,7 @@ public class IdentityProviderBean {
         if (!hideOnLoginPage) {
             orderedSet.add(new IdentityProvider(identityProvider.getAlias(),
                     displayName, identityProvider.getProviderId(), loginUrl,
-                    config != null ? config.get("guiOrder") : null, getLoginIconClasses(identityProvider)));
+                    config != null ? config.get("guiOrder") : null, getLoginIconClasses(identityProvider), config.get(IdentityProviderModel.LOGO_URI)));
         }
     }
 
@@ -110,18 +110,20 @@ public class IdentityProviderBean {
         private final String guiOrder;
         private final String displayName;
         private final String iconClasses;
+        private final String logoUri;
 
         public IdentityProvider(String alias, String displayName, String providerId, String loginUrl, String guiOrder) {
-            this(alias, displayName, providerId, loginUrl, guiOrder, "");
+            this(alias, displayName, providerId, loginUrl, guiOrder, "", null);
         }
 
-        public IdentityProvider(String alias, String displayName, String providerId, String loginUrl, String guiOrder, String iconClasses) {
+        public IdentityProvider(String alias, String displayName, String providerId, String loginUrl, String guiOrder, String iconClasses, String logoUri) {
             this.alias = alias;
             this.displayName = displayName;
             this.providerId = providerId;
             this.loginUrl = loginUrl;
             this.guiOrder = guiOrder;
             this.iconClasses = iconClasses;
+            this.logoUri = logoUri;
         }
 
         public String getAlias() {
@@ -147,6 +149,10 @@ public class IdentityProviderBean {
 
         public String getIconClasses() {
             return iconClasses;
+        }
+
+        public String getLogoUri() {
+            return logoUri;
         }
     }
 
