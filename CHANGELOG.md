@@ -14,6 +14,10 @@ Our Keycloak version is working well with PostgreSQL database. For using other S
 
 ### Added
 - Logo uri for IdPs
+- Add cookie for chosen login IdPs
+
+### Fixed
+- Make IdPs selection more efficient
 
 ## [22.0.11-1.10] - 2024-10-21
 

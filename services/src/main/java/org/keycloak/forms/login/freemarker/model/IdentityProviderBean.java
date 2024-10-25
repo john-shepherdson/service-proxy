@@ -52,7 +52,7 @@ public class IdentityProviderBean {
         if (!identityProviders.isEmpty()) {
             List<IdentityProvider> orderedList = new ArrayList<>();
             for (IdentityProviderModel identityProvider : identityProviders) {
-                if (identityProvider.isEnabled() && !identityProvider.isLinkOnly()) {
+                if (identityProvider.isEnabled() && !identityProvider.isLinkOnly() && !(identityProvider.getConfig() != null && Boolean.parseBoolean(identityProvider.getConfig().get("hideOnLoginPage")))) {
                     addIdentityProvider(orderedList, realm, baseURI, identityProvider);
                 }
             }
@@ -69,12 +69,9 @@ public class IdentityProviderBean {
         String loginUrl = Urls.identityProviderAuthnRequest(baseURI, identityProvider.getAlias(), realm.getName()).toString();
         String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, identityProvider);
         Map<String, String> config = identityProvider.getConfig();
-        boolean hideOnLoginPage = config != null && Boolean.parseBoolean(config.get("hideOnLoginPage"));
-        if (!hideOnLoginPage) {
-            orderedSet.add(new IdentityProvider(identityProvider.getAlias(),
-                    displayName, identityProvider.getProviderId(), loginUrl,
-                    config != null ? config.get("guiOrder") : null, getLoginIconClasses(identityProvider), config.get(IdentityProviderModel.LOGO_URI)));
-        }
+        orderedSet.add(new IdentityProvider(identityProvider.getAlias(),
+                displayName, identityProvider.getProviderId(), loginUrl,
+                config != null ? config.get("guiOrder") : null, getLoginIconClasses(identityProvider), config.get(IdentityProviderModel.LOGO_URI)));
     }
 
     // Get icon classes defined in properties of current theme with key 'kcLogoIdP-{alias}'
