@@ -652,7 +652,7 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         session.getContext().setClient(authenticationSession.getClient());
         //set last login IdP to cookie (alias comma separated)
         Cookie idpsCookie = session.getContext().getHttpRequest().getHttpHeaders().getCookies().get(KEYCLOAK_REMEMBER_IDPS);
-        List<String> idpsAlias = idpsCookie == null ? new ArrayList<>() : Arrays.asList(idpsCookie.getValue().split(","));
+        List<String> idpsAlias = idpsCookie == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(idpsCookie.getValue().split(",")));
         if (! idpsAlias.contains(providerId)) {
             idpsAlias.add(providerId);
             CookieHelper.addCookie(KEYCLOAK_REMEMBER_IDPS, idpsAlias.stream().collect(Collectors.joining(",")), AuthenticationManager.getRealmCookiePath(realmModel, session.getContext().getUri()), null, null, 31536000, realmModel.getSslRequired().isRequired(session.getContext().getConnection()), true, ServerCookie.SameSiteAttributeValue.NONE, session);
